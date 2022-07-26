@@ -1,0 +1,35 @@
+.menu_container {
+  padding-top: 12px;
+}
+
+.menu_container > div {
+  padding-top: 33px;
+}
+
+div.menu_section {
+  align-items: start;
+}
+
+.menu_tittle {
+  font-size: var(--font-size-xsm);
+  font-weight: bold;
+  color: var(--chakra-colors-text_ghost);
+}
+
+.menu_item {
+  cursor: pointer;
+}
+
+.item_text {
+  font-size: var(--font-size-xsm);
+  font-weight: 500;
+  text-align: start;
+}
+
+.item_text__width {
+  width: 146px;
+}
+
+.item_text__selected {
+  color: green;
+}

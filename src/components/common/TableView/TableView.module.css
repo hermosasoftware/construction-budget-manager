@@ -1,0 +1,39 @@
+.table_container {
+  border-radius: 12px;
+  border: 1px;
+  border-color: var(--chakra-colors-divider_disable);
+  border-style: solid;
+  padding: 12px;
+  overflow-x: auto;
+}
+
+th.th {
+  border-bottom: none;
+  font-style: bold;
+  color: var(--chakra-colors-black);
+}
+
+.table_padding {
+  padding: 12px;
+}
+
+td.td {
+  font-size: var(--font-size-sm);
+  border: none;
+}
+
+.column_color__green {
+  color: green;
+}
+
+.column_color__black {
+  color: var(--chakra-colors-black);
+}
+
+.column_bold_text {
+  font-weight: bold;
+}
+
+.cursor_pointer {
+  cursor: pointer;
+}

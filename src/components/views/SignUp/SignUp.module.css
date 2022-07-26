@@ -1,0 +1,18 @@
+.signup__content {
+  padding: 50px 0;
+}
+
+.signup__form_container {
+  flex-direction: column;
+  margin: auto;
+  gap: var(--separator-space-md);
+}
+
+.signup__form {
+  width: var(--form-default-width);
+}
+
+.signup__email_confirmation {
+  width: var(--form-default-width);
+  flex-direction: column;
+}

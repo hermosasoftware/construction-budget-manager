@@ -1,0 +1,12 @@
+button.button {
+  --btn-border-radius-sm: var(--border-radius-sm);
+  --btn-border-radius-md: var(--border-radius-md);
+  --btn-border-radius-lg: var(--border-radius-lg);
+  --btn-border-radius-xlg: var(--border-radius-xlg);
+  --btn-height-sm: 32px;
+  --btn-height-md: 38px;
+  --btn-font-size: 100%;
+  --btn-border-width-sm: 1px;
+  --btn-padding-sm: 6px;
+  height: var(--btn-height-sm);
+}

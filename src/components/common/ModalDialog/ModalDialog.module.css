@@ -1,0 +1,26 @@
+.header {
+  display: flex;
+  font-size: calc(var(--font-size-lg) * 0.9);
+  gap: 16px;
+  padding: 24px 24px 0px 24px;
+}
+
+section.content {
+  width: 366px;
+}
+
+div.body {
+  color: var(--chakra-colors-modal_dialog_body);
+  padding: 0px 24px 0px 75px;
+}
+
+.icon {
+  height: 40px;
+  width: 40px;
+  color: green;
+}
+
+.footer {
+  gap: 12px;
+  padding: 24px 24px 24px 0px;
+}

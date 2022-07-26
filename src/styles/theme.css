@@ -1,0 +1,38 @@
+:root {
+  /* Global */
+  --sidebar-width: 228px;
+  --form-default-width: 320px;
+  --padding-vertical-sm: 10px;
+  --padding-vertical-md: 20px;
+  --padding-vertical-lg: 30px;
+  --padding-vertical-xlg: 50px;
+  --margin-vertical-md: 20px;
+  --margin-vertical-lg: 30px;
+  /* Font Sizes */
+  --font-size-xsm: 12px;
+  --font-size-sm: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 20px;
+  --font-size-xlg: 42px;
+  /* Input Heights */
+  --input-height-md: 40px;
+  /* Input Widths */
+  --input-width-md: 155px;
+  /* Line Heights */
+  --line-height-sm: 20px;
+  --line-height-md: 24px;
+  --line-height-lg: 32px;
+  --line-height-xlg: 53px;
+  /* Border Radius */
+  --border-radius-sm: 4px;
+  --border-radius-md: 6px;
+  --border-radius-lg: 12px;
+  --border-radius-xlg: 100px;
+  /* Separators */
+  --separator-space-md: 38px;
+  --separator-gap-sm: 8px;
+  --separator-gap-md: 10px;
+  --separator-gap-lg: 12px;
+  --separator-gap-xlg: 16px;
+  --separator-gap-xxlg: 33px;
+}

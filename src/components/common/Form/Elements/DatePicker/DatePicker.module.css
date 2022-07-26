@@ -1,0 +1,30 @@
+.date_picker__container {
+  height: 40px;
+  width: 100%;
+  cursor: pointer;
+  padding-left: 5px;
+  padding-right: 5px;
+  gap: 2px;
+  border: 1px solid var(--chakra-colors-divider_disable);
+  border-radius: var(--btn-border-radius-sm);
+}
+
+.date_picker__container:focus-within {
+  outline-color: var(--chakra-colors-focus_color);
+  border-color: var(--chakra-colors-focus_color);
+  box-shadow: 0 0 0 1px var(--chakra-colors-focus_color);
+}
+
+.date_picker__input {
+  width: 100%;
+  font-size: var(--font-size-md);
+  text-align: center;
+}
+
+.date_picker__input:focus {
+  outline: none;
+}
+
+.date_picker__input::-webkit-input-placeholder {
+  font-size: var(--font-size-sm);
+}

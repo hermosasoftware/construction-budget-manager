@@ -1,0 +1,12 @@
+.search_icon {
+  padding: 12px 0px 20px 20px;
+  cursor: pointer;
+}
+
+input.search_button {
+  margin-left: 12px;
+  margin-right: 12px;
+  height: 30px;
+  border-radius: 100px;
+  background-color: white;
+}

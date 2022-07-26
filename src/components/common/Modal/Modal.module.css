@@ -1,0 +1,23 @@
+button.modal__close_btn {
+  width: var(--chakra-space-8);
+  height: var(--chakra-space-8);
+  top: var(--chakra-space-4);
+  right: var(--chakra-space-4);
+}
+
+header.modal_header {
+  border-bottom: 1px solid var(--chakra-colors-light_border);
+}
+
+div.modal_body {
+  display: flex;
+  flex-direction: column;
+}
+
+div.modal_body:not(.no_body_padding) {
+  padding: var(--chakra-space-6);
+}
+
+div.no_body_padding {
+  padding: 0;
+}

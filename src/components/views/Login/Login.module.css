@@ -1,0 +1,13 @@
+.login__content {
+  padding: var(--padding-vertical-xlg) 0;
+}
+
+.login__form_container {
+  flex-direction: column;
+  margin: auto;
+  gap: var(--separator-space-md);
+}
+
+.login__form {
+  width: var(--form-default-width);
+}

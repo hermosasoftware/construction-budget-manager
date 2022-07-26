@@ -1,0 +1,19 @@
+.main_container {
+  width: 100%;
+  justify-content: space-between;
+}
+
+.main_container .content_label {
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-sm);
+}
+
+.main_container > .content_container {
+  gap: 5px;
+}
+
+.main_container > .content_container > button {
+  padding: 0px;
+  min-width: 32px;
+  border-color: var(--chakra-colors-divider_disable);
+}

@@ -1,0 +1,5 @@
+button.button {
+  width: var(--input-width-md);
+  height: var(--input-height-md);
+  font-size: var(--font-size-sm);
+}

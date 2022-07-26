@@ -1,0 +1,62 @@
+.sideBar {
+  position: fixed;
+  background-color: var(--chakra-colors-side_bar_background);
+  width: var(--sidebar-width);
+  align-items: center;
+  overflow-y: auto;
+}
+
+.sideBar_container {
+  height: 100vh;
+  justify-content: space-between;
+}
+
+.sideBar_container > div:not(:first-child) {
+  padding-top: 50px;
+}
+
+.sideBar_tittle {
+  align-self: center;
+  font-weight: bold;
+  font-size: var(--font-size-lg);
+  margin-top: 22px;
+  margin-bottom: 18px;
+}
+
+.account {
+  align-self: flex-start;
+  padding-left: 12px;
+  padding-bottom: 12px;
+}
+
+.account_image {
+  width: 24px;
+  height: 24px;
+  border-radius: 100px;
+}
+
+div.account_info {
+  align-items: start;
+  font-weight: bold;
+  font-size: var(--font-size-xsm);
+}
+
+.account_info p.account_job__text {
+  font-size: calc(var(--font-size-xsm) * 0.75);
+  color: var(--chakra-colors-text_ghost);
+  margin-top: 0px;
+}
+
+.logo {
+  margin-top: calc(var(--margin-vertical-md) * 1.1);
+  margin-bottom: calc(var(--margin-vertical-md) * 0.9);
+  width: 70px;
+  height: 15px;
+}
+
+.sidebar_icon {
+  position: absolute;
+  cursor: pointer;
+  margin-top: 5px;
+  margin-left: 5px;
+}

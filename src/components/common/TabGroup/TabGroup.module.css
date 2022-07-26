@@ -1,0 +1,24 @@
+.tab_group {
+  gap: 0;
+}
+
+.tab_group__option {
+  background-color: transparent;
+  padding: calc(var(--padding-vertical-md) * 0.8) var(--padding-vertical-lg);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+
+.tab_group__option > p {
+  color: var(--chakra-colors-black);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-md);
+}
+
+.active {
+  border-bottom-color: var(--chakra-colors-success);
+}
+
+.active > p {
+  color: var(--chakra-colors-success);
+}

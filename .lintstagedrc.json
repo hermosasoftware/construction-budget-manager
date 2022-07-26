@@ -1,0 +1,5 @@
+{
+  "(src|public)/**/*.+(ts|tsx|js|jsx|css|html|md|json)": [
+    "prettier --write"
+  ]
+}

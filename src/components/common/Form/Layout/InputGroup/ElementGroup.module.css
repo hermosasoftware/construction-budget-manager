@@ -1,0 +1,8 @@
+.input_group {
+  width: 100%;
+  gap: var(--separator-gap-lg);
+}
+
+.input_group > * {
+  flex-grow: 1;
+}

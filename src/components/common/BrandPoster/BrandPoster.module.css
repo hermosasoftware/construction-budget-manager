@@ -1,0 +1,28 @@
+.brand_poster__container {
+  padding: var(--padding-vertical-sm);
+}
+
+.brand_poster {
+  width: 600px;
+  flex-direction: column;
+  padding-bottom: calc(var(--brand-name-height) + var(--brand-name-mb));
+  border-radius: var(--border-radius-lg);
+  background-image: url('/src/assets/img/login-pattern.svg');
+  background-size: cover;
+  background-position: center;
+}
+
+.mav_logo {
+  width: 160px;
+  height: 40px;
+}
+
+.mav_logo path {
+  fill: white;
+}
+
+@media screen and (max-width: 1050px) {
+  .brand_poster__container {
+    display: none;
+  }
+}
