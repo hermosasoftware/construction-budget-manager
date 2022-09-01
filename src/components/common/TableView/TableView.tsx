@@ -32,7 +32,7 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
   }, [props.items, filter]);
 
   return (
-    <Box className={styles.table_container} style={{ ...(boxStyle ?? null) }}>
+    <Box className={styles.table_container} style={{ ...(boxStyle ?? '') }}>
       <Table>
         <Thead>
           <Tr>
