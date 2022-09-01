@@ -1,12 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../../../redux/hooks';
+import { useAppSelector } from '../../../redux/hooks';
 import BrandPoster from '../../common/BrandPoster/BrandPoster';
 import ThirdPartyAuth from '../../common/ThirdPartyAuth/ThirdPartyAuth';
 import ToggleGroup from '../../common/ToggleGroup/ToggleGroup';
 import LoginForm, { ILoginFormData } from '../../forms/LoginForm/LoginForm';
-import { logIn } from '../../../services/authService';
-import { changeUser } from '../../../redux/reducers/sessionSlice';
+import { logIn } from '../../../providers/userAuthContextProvider';
+
 import { useToast } from '@chakra-ui/react';
 
 import styles from './Login.module.css';
@@ -16,7 +16,6 @@ interface ILogin {}
 const LogIn: React.FC<ILogin> = props => {
   const navigate = useNavigate();
   const appStrings = useAppSelector(state => state.settings.appStrings);
-  const dispatch = useAppDispatch();
   const toast = useToast();
 
   const toggleOptions = [
@@ -29,15 +28,15 @@ const LogIn: React.FC<ILogin> = props => {
   ];
 
   const handleOnFormSubmit = async (data: ILoginFormData) => {
-    const { id, email, password } = data;
-    const [errors, user] = await logIn(id || email, password);
+    const { email, password } = data;
+    const [errors, user] = await logIn(email, password);
     if (!errors && user) {
-      dispatch(changeUser(user));
+      // dispatch(changeUser(user));
       navigate('/onboarding');
     } else {
       toast({
         title: appStrings?.Global?.errorWhileLogIn,
-        description: errors,
+        description: errors + '',
         status: 'error',
         duration: 5000,
         isClosable: true,

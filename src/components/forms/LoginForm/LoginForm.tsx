@@ -11,7 +11,7 @@ import styles from './LoginForm.module.css';
 
 export interface ILoginFormData {
   id?: IUser['id'];
-  email?: IUser['email'];
+  email: IUser['email'];
   password: string;
 }
 
