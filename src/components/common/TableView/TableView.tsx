@@ -21,17 +21,18 @@ interface ITableProps<T> {
     index: number,
     array: TTableItem<T>[],
   ) => boolean;
+  boxStyle?: React.CSSProperties;
 }
 
 const TableView = <T extends TObject>(props: ITableProps<T>) => {
-  const { headers, filter } = props;
+  const { headers, filter, boxStyle } = props;
 
   const items = useMemo(() => {
     return !filter ? props.items : props.items?.filter(filter);
   }, [props.items, filter]);
 
   return (
-    <Box className={styles.table_container}>
+    <Box className={styles.table_container} style={{ ...(boxStyle ?? '') }}>
       <Table>
         <Thead>
           <Tr>

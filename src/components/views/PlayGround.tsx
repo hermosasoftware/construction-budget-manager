@@ -14,7 +14,7 @@ import * as yup from 'yup';
 
 import styles from './PlayGround.module.css';
 
-const tableHeader: TTableHeader[] = [
+export const tableHeader: TTableHeader[] = [
   { name: 'name', value: 'Nombre' },
   { name: 'invoice', value: '# Factura', isGreen: true },
   { name: 'creation', value: 'Creacion' },
@@ -22,7 +22,7 @@ const tableHeader: TTableHeader[] = [
   { name: 'value', value: 'Valor' },
 ];
 
-const tableData = [
+export const tableData = [
   {
     id: '1',
     name: 'Segun Adebayo',

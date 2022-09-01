@@ -1,0 +1,22 @@
+.projects_container {
+  height: 100%;
+  margin-left: 220px;
+}
+
+.title {
+  text-align: left;
+  margin-left: 20px;
+  font-weight: 600;
+}
+
+.tabs {
+  width: fit-content;
+  margin-left: 25px;
+  margin-top: 80px;
+}
+
+.projects_table {
+  width: 95%;
+  margin-left: 20px;
+  margin-top: 10px;
+}
