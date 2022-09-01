@@ -4,44 +4,17 @@ const menuItems = (appStrings: TObject) => {
   return [
     {
       id: 1,
-      title: appStrings?.Global?.myAccount,
+      title: 'Inicio',
       options: [
         {
-          name: appStrings?.Global?.home,
-          redirectTo: '/home',
-          hasIcon: false,
-        },
-        {
-          name: appStrings?.Global?.clients,
-          redirectTo: '/clients',
-          hasIcon: true,
-        },
-      ],
-    },
-    {
-      id: 2,
-      title: appStrings?.Global?.countability,
-      options: [
-        {
-          name: appStrings?.Global?.invoices,
-          redirectTo: '/invoices',
-          hasIcon: true,
-        },
-      ],
-    },
-    {
-      id: 3,
-      title: appStrings?.Global?.administration,
-      options: [
-        {
-          name: appStrings?.Global?.products,
-          redirectTo: '/products',
+          name: 'Proyectos',
+          redirectTo: '/projects',
           hasIcon: true,
         },
         {
-          name: appStrings?.Global?.reports,
-          redirectTo: '/reports',
-          hasIcon: false,
+          name: 'Materiales',
+          redirectTo: '/materiales',
+          hasIcon: true,
         },
       ],
     },
