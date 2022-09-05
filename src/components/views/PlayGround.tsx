@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import { changeAppLang } from '../../redux/reducers/settingsSlice';
@@ -13,13 +13,12 @@ import TabGroup from '../common/TabGroup/TabGroup';
 import * as yup from 'yup';
 
 import styles from './PlayGround.module.css';
+import { verifyEmail } from '../../providers/userAuthContextProvider';
 
 export const tableHeader: TTableHeader[] = [
   { name: 'name', value: 'Nombre' },
-  { name: 'invoice', value: '# Factura', isGreen: true },
-  { name: 'creation', value: 'Creacion' },
-  { name: 'email', value: 'Correo' },
-  { name: 'value', value: 'Valor' },
+  { name: 'client', value: 'Cliente', isGreen: true },
+  { name: 'location', value: 'Localizacion' },
 ];
 
 export const tableData = [
@@ -68,6 +67,13 @@ const Home = () => {
     username: yup.string().required('Campo requerido'),
     password: yup.string().required('Campo requerido'),
   });
+  useEffect(() => {
+    const test = async () => {
+      await verifyEmail('estebanvargasu@gmail.com');
+    };
+
+    test();
+  }, []);
 
   return (
     <div className={`red-text ${styles.home_container}`}>

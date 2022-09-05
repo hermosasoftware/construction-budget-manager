@@ -1,6 +1,6 @@
 import React from 'react';
 import { IStyledComponent } from '../../../types/global';
-import { ReactComponent as MavLogo } from '../../../assets/img/mav-logo.svg';
+import { ReactComponent as MavLogo } from '../../../assets/img/coto-logo.svg';
 
 import styles from './BrandPoster.module.css';
 
