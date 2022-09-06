@@ -15,7 +15,7 @@ export const verifyEmail = async (email: string): Promise<String | null> => {
   try {
     const result = await fetchSignInMethodsForEmail(auth, email);
     console.log(result);
-    if (result.length === 0) {
+    if (!result.length) {
       return Error('La direccion de correo electronico no exite') + '';
     } else if (result[0] === 'google.com') {
       return Error('Debe iniciar seccion con Google') + '';

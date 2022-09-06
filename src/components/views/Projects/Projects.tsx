@@ -12,13 +12,13 @@ import { tableHeader } from '../PlayGround';
 import styles from './Projects.module.css';
 
 export default function Projects() {
-  const [projects, setprojects] = useState<IProject[]>([]);
+  const [projects, setProjects] = useState<IProject[]>([]);
   const toast = useToast();
 
-  const searchHandle = async (event: { target: { value: String } }) => {
+  const handleSearch = async (event: { target: { value: String } }) => {
     const [errors, resProjects] = await getProjectsByName(event.target.value);
     if (!errors) {
-      setprojects(resProjects);
+      setProjects(resProjects);
     } else {
       toast({
         title: 'Error al extraer la informacion',
@@ -35,7 +35,7 @@ export default function Projects() {
     const getProjects = async (status: boolean) => {
       const [errors, resProjects] = await getProjectsByStatus(status);
       if (!errors) {
-        setprojects(resProjects);
+        setProjects(resProjects);
       } else {
         toast({
           title: 'Error al extraer la informacion',
@@ -63,7 +63,7 @@ export default function Projects() {
           console.log('Single - Active Tabs: ', activeTabs)
         }
       />
-      <SearchInput onChange={searchHandle}></SearchInput>
+      <SearchInput onChange={handleSearch}></SearchInput>
       <TableView
         headers={tableHeader}
         items={projects as []}

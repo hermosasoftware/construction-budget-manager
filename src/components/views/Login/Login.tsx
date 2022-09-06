@@ -21,10 +21,10 @@ const LogIn: React.FC<ILogin> = props => {
   const navigate = useNavigate();
   const appStrings = useAppSelector(state => state.settings.appStrings);
   const toast = useToast();
-  const [LoginPhase, setLoginPhase] = useState('email');
-  const [Email, setEmail] = useState('');
+  const [loginPhase, setLoginPhase] = useState('email');
+  const [email, setEmail] = useState('');
 
-  const handleOnFormSubmit = async (data: ILoginFormEmailData) => {
+  const handleOnEmailSubmit = async (data: ILoginFormEmailData) => {
     const { email } = data;
     const response = await verifyEmail(email);
     console.log(response);
@@ -44,9 +44,9 @@ const LogIn: React.FC<ILogin> = props => {
       });
     }
   };
-  const handleOnFormSubmit2 = async (data: ILoginFormPasswordData) => {
+  const handleOnPasswordSubmit = async (data: ILoginFormPasswordData) => {
     const { password } = data;
-    const [errors, user] = await logIn(Email, password);
+    const [errors, user] = await logIn(email, password);
     if (!errors && user) {
       // dispatch(changeUser(user));
 
@@ -70,15 +70,15 @@ const LogIn: React.FC<ILogin> = props => {
         className={`fill-parent center-content scroll ${styles.login__content}`}
       >
         <div className={`center-content ${styles.login__form_container}`}>
-          {LoginPhase === 'email' ? (
+          {loginPhase === 'email' ? (
             <LoginFormEmail
               className={styles.login__form}
-              onSubmit={handleOnFormSubmit}
+              onSubmit={handleOnEmailSubmit}
             />
           ) : (
             <LoginFormPassword
               className={styles.login__form}
-              onSubmit={handleOnFormSubmit2}
+              onSubmit={handleOnPasswordSubmit}
             />
           )}
           <ThirdPartyAuth className={styles.login__third_parties} />
