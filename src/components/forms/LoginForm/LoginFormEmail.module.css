@@ -1,0 +1,9 @@
+.password_input {
+  margin-top: calc(var(--separator-gap-lg) * 2);
+}
+
+.restore_link {
+  align-self: flex-start;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-sm);
+}

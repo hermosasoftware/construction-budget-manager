@@ -5,16 +5,20 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   onAuthStateChanged,
+  fetchSignInMethodsForEmail,
+  User,
 } from 'firebase/auth';
 import { query, where, collection, addDoc, getDocs } from 'firebase/firestore';
 import { auth, db } from '../config/firebaseConfig';
 
 export const verifyEmail = async (email: string): Promise<String | null> => {
   try {
-    const userRef = collection(db, 'users');
-    const result = await getDocs(query(userRef, where('email', '==', email)));
-    if (result.empty) {
+    const result = await fetchSignInMethodsForEmail(auth, email);
+    console.log(result);
+    if (!result.length) {
       return Error('La direccion de correo electronico no exite') + '';
+    } else if (result[0] === 'google.com') {
+      return Error('Debe iniciar seccion con Google') + '';
     }
     return null;
   } catch (error) {
@@ -22,7 +26,10 @@ export const verifyEmail = async (email: string): Promise<String | null> => {
   }
 };
 
-export const logIn = async (email: string, password: string) => {
+export const logIn = async (
+  email: string,
+  password: string,
+): Promise<[String | null, User | null]> => {
   try {
     const userCredential = await signInWithEmailAndPassword(
       auth,
@@ -32,7 +39,7 @@ export const logIn = async (email: string, password: string) => {
     console.log(userCredential.user);
     return [null, userCredential.user];
   } catch (error) {
-    return [error, null];
+    return [error + '', null];
   }
 };
 

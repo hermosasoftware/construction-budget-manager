@@ -17,7 +17,7 @@ import { useAppSelector } from '../../redux/hooks';
 import { List } from 'phosphor-react';
 import { useBreakpointValue } from '@chakra-ui/react';
 import { useState } from 'react';
-import { ReactComponent as Logo } from '../../assets/img/mav-logo.svg';
+import { ReactComponent as Logo } from '../../assets/img/coto-logo.svg';
 
 import styles from './Sidebar.module.css';
 
