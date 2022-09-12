@@ -4,7 +4,7 @@ import { IStyledComponent, TObject } from './global';
 
 export type TFormErrors<T> = Partial<{ [key in keyof T]: string }>;
 export type TFormDataElement<T> = {
-  name: string; //Extract<keyof T, string>;
+  name: string; //Extract<keyof T, string>; - Need to review this with Chris
   value: any;
 };
 

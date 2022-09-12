@@ -13,11 +13,6 @@ import { tableHeader } from '../PlayGround';
 import styles from './Projects.module.css';
 
 export default function Projects() {
-  const navigate = useNavigate();
-
-  const handleRowClick = (event: any) => {
-    navigate('/project-materials');
-  };
   const [projects, setProjects] = useState<IProject[]>([]);
   const toast = useToast();
 
@@ -74,7 +69,6 @@ export default function Projects() {
         headers={tableHeader}
         items={projects as []}
         boxStyle={{ width: '95%', margin: '20px 0 0 20px' }}
-        handleRowClick={handleRowClick}
       />
     </div>
   );
