@@ -12,8 +12,8 @@ const menuItems = (appStrings: TObject) => {
           hasIcon: true,
         },
         {
-          name: 'Materiales',
-          redirectTo: '/materiales',
+          name: 'Materials',
+          redirectTo: '/materials',
           hasIcon: true,
         },
       ],

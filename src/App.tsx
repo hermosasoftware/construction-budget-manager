@@ -7,7 +7,7 @@ import Projects from './components/views/Projects/Projects';
 import ForgotPassword from './components/views/ForgotPassword/ForgotPassword';
 import PlayGround from './components/views/PlayGround';
 import Sidebar from './components/layout/Sidebar';
-
+import Materials from './components/views/Materials/Materials';
 import './App.css';
 
 function App() {
@@ -20,6 +20,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/projects" element={<Projects />} />
+          <Route path="/materials" element={<Materials />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
         </Routes>
       </BrowserRouter>

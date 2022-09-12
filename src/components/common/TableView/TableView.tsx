@@ -9,6 +9,7 @@ export type TTableHeader<T = TObject> = {
   name: keyof TTableItem<T>;
   value: string | number;
   isGreen?: boolean;
+  isEditable?: boolean;
 };
 
 export type TTableItem<T = TObject> = T & { id: string | number };
@@ -22,10 +23,12 @@ interface ITableProps<T> {
     array: TTableItem<T>[],
   ) => boolean;
   boxStyle?: React.CSSProperties;
+  handleRowClick?: (event: any) => void;
+  rowActions?: [];
 }
 
 const TableView = <T extends TObject>(props: ITableProps<T>) => {
-  const { headers, filter, boxStyle } = props;
+  const { headers, filter, boxStyle, handleRowClick, rowActions } = props;
 
   const items = useMemo(() => {
     return !filter ? props.items : props.items?.filter(filter);
@@ -48,25 +51,30 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
         </Thead>
         <Tbody>
           {items?.map(row => (
-            <Tr key={`table-row-${row.id}`}>
+            <Tr key={`table-row-${row.id}`} onClick={handleRowClick}>
               {headers?.map(header => (
                 <Td
                   key={`table-row-header-${header.name as string}`}
+                  id={row.id?.toString()}
                   className={`${styles.td} ${
                     header.isGreen
                       ? styles.column_color__green
                       : styles.column_color__black
-                  } ${header.name === 'name' ? styles.column_bold_text : ''}`}
+                  } ${header.name === 'name' ? styles.column_bold_text : ''} ${
+                    handleRowClick ? styles.cursor_pointer : ''
+                  }`}
                 >
                   {row[header.name]}
                 </Td>
               ))}
-              <Td>
-                <DotsThreeOutlineVertical
-                  className={styles.cursor_pointer}
-                  weight="fill"
-                />
-              </Td>
+              {rowActions?.length && (
+                <Td>
+                  <DotsThreeOutlineVertical
+                    className={styles.cursor_pointer}
+                    weight="fill"
+                  />
+                </Td>
+              )}
             </Tr>
           ))}
         </Tbody>
