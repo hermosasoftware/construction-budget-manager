@@ -22,7 +22,7 @@ registerLocale('es', es);
 
 type TThirdPartyDatePickerProps = Omit<
   ReactDatePickerProps,
-  'name' | 'value' | 'onChange' | 'onBlur'
+  'name' | 'value' | 'onChange' | 'onBlur' | 'onKeyDown' | 'onFocus'
 >;
 
 interface IDatePicker
