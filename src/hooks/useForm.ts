@@ -3,6 +3,7 @@ import { TObject, TValidationSchema } from '../types/global';
 import useObjectValidation from './useObjectValidation';
 import { IFormContext, IFormProps } from '../components/common/Form/Form';
 import { TFormDataElement, TFormErrors } from '../types/forms';
+import { array } from 'yup';
 
 export interface IUseFormOptions<T> {
   initialFormData?: Partial<T>;
@@ -36,7 +37,7 @@ const useForm = <T extends TObject = TObject>(
   options: IUseFormOptions<T> = {},
 ): IUseFormHook<T> => {
   const {
-    initialFormData = {},
+    initialFormData,
     onSubmit,
     onFormDataChange,
     validationSchema,
@@ -45,7 +46,7 @@ const useForm = <T extends TObject = TObject>(
     validateTogether,
   } = options;
 
-  const [formData, setFormData] = useState<Partial<T>>(initialFormData);
+  const [formData, setFormData] = useState<Partial<T>>(initialFormData as {});
   const { isValid, errors, validate, validateSome } = useObjectValidation(
     formData,
     validationSchema,
@@ -69,6 +70,19 @@ const useForm = <T extends TObject = TObject>(
     setFormData(newFormData);
     onFormDataChange?.(newFormData);
   };
+
+  useEffect(() => {
+    if (initialFormData) {
+      const array: any = [];
+      Object.keys(initialFormData).forEach(key => {
+        array.push({
+          name: key,
+          value: initialFormData[key],
+        });
+      });
+      updateFormData(array);
+    }
+  }, [initialFormData]);
 
   const handleOnSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();

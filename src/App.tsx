@@ -8,6 +8,7 @@ import ForgotPassword from './components/views/ForgotPassword/ForgotPassword';
 import PlayGround from './components/views/PlayGround';
 import Sidebar from './components/layout/Sidebar';
 import AuthRoute from './components/common/AuthRoute';
+import Materials from './components/views/Materials/Materials';
 import './App.css';
 
 function App() {
@@ -22,6 +23,10 @@ function App() {
           <Route
             path="/projects"
             element={<AuthRoute component={Projects} />}
+          />
+          <Route
+            path="/materials"
+            element={<AuthRoute component={Materials} />}
           />
           <Route path="/forgot-password" element={<ForgotPassword />} />
         </Routes>

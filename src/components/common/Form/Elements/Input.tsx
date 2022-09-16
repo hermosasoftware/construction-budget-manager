@@ -11,7 +11,7 @@ import Button from '../../Button/Button';
 import { useAppSelector } from '../../../../redux/hooks';
 import { IFormElementProps } from '../../../../types/forms';
 
-interface IInput extends IFormControl, IFormElementProps {
+export interface IInput extends IFormControl, IFormElementProps {
   placeholder?: string;
   type?: React.HTMLInputTypeAttribute;
   viewPassword?: boolean;
@@ -31,6 +31,9 @@ const Input: React.FC<IInput> = props => {
     onChange,
     onBlur,
     error,
+    onKeyDown,
+    sx,
+    onFocus,
   } = props;
 
   const {
@@ -81,6 +84,9 @@ const Input: React.FC<IInput> = props => {
     onChange: triggerOnChangeHandlers,
     onBlur: triggerOnBlurHandlers,
     _placeholder: { color: 'text_ghost' },
+    onKeyDown: onKeyDown,
+    sx: sx,
+    onFocus: onFocus,
   };
 
   return (
