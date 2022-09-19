@@ -1,4 +1,4 @@
-import { Route, BrowserRouter, Routes } from 'react-router-dom';
+import { Route, BrowserRouter, Routes, Navigate } from 'react-router-dom';
 
 // Components
 import Login from './components/views/Login/Login';
@@ -15,7 +15,7 @@ function App() {
   return (
     <div className="App">
       <BrowserRouter>
-        <Sidebar />
+        {/* <Sidebar /> */}
         <Routes>
           <Route path="/" element={<AuthRoute component={PlayGround} />} />
           <Route path="/login" element={<Login />} />
@@ -29,6 +29,7 @@ function App() {
             element={<AuthRoute component={Materials} />}
           />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="*" element={<Navigate to={'/login'} />} />
         </Routes>
       </BrowserRouter>
     </div>

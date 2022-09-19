@@ -9,6 +9,7 @@ import { IProject } from '../../../types/project';
 import SearchInput from '../../common/SearchInput/SearchInput';
 import TabGroup from '../../common/TabGroup/TabGroup';
 import TableView from '../../common/TableView/TableView';
+import Sidebar from '../../layout/Sidebar';
 import { tableHeader } from '../PlayGround';
 import styles from './Projects.module.css';
 
@@ -52,24 +53,27 @@ export default function Projects() {
   }, [toast]);
 
   return (
-    <div className={`${styles.projects_container}`}>
-      <h1 className={`${styles.title}`}>Proyectos</h1>
-      <TabGroup
-        className={`${styles.tabs}`}
-        tabs={[
-          { id: 'product', name: 'Proyectos Activos', selected: true },
-          { id: 'services', name: 'Proyectos Inactivos' },
-        ]}
-        onSelectedTabChange={activeTabs =>
-          console.log('Single - Active Tabs: ', activeTabs)
-        }
-      />
-      <SearchInput onChange={handleSearch}></SearchInput>
-      <TableView
-        headers={tableHeader}
-        items={projects as []}
-        boxStyle={{ width: '95%', margin: '20px 0 0 20px' }}
-      />
-    </div>
+    <>
+      <Sidebar />
+      <div className={`${styles.projects_container}`}>
+        <h1 className={`${styles.title}`}>Proyectos</h1>
+        <TabGroup
+          className={`${styles.tabs}`}
+          tabs={[
+            { id: 'product', name: 'Proyectos Activos', selected: true },
+            { id: 'services', name: 'Proyectos Inactivos' },
+          ]}
+          onSelectedTabChange={activeTabs =>
+            console.log('Single - Active Tabs: ', activeTabs)
+          }
+        />
+        <SearchInput onChange={handleSearch}></SearchInput>
+        <TableView
+          headers={tableHeader}
+          items={projects as []}
+          boxStyle={{ width: '95%', margin: '20px 0 0 20px' }}
+        />
+      </div>
+    </>
   );
 }

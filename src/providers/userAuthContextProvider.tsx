@@ -73,7 +73,7 @@ export const googleSignIn = async () => {
         email: user.email,
       });
     }
-    return [null, result];
+    return [null, result.docs[0] as any];
   } catch (error) {
     return [error, null];
   }

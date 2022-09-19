@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../../redux/hooks';
 import BrandPoster from '../../common/BrandPoster/BrandPoster';
@@ -20,6 +20,7 @@ interface ILogin {}
 const LogIn: React.FC<ILogin> = props => {
   const navigate = useNavigate();
   const appStrings = useAppSelector(state => state.settings.appStrings);
+  const appUser = useAppSelector(state => state.session.user);
   const toast = useToast();
   const [loginPhase, setLoginPhase] = useState('email');
   const [email, setEmail] = useState('');
@@ -62,6 +63,10 @@ const LogIn: React.FC<ILogin> = props => {
       });
     }
   };
+
+  useEffect(() => {
+    if (appUser) navigate('/projects');
+  }, [appUser]);
 
   return (
     <div className="fill-parent flex">

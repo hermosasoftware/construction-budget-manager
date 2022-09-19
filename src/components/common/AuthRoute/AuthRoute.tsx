@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Navigate, Route } from 'react-router-dom';
+import { useAppSelector } from '../../../redux/hooks';
 
 interface Props {
   component: any;
@@ -8,16 +9,8 @@ interface Props {
 }
 
 const AuthRoute = ({ component: Component, exact, ...rest }: Props) => {
-  const isAuth = false;
-  debugger;
-  return isAuth ? <Component {...rest} /> : <Navigate to="/login" />;
-  // <Route
-  //   path={path}
-  //   element={(props: any) => {
-  //     debugger;
-  //     return <Component {...props} />;
-  //   }}
-  // />
+  const appUser = useAppSelector(state => state.session.user);
+  return appUser ? <Component {...rest} /> : <Navigate to="/login" />;
 };
 
 export default AuthRoute;
