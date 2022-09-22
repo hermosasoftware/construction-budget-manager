@@ -71,19 +71,6 @@ const useForm = <T extends TObject = TObject>(
     onFormDataChange?.(newFormData);
   };
 
-  useEffect(() => {
-    if (initialFormData) {
-      const array: any = [];
-      Object.keys(initialFormData).forEach(key => {
-        array.push({
-          name: key,
-          value: initialFormData[key],
-        });
-      });
-      updateFormData(array);
-    }
-  }, [initialFormData]);
-
   const handleOnSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const [isValid] = await validate();
