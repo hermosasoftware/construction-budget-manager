@@ -19,6 +19,7 @@ import styles from './Materials.module.css';
 import * as yup from 'yup';
 import { useAppSelector } from '../../../redux/hooks';
 import Sidebar from '../../layout/Sidebar';
+import { MaterialsTable } from '../../common/MaterialsTable/MaterialsTable';
 
 const tableHeader: TTableHeader[] = [
   { name: 'name', value: 'Name' },
@@ -50,8 +51,6 @@ export default function Materials() {
   const handleRowClick = (event: MouseEvent) => {
     const row = event.target as HTMLInputElement;
     const materialID = row.id;
-    const material = materialsData.find(material => material.id === materialID);
-    material && setSelectedMaterial(material);
   };
 
   const validationSchema = yup.object().shape({
