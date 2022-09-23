@@ -4,10 +4,10 @@ const menuItems = (appStrings: TObject) => {
   return [
     {
       id: 1,
-      title: 'Inicio',
+      title: 'Home',
       options: [
         {
-          name: 'Proyectos',
+          name: 'Projects',
           redirectTo: '/projects',
           hasIcon: true,
         },

@@ -1,6 +1,20 @@
 import React, { useMemo, useState } from 'react';
-import { Box, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react';
-import { DotsThreeOutlineVertical } from 'phosphor-react';
+import {
+  Box,
+  Center,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
+  Spacer,
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr,
+} from '@chakra-ui/react';
+import { DotsThreeOutlineVertical, Pencil, Trash } from 'phosphor-react';
 import { TObject } from '../../../types/global';
 
 import styles from './TableView.module.css';
@@ -24,13 +38,21 @@ interface ITableProps<T> {
   ) => boolean;
   boxStyle?: React.CSSProperties;
   handleRowClick?: (event: any) => void;
-  rowActions?: [];
+  onClickEdit?: (id: string) => void;
+  onClickDelete?: (id: string) => void;
   rowChild?: React.ReactElement;
 }
 
 const TableView = <T extends TObject>(props: ITableProps<T>) => {
-  const { headers, filter, boxStyle, handleRowClick, rowActions, rowChild } =
-    props;
+  const {
+    headers,
+    filter,
+    boxStyle,
+    onClickEdit,
+    onClickDelete,
+    handleRowClick,
+    rowChild,
+  } = props;
   const [rowChildVisible, seTrowChildVisible] = useState<boolean>(false);
   const [selectedRow, setSelectedRow] = useState<string | number>('');
 
@@ -55,22 +77,20 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
         </Thead>
         <Tbody>
           {items?.map(row => (
-            <>
-              <Tr
-                key={`table-row-${row.id}`}
-                onClick={e => {
-                  if (rowChild) {
-                    if (selectedRow === row.id)
-                      seTrowChildVisible(!rowChildVisible);
-                    else seTrowChildVisible(true);
-                    setSelectedRow(row.id);
-                  }
-                  handleRowClick && handleRowClick(e);
-                }}
-              >
+            <React.Fragment key={`table-row-${row.id}`}>
+              <Tr key={`table-row-${row.id}`}>
                 {headers?.map(header => (
                   <Td
                     key={`table-row-header-${header.name as string}`}
+                    onClick={e => {
+                      if (rowChild) {
+                        if (selectedRow === row.id)
+                          seTrowChildVisible(!rowChildVisible);
+                        else seTrowChildVisible(true);
+                        setSelectedRow(row.id);
+                      }
+                      handleRowClick && handleRowClick(e);
+                    }}
                     id={row.id?.toString()}
                     className={`${styles.td} ${
                       header.isGreen
@@ -83,21 +103,45 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
                     {row[header.name]}
                   </Td>
                 ))}
-                {rowActions?.length && (
-                  <Td>
-                    <DotsThreeOutlineVertical
-                      className={styles.cursor_pointer}
-                      weight="fill"
-                    />
+                {onClickEdit && onClickDelete ? (
+                  <Td
+                    id={row.id?.toString()}
+                    className={`${styles.td}`}
+                    textAlign="center"
+                    width="90px"
+                  >
+                    <Menu>
+                      <MenuButton boxSize="40px">
+                        <Center>
+                          <DotsThreeOutlineVertical
+                            className={styles.cursor_pointer}
+                            weight="fill"
+                          />
+                        </Center>
+                      </MenuButton>
+                      <MenuList>
+                        <MenuItem
+                          onClick={() => onClickEdit(row.id.toString())}
+                        >
+                          Edit<Spacer></Spacer>
+                          <Pencil />
+                        </MenuItem>
+                        <MenuItem
+                          onClick={() => onClickDelete(row.id.toString())}
+                        >
+                          Delete <Spacer></Spacer> <Trash />
+                        </MenuItem>
+                      </MenuList>
+                    </Menu>
                   </Td>
-                )}
+                ) : null}
               </Tr>
               {rowChildVisible && rowChild && row.id === selectedRow && (
                 <Tr>
                   <Td>{React.cloneElement(rowChild, { rowID: row.id })}</Td>
                 </Tr>
               )}
-            </>
+            </React.Fragment>
           ))}
         </Tbody>
       </Table>

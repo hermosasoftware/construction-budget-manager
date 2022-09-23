@@ -7,6 +7,8 @@ import {
   startAt,
   endAt,
   orderBy,
+  getDoc,
+  doc,
 } from 'firebase/firestore';
 import { db } from '../config/firebaseConfig';
 import { IProject } from '../types/project';
@@ -18,14 +20,27 @@ export const getAllProjects = async (): Promise<
     const userRef = collection(db, 'projects');
     const result = await getDocs(userRef);
     const data = result.docs.map(doc => ({
-      name: doc.data().name,
-      client: doc.data().client,
-      location: doc.data().location,
+      ...doc.data(),
+      id: doc.id,
     })) as IProject[];
 
     return [null, data];
   } catch (error) {
     return [error + '', []];
+  }
+};
+
+export const getProjectById = async (
+  id: string,
+): Promise<[String | null, IProject | null]> => {
+  try {
+    const userRef = doc(db, 'projects', id);
+    const result = await getDoc(userRef);
+    const data = { ...result.data(), id: result.id } as IProject;
+
+    return [null, data];
+  } catch (error) {
+    return [error + '', null];
   }
 };
 
@@ -39,12 +54,9 @@ export const getProjectsByStatus = async (
     );
     const result = await getDocs(userRef);
     const data = result.docs.map(doc => ({
-      name: doc.data().name,
-      client: doc.data().client,
-      location: doc.data().location,
-      status: doc.data().status,
+      ...doc.data(),
+      id: doc.id,
     })) as IProject[];
-
     return [null, data];
   } catch (error) {
     return [error + '', []];
@@ -63,9 +75,8 @@ export const getProjectsByName = async (
     );
     const result = await getDocs(userRef);
     const data = result.docs.map(doc => ({
-      name: doc.data().name,
-      client: doc.data().client,
-      location: doc.data().location,
+      ...doc.data(),
+      id: doc.id,
     })) as IProject[];
 
     return [null, data];
