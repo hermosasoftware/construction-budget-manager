@@ -8,6 +8,7 @@ import { IProject } from '../../../types/project';
 import ExpensesReport from './ExpensesReport/ExpensesReport';
 import MaterialsDelivered from './MaterialsDelivered/MaterialsDelivered';
 import InitialPlan from './InitialPlan/InitialPlan';
+import Sidebar from '../../layout/Sidebar';
 
 export default function Projects() {
   const [selectedTab, setSelectedTab] = useState('initial');
@@ -39,34 +40,37 @@ export default function Projects() {
   }, [projectId, toast]);
 
   return (
-    <div className={`${styles.projects_container}`}>
-      <Box p={5} borderWidth="1px">
-        <Flex>
-          <h1 className={`${styles.title}`}>Project: {project?.name}</h1>
-          <h1 className={`${styles.title}`}>Client: {project?.client}</h1>
-          <h1 className={`${styles.title}`}>Location: {project?.location}</h1>
-          <h1 className={`${styles.title}`}>
-            Status: {project?.status ? 'Active' : 'Inactive'}
-          </h1>
-        </Flex>
-      </Box>
+    <>
+      <Sidebar />
+      <div className={`${styles.projects_container}`}>
+        <Box p={5} borderWidth="1px">
+          <Flex>
+            <h1 className={`${styles.title}`}>Project: {project?.name}</h1>
+            <h1 className={`${styles.title}`}>Client: {project?.client}</h1>
+            <h1 className={`${styles.title}`}>Location: {project?.location}</h1>
+            <h1 className={`${styles.title}`}>
+              Status: {project?.status ? 'Active' : 'Inactive'}
+            </h1>
+          </Flex>
+        </Box>
 
-      <TabGroup
-        className={`${styles.tabs}`}
-        tabs={[
-          { id: 'initial', name: 'Initial Planning', selected: true },
-          { id: 'delivered', name: 'Materials Delivered' },
-          { id: 'expenses', name: 'Expenses Report' },
-        ]}
-        onSelectedTabChange={activeTabs => setSelectedTab(activeTabs[0])}
-      />
-      {selectedTab === 'initial' ? (
-        <InitialPlan projectId={projectId}></InitialPlan>
-      ) : selectedTab === 'delivered' ? (
-        <MaterialsDelivered projectId={projectId}></MaterialsDelivered>
-      ) : selectedTab === 'expenses' ? (
-        <ExpensesReport projectId={projectId}></ExpensesReport>
-      ) : null}
-    </div>
+        <TabGroup
+          className={`${styles.tabs}`}
+          tabs={[
+            { id: 'initial', name: 'Initial Planning', selected: true },
+            { id: 'delivered', name: 'Materials Delivered' },
+            { id: 'expenses', name: 'Expenses Report' },
+          ]}
+          onSelectedTabChange={activeTabs => setSelectedTab(activeTabs[0])}
+        />
+        {selectedTab === 'initial' ? (
+          <InitialPlan projectId={projectId}></InitialPlan>
+        ) : selectedTab === 'delivered' ? (
+          <MaterialsDelivered projectId={projectId}></MaterialsDelivered>
+        ) : selectedTab === 'expenses' ? (
+          <ExpensesReport projectId={projectId}></ExpensesReport>
+        ) : null}
+      </div>
+    </>
   );
 }
