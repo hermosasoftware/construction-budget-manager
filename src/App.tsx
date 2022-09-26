@@ -4,6 +4,7 @@ import { Route, BrowserRouter, Routes, Navigate } from 'react-router-dom';
 import Login from './components/views/Login/Login';
 import SignUp from './components/views/SignUp/SignUp';
 import Projects from './components/views/Projects/Projects';
+import ProjectDetail from './components/views/ProjectDetail/ProjectDetail';
 import ForgotPassword from './components/views/ForgotPassword/ForgotPassword';
 import PlayGround from './components/views/PlayGround';
 import Sidebar from './components/layout/Sidebar';
@@ -36,7 +37,12 @@ function App() {
             path="/materials"
             element={<AuthRoute component={Materials} />}
           />
+          <Route
+            path="/project-detail/:id"
+            element={<AuthRoute component={ProjectDetail} />}
+          />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+
           <Route path="*" element={<Navigate to={'/login'} />} />
         </Routes>
       </BrowserRouter>
