@@ -9,7 +9,7 @@ import {
   DrawerContent,
   Box,
 } from '@chakra-ui/react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import SearchInput from '../common/SearchInput/SearchInput';
 import MenuBar from './MenuBar';
 import menuItems from '../../config/sidebarItems';
@@ -20,6 +20,9 @@ import { useState } from 'react';
 import { ReactComponent as Logo } from '../../assets/img/coto-logo.svg';
 
 import styles from './Sidebar.module.css';
+import { useDispatch } from 'react-redux';
+import { auth } from '../../config/firebaseConfig';
+import { logout } from '../../redux/reducers/sessionSlice';
 
 const smVariant = { navigation: 'drawer', navigationButton: true };
 const mdVariant = { navigation: 'sidebar', navigationButton: false };
@@ -31,6 +34,9 @@ const Sidebar = () => {
   const { appStrings } = useAppSelector(state => ({
     ...state.settings,
   }));
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const variants = useBreakpointValue({ base: smVariant, md: mdVariant });
@@ -45,7 +51,7 @@ const Sidebar = () => {
           <SearchInput placeholder={appStrings?.Global?.search} />
           <MenuBar menuItems={menuItems(appStrings)} />
         </Stack>
-
+        <button onClick={singOut}>Logout</button>
         <HStack className={styles.account}>
           <Image
             className={styles.account_image}
@@ -63,6 +69,12 @@ const Sidebar = () => {
   );
 
   const shouldBeDisplayed = !blacklist.includes(location.pathname);
+
+  const singOut = () => {
+    dispatch(logout());
+    auth.signOut();
+    navigate('/login');
+  };
 
   return shouldBeDisplayed ? (
     variants?.navigation === 'sidebar' ? (

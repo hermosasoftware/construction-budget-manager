@@ -10,8 +10,16 @@ import Sidebar from './components/layout/Sidebar';
 import AuthRoute from './components/common/AuthRoute';
 import Materials from './components/views/Materials/Materials';
 import './App.css';
+import { useEffect } from 'react';
+import { useAppDispatch } from './redux/hooks';
+import { handleAuthChange } from './providers/userAuthContextProvider';
 
 function App() {
+  const dispatch = useAppDispatch();
+  useEffect(() => {
+    handleAuthChange(dispatch);
+  }, []);
+
   return (
     <div className="App">
       <BrowserRouter>

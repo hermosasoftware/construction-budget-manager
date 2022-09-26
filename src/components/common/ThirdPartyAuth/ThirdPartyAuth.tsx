@@ -20,19 +20,7 @@ const ThirdPartyAuth: React.FC<IThirdPartyAuth> = props => {
 
   const handleOnClickGoogle = async () => {
     const [errors, user] = await googleSignIn();
-    if (!errors && user) {
-      const userData = user?.data();
-      dispatch(
-        changeUser({
-          name: userData.name,
-          lastName: 'lastName',
-          idType: 'national',
-          id: userData.uid,
-          email: userData.email,
-        }),
-      );
-      navigate('/projects');
-    } else {
+    if (errors && !user) {
       toast({
         title: appStrings?.Global?.errorWhileLogIn,
         description: errors + '',
