@@ -10,6 +10,7 @@ import {
 } from 'firebase/auth';
 import { query, where, collection, addDoc, getDocs } from 'firebase/firestore';
 import { auth, db } from '../config/firebaseConfig';
+import { login, logout } from '../redux/reducers/sessionSlice';
 
 export const verifyEmail = async (email: string): Promise<String | null> => {
   try {
@@ -73,7 +74,7 @@ export const googleSignIn = async () => {
         email: user.email,
       });
     }
-    return [null, result];
+    return [null, result.docs[0] as any];
   } catch (error) {
     return [error, null];
   }
@@ -83,15 +84,20 @@ export const logOut = async () => {
   return await signOut(auth);
 };
 
-export const handleAuthChange = () => {
-  onAuthStateChanged(auth, user => {
-    if (user) {
-      // User is signed in, see docs for a list of available properties
-      // https://firebase.google.com/docs/reference/js/firebase.User
-      // ...
+export const handleAuthChange = (dispatch: Function) => {
+  onAuthStateChanged(auth, userAuth => {
+    if (userAuth) {
+      // user is logged in, send the user's details to redux, store the current user in the state
+      dispatch(
+        login({
+          email: userAuth.email,
+          uid: userAuth.uid,
+          name: userAuth.displayName,
+          // photoUrl: userAuth.photoURL,
+        }),
+      );
     } else {
-      // User is signed out
-      // ...
+      dispatch(logout());
     }
   });
 };
