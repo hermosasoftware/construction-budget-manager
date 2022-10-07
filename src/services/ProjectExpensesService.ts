@@ -1,4 +1,11 @@
-import { collection, addDoc, getDocs } from 'firebase/firestore';
+import {
+  collection,
+  addDoc,
+  getDocs,
+  doc,
+  setDoc,
+  getDoc,
+} from 'firebase/firestore';
 import { db } from '../config/firebaseConfig';
 import { IProjectExpense } from '../types/projectExpense';
 
@@ -20,14 +27,53 @@ export const getProjectExpenses = async (
   }
 };
 
+export const getProjectExpenseById = async (
+  projectId: string,
+  projectExpenseId: string,
+): Promise<[String | null, IProjectExpense | null]> => {
+  try {
+    const userRef = doc(
+      db,
+      'projects',
+      projectId,
+      'projectExpenses',
+      projectExpenseId,
+    );
+    const result = await getDoc(userRef);
+    const data = {
+      ...result.data(),
+    } as IProjectExpense;
+
+    return [null, data];
+  } catch (error) {
+    return [error + '', null];
+  }
+};
+
 export const createProjectExpense = async (
-  project: IProjectExpense,
+  projectId: string,
+  projectExpenseId: IProjectExpense,
 ): Promise<String | null> => {
   try {
-    const userRef = collection(db, 'projects');
-    const result = await addDoc(userRef, project);
+    const userRef = collection(db, 'projects', projectId, 'projectExpenses');
+    const result = await addDoc(userRef, projectExpenseId);
 
     console.log(result.id);
+
+    return null;
+  } catch (error) {
+    return error + '';
+  }
+};
+
+export const updateProjectExpense = async (
+  projectId: string,
+  projectExpense: IProjectExpense,
+): Promise<String | null> => {
+  try {
+    const { id, ...rest } = projectExpense;
+    const userRef = doc(db, 'projects', projectId, 'projectExpenses', id);
+    await setDoc(userRef, rest);
 
     return null;
   } catch (error) {
