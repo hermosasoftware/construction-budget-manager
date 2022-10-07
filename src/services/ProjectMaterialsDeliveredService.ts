@@ -1,4 +1,11 @@
-import { collection, addDoc, getDocs } from 'firebase/firestore';
+import {
+  collection,
+  addDoc,
+  getDocs,
+  doc,
+  setDoc,
+  getDoc,
+} from 'firebase/firestore';
 import { db } from '../config/firebaseConfig';
 import { IProjectMaterialDelivered } from '../types/projectMaterialDelivered';
 
@@ -26,6 +33,31 @@ export const getProjectMaterialsDelivered = async (
   }
 };
 
+export const getProjectMaterialDeliveredById = async (
+  projectId: string,
+  projectMaterialDeliveredId: string,
+): Promise<[String | null, IProjectMaterialDelivered | null]> => {
+  try {
+    const userRef = doc(
+      db,
+      'projects',
+      projectId,
+      'projectMaterialsDelivered',
+      projectMaterialDeliveredId,
+    );
+    const result = await getDoc(userRef);
+    const data = {
+      ...result.data(),
+      id: result.id,
+      subtotal: result.data()?.cost * result.data()?.quantity,
+    } as IProjectMaterialDelivered;
+
+    return [null, data];
+  } catch (error) {
+    return [error + '', null];
+  }
+};
+
 export const createProjectMaterialDelivered = async (
   projectId: string,
   project: IProjectMaterialDelivered,
@@ -40,6 +72,27 @@ export const createProjectMaterialDelivered = async (
     const result = await addDoc(userRef, project);
 
     console.log(result.id);
+
+    return null;
+  } catch (error) {
+    return error + '';
+  }
+};
+
+export const updateProjectMaterialDelivered = async (
+  projectId: string,
+  projectMaterialDelivered: IProjectMaterialDelivered,
+): Promise<String | null> => {
+  try {
+    const { id, ...rest } = projectMaterialDelivered;
+    const userRef = doc(
+      db,
+      'projects',
+      projectId,
+      'projectMaterialsDelivered',
+      id,
+    );
+    await setDoc(userRef, rest);
 
     return null;
   } catch (error) {
