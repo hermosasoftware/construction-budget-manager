@@ -3,6 +3,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import settings from './reducers/settingsSlice';
 import session from './reducers/sessionSlice';
 import modals from './reducers/modalsSlice';
+import materials from './reducers/materialsSlice';
 
 import logger from 'redux-logger';
 
@@ -11,6 +12,7 @@ export const store = configureStore({
     settings,
     session,
     modals,
+    materials,
   },
   middleware: getDefaultMiddleware => getDefaultMiddleware().concat(logger),
 });
