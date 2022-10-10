@@ -11,21 +11,32 @@ import {
   startAt,
 } from 'firebase/firestore';
 import { db } from '../config/firebaseConfig';
-import { IMaterial } from '../types/collections';
+import { IMaterial, IMaterialBreakdown } from '../types/collections';
 
 const materialDocRef = collection(db, 'materials');
 
-export const getMaterials = async (): Promise<IMaterial[] | null> => {
+export const getMaterials = async (): Promise<IMaterialBreakdown[] | null> => {
   try {
     const docSnap = await getDocs(materialDocRef);
-    return docSnap.docs.map(doc => {
-      return {
-        cost: doc.get('cost'),
+
+    const materials = docSnap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+
+    let allMaterials = null;
+    let submaterialsPromise = materials.map(async elem => {
+      const materialQ = query(
+        collection(db, 'materials', elem.id, 'subMaterials'),
+      );
+      const subMaterials = await getDocs(materialQ);
+      const data = subMaterials.docs.map(doc => ({
+        ...doc.data(),
         id: doc.id,
-        name: doc.get('name'),
-        unit: doc.get('unit'),
-      };
+      }));
+      return { id: elem.id, material: elem, subMaterials: data };
     });
+    await Promise.all(submaterialsPromise).then(resul => {
+      allMaterials = resul;
+    });
+    return allMaterials;
   } catch (error) {
     console.log(error);
     return null;

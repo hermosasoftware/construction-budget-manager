@@ -1,0 +1,67 @@
+.table_container {
+  border-radius: 12px;
+  border: 1px;
+  border-color: var(--chakra-colors-divider_disable);
+  border-style: solid;
+  padding: 12px;
+  overflow-x: auto;
+}
+
+th.th {
+  border-bottom: none;
+  font-style: bold;
+  color: var(--chakra-colors-black);
+}
+
+.table_padding {
+  padding: 12px;
+}
+
+td.td {
+  font-size: var(--font-size-sm);
+  border: none;
+}
+
+.column_color__green {
+  color: green;
+}
+
+.column_color__black {
+  color: var(--chakra-colors-black);
+}
+
+.column_bold_text {
+  font-weight: bold;
+}
+
+.cursor_pointer {
+  cursor: pointer;
+}
+
+.rowSelected {
+  background-color: var(--chakra-colors-green-100);
+}
+
+.rowSelected td:first-child {
+  border-radius: 10px 0 0 10px;
+}
+.rowSelected td:last-child {
+  border-radius: 0 10px 10px 0;
+}
+
+.materialArrow {
+  position: absolute;
+  transform: translate(-15px, 0px);
+}
+
+/* .rowSelected:last-child td:last-child {
+  border-radius: 0 10px 10px 0;
+} */
+
+.sub::after {
+  content: '';
+  border-width: 5px !important;
+  border-color: transparent !important;
+  border-style: solid !important;
+  border-left-color: #222 !important;
+}

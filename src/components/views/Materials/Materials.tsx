@@ -11,32 +11,40 @@ import {
   getMaterials,
   updateMaterial,
 } from '../../../services/materialsService';
-import { IMaterial } from '../../../types/collections';
+import { IMaterial, IMaterialBreakdown } from '../../../types/collections';
 import Button from '../../common/Button/Button';
 import Form, { Input } from '../../common/Form';
-import TableView, { TTableHeader } from '../../common/TableView/TableView';
 import styles from './Materials.module.css';
 import * as yup from 'yup';
 import { useAppSelector } from '../../../redux/hooks';
 import Sidebar from '../../layout/Sidebar';
-import { MaterialsTable } from '../../common/MaterialsTable/MaterialsTable';
+import MaterialsTableView, {
+  TTableHeader,
+} from '../../layout/MaterialsTableView/MaterialsTableView';
 
 const tableHeader: TTableHeader[] = [
   { name: 'name', value: 'Name' },
   { name: 'unit', value: 'Unit' },
+  { name: 'quantity', value: 'Quantity' },
   { name: 'cost', value: 'Cost' },
 ];
 
 const initialSelectedMaterialData = {
-  cost: 0,
   id: '',
-  name: '',
-  unit: '',
+  material: {
+    cost: 0,
+    id: '',
+    name: '',
+    unit: '',
+  },
+  subMaterials: [],
 };
 
 export default function Materials() {
-  const [materialsData, setMaterialsDataTable] = useState<Array<IMaterial>>([]);
-  const [selectedMaterial, setSelectedMaterial] = useState<IMaterial>(
+  const [materialsData, setMaterialsDataTable] = useState<
+    Array<IMaterialBreakdown>
+  >([]);
+  const [selectedMaterial, setSelectedMaterial] = useState<IMaterialBreakdown>(
     initialSelectedMaterialData,
   );
   const appStrings = useAppSelector(state => state.settings.appStrings);
@@ -59,33 +67,40 @@ export default function Materials() {
     cost: yup.string().required(appStrings?.Global?.requiredField),
   });
 
+  const onSubmit = async (data: any) => {
+    if (!selectedMaterial.material.id) {
+      const materialID = await addMaterial(data);
+      if (materialID) {
+        Object.assign(data, { id: materialID });
+        setMaterialsDataTable([
+          ...materialsData,
+          { id: materialID, material: data, subMaterials: [] },
+        ]);
+      }
+    } else {
+      const res = await updateMaterial(data);
+      if (res) {
+        const materials = materialsData.map(breakDown =>
+          breakDown.material.id === data.id
+            ? { id: data.id, material: data, subMaterials: [] }
+            : breakDown,
+        );
+        setMaterialsDataTable(materials);
+      }
+    }
+  };
+
   return (
     <>
       <Sidebar />
       <div className={`${styles.projects_materials_container}`}>
         <Form
           id="materials-form"
-          initialFormData={selectedMaterial}
+          initialFormData={selectedMaterial.material}
           validationSchema={validationSchema}
           validateOnBlur={['cost', 'name', 'unit']}
           style={{ marginLeft: '26px', alignItems: 'start' }}
-          onSubmit={async data => {
-            if (!selectedMaterial.id) {
-              const materialID = await addMaterial(data);
-              if (materialID) {
-                Object.assign(data, { id: materialID });
-                setMaterialsDataTable([...materialsData, { ...data }]);
-              }
-            } else {
-              const res = await updateMaterial(data);
-              if (res) {
-                const materials = materialsData.map(material =>
-                  material.id === data.id ? data : material,
-                );
-                setMaterialsDataTable(materials);
-              }
-            }
-          }}
+          onSubmit={onSubmit}
         >
           <div style={{ display: 'flex' }}>
             <Input
@@ -107,9 +122,9 @@ export default function Materials() {
           </div>
           <div>
             <Button type="submit" style={{ width: '75px' }}>
-              {selectedMaterial.id ? 'Update' : 'Add'}
+              {selectedMaterial.material.id ? 'Update' : 'Add'}
             </Button>
-            {selectedMaterial.id && (
+            {selectedMaterial.material.id && (
               <Button
                 onClick={() => setSelectedMaterial(initialSelectedMaterialData)}
                 style={{ width: '75px', marginLeft: '5px' }}
@@ -119,7 +134,7 @@ export default function Materials() {
             )}
           </div>
         </Form>
-        <TableView
+        <MaterialsTableView
           headers={tableHeader}
           items={materialsData}
           boxStyle={{ width: '98%', margin: '20px 0 0 20px' }}
