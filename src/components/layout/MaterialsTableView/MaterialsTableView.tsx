@@ -60,6 +60,14 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
     return !filter ? props.items : props.items?.filter(filter);
   }, [props.items, filter]);
 
+  const onRowClick = (isSelected: boolean, row: any, e: React.MouseEvent) => {
+    if (isSelected) setRowChildVisible(!rowChildVisible);
+    else setRowChildVisible(true);
+    setSelectedRow(row.id);
+
+    handleRowClick && handleRowClick(e);
+  };
+
   return (
     <Box className={styles.table_container} style={{ ...(boxStyle ?? '') }}>
       <Table>
@@ -92,13 +100,7 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
                     return (
                       <Td
                         key={`table-row-header-${header.name as string}`}
-                        onClick={e => {
-                          if (isSelected) setRowChildVisible(!rowChildVisible);
-                          else setRowChildVisible(true);
-                          setSelectedRow(row.id);
-
-                          handleRowClick && handleRowClick(e);
-                        }}
+                        onClick={e => onRowClick(isSelected, row, e)}
                         id={row.id?.toString()}
                         className={`${styles.td} ${
                           header.isGreen
