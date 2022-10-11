@@ -59,16 +59,17 @@ export const getProjectMaterialPlanById = async (
 
 export const createProjectMaterialPlan = async (
   projectId: string,
-  project: IProjectMaterialPlan,
+  projectMaterialPlan: IProjectMaterialPlan,
 ): Promise<String | null> => {
   try {
+    const { id, subtotal, ...rest } = projectMaterialPlan;
     const userRef = collection(
       db,
       'projects',
       projectId,
       'projectMaterialsPlan',
     );
-    await addDoc(userRef, project);
+    await addDoc(userRef, rest);
 
     return null;
   } catch (error) {
@@ -81,7 +82,7 @@ export const updateProjectMaterialPlan = async (
   projectMaterialPlan: IProjectMaterialPlan,
 ): Promise<String | null> => {
   try {
-    const { id, ...rest } = projectMaterialPlan;
+    const { id, subtotal, ...rest } = projectMaterialPlan;
     const userRef = doc(db, 'projects', projectId, 'projectMaterialsPlan', id);
     await setDoc(userRef, rest);
 

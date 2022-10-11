@@ -6,7 +6,7 @@ import Button from '../../../common/Button/Button';
 import Modal from '../../../common/Modal/Modal';
 import SearchInput from '../../../common/SearchInput/SearchInput';
 import TableView, { TTableHeader } from '../../../common/TableView/TableView';
-import Form, { Input } from '../../../common/Form';
+import Form, { DatePicker, Input } from '../../../common/Form';
 import {
   createProjectExpense,
   getProjectExpenseById,
@@ -20,6 +20,15 @@ interface IExpensesReport {
   projectId: string;
 }
 
+const tableHeader: TTableHeader[] = [
+  { name: 'name', value: 'Name' },
+  { name: 'docNumber', value: 'Doc Number' },
+  { name: 'date', value: 'Date', isGreen: true },
+  { name: 'owner', value: 'Owner' },
+  { name: 'work', value: 'Work' },
+  { name: 'amount', value: 'Amount', isGreen: true },
+];
+
 const initialSelectedItemData = {
   id: '',
   docNumber: 0,
@@ -27,11 +36,10 @@ const initialSelectedItemData = {
   owner: '',
   amount: 0,
   work: '',
-  date: '',
+  date: new Date(),
 };
 
 const ExpensesReport: React.FC<IExpensesReport> = props => {
-  const [tableHeader, setTableHeader] = useState<TTableHeader[]>([]);
   const [tableData, setTableData] = useState<IProjectExpense[]>([]);
   const [selectedItem, setSelectedItem] = useState<IProjectExpense>(
     initialSelectedItemData,
@@ -43,17 +51,9 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
   const getExpenses = useCallback(async () => {
-    const [errors, resProjects] = await getProjectExpenses(projectId);
+    const [errors, response] = await getProjectExpenses(projectId);
     if (!errors) {
-      setTableHeader([
-        { name: 'name', value: 'Name' },
-        { name: 'docNumber', value: 'Doc Number' },
-        { name: 'date', value: 'Date', isGreen: true },
-        { name: 'owner', value: 'Owner' },
-        { name: 'work', value: 'Work' },
-        { name: 'amount', value: 'Amount', isGreen: true },
-      ]);
-      setTableData(resProjects);
+      setTableData(response);
     } else {
       toast({
         title: 'Error al extraer la informacion',
@@ -71,9 +71,9 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
   };
 
   const editButton = async (id: string) => {
-    const [errors, resProjects] = await getProjectExpenseById(projectId, id);
-    if (!errors && resProjects) {
-      setSelectedItem(resProjects);
+    const [errors, response] = await getProjectExpenseById(projectId, id);
+    if (!errors && response) {
+      setSelectedItem(response);
       setIsModalOpen(true);
     }
   };
@@ -143,8 +143,7 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
               <Input name="owner" label="Owner" />
               <Input name="amount" type="number" label="Amount" />
               <Input name="work" label="Work" />
-              <Input name="date" type="date" label="Date" />
-
+              <DatePicker name="date" label="Date"></DatePicker>
               <br />
               <Button width="full" type="submit">
                 Submit
@@ -153,10 +152,12 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
           </Modal>
         </div>
       </Flex>
-
       <TableView
         headers={tableHeader}
-        items={tableData}
+        items={tableData.map(item => ({
+          ...item,
+          date: item.date.toDateString(),
+        }))}
         filter={value =>
           searchTerm === '' || value.name.toUpperCase().includes(searchTerm)
         }

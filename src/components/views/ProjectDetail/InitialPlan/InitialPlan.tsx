@@ -25,6 +25,14 @@ interface IItem extends Omit<IProjectMaterialPlan, 'name'> {
   name: { value: string; label: string };
 }
 
+const tableHeader: TTableHeader[] = [
+  { name: 'name', value: 'Name' },
+  { name: 'unit', value: 'Unit' },
+  { name: 'quantity', value: 'Quantity' },
+  { name: 'cost', value: 'Cost', isGreen: true },
+  { name: 'subtotal', value: 'SubTotal', isGreen: true },
+];
+
 const initialSelectedItemData = {
   id: '',
   name: { value: '', label: '' },
@@ -35,7 +43,6 @@ const initialSelectedItemData = {
 };
 
 const InitialPlan: React.FC<IInitialPlan> = props => {
-  const [tableHeader, setTableHeader] = useState<TTableHeader[]>([]);
   const [tableData, setTableData] = useState<IProjectMaterialPlan[]>([]);
   const [selectedItem, setSelectedItem] = useState<IItem>(
     initialSelectedItemData,
@@ -48,16 +55,9 @@ const InitialPlan: React.FC<IInitialPlan> = props => {
   const materials = useAppSelector(state => state.materials.materials);
 
   const getMaterialsPlan = useCallback(async () => {
-    const [errors, resProjects] = await getProjectMaterialsPlan(projectId);
+    const [errors, response] = await getProjectMaterialsPlan(projectId);
     if (!errors) {
-      setTableHeader([
-        { name: 'name', value: 'Name' },
-        { name: 'unit', value: 'Unit' },
-        { name: 'quantity', value: 'Quantity' },
-        { name: 'cost', value: 'Cost', isGreen: true },
-        { name: 'subtotal', value: 'SubTotal', isGreen: true },
-      ]);
-      setTableData(resProjects);
+      setTableData(response);
     } else {
       toast({
         title: 'Error al extraer la informacion',
@@ -71,14 +71,11 @@ const InitialPlan: React.FC<IInitialPlan> = props => {
   }, [projectId, toast]);
 
   const editButton = async (id: string) => {
-    const [errors, resProjects] = await getProjectMaterialPlanById(
-      projectId,
-      id,
-    );
-    if (!errors && resProjects) {
+    const [errors, response] = await getProjectMaterialPlanById(projectId, id);
+    if (!errors && response) {
       setSelectedItem({
-        ...resProjects,
-        name: { value: resProjects.id, label: resProjects.name },
+        ...response,
+        name: { value: response.id, label: response.name },
       });
       setIsModalOpen(true);
     }
@@ -164,7 +161,7 @@ const InitialPlan: React.FC<IInitialPlan> = props => {
             >
               <SearchSelect
                 name="name"
-                label="name"
+                label="Material"
                 placeholder="Project name"
                 isDisabled={!!selectedItem.id}
                 options={materials.map(material => ({

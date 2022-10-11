@@ -20,6 +20,18 @@ interface IMaterialsDelivered {
   projectId: string;
 }
 
+const tableHeader: TTableHeader[] = [
+  { name: 'order', value: 'Order' },
+  { name: 'quantity', value: 'Quantity', isGreen: true },
+  { name: 'name', value: 'Name' },
+  { name: 'cost', value: 'Cost' },
+  { name: 'subtotal', value: 'Subtotal' },
+  { name: 'activity', value: 'Activity' },
+  { name: 'invoice', value: 'Invoice' },
+  { name: 'delivered', value: 'Delivered' },
+  { name: 'diference', value: 'Diference' },
+];
+
 const initialSelectedItemData = {
   id: '',
   order: 0,
@@ -34,7 +46,6 @@ const initialSelectedItemData = {
 };
 
 const MaterialsDelivered: React.FC<IMaterialsDelivered> = props => {
-  const [tableHeader, setTableHeader] = useState<TTableHeader[]>([]);
   const [tableData, setTableData] = useState<IProjectMaterialDelivered[]>([]);
   const [selectedItem, setSelectedItem] = useState<IProjectMaterialDelivered>(
     initialSelectedItemData,
@@ -46,20 +57,9 @@ const MaterialsDelivered: React.FC<IMaterialsDelivered> = props => {
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
   const getMaterialsDelivered = useCallback(async () => {
-    const [errors, resProjects] = await getProjectMaterialsDelivered(projectId);
+    const [errors, response] = await getProjectMaterialsDelivered(projectId);
     if (!errors) {
-      setTableHeader([
-        { name: 'order', value: 'Order' },
-        { name: 'quantity', value: 'Quantity', isGreen: true },
-        { name: 'name', value: 'Name' },
-        { name: 'cost', value: 'Cost' },
-        { name: 'subtotal', value: 'Subtotal' },
-        { name: 'activity', value: 'Activity' },
-        { name: 'invoice', value: 'Invoice' },
-        { name: 'delivered', value: 'Delivered' },
-        { name: 'diference', value: 'Diference' },
-      ]);
-      setTableData(resProjects);
+      setTableData(response);
     } else {
       toast({
         title: 'Error al extraer la informacion',
@@ -77,12 +77,12 @@ const MaterialsDelivered: React.FC<IMaterialsDelivered> = props => {
   };
 
   const editButton = async (id: string) => {
-    const [errors, resProjects] = await getProjectMaterialDeliveredById(
+    const [errors, response] = await getProjectMaterialDeliveredById(
       projectId,
       id,
     );
-    if (!errors && resProjects) {
-      setSelectedItem(resProjects);
+    if (!errors && response) {
+      setSelectedItem(response);
       setIsModalOpen(true);
     }
   };

@@ -1,5 +1,5 @@
 import styles from './Projects.module.css';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Box, Flex, Heading, useToast } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import * as yup from 'yup';
@@ -45,6 +45,25 @@ export default function Projects() {
   const navigate = useNavigate();
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
+  const getProjects = useCallback(
+    async (status: string) => {
+      const [errors, response] = await getProjectsByStatus(status);
+      if (!errors) {
+        setTableData(response);
+      } else {
+        toast({
+          title: 'Error al extraer la informacion',
+          description: errors + '',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+          position: 'top-right',
+        });
+      }
+    },
+    [toast],
+  );
+
   const handleSearch = async (event: { target: { value: string } }) => {
     setSearchTerm(event.target.value.toUpperCase());
   };
@@ -56,21 +75,20 @@ export default function Projects() {
   };
 
   const editButton = async (id: string) => {
-    const [errors, resProjects] = await getProjectById(id);
-    if (!errors && resProjects) {
-      setSelectedItem(resProjects);
+    const [errors, response] = await getProjectById(id);
+    if (!errors && response) {
+      setSelectedItem(response);
       setIsModalOpen(true);
     }
   };
 
   const deleteButton = (id: string) => {};
 
-  const handleOnUpdateSubmit = async (project: IProject) => {
-    updateProject(project);
-  };
-
-  const handleOnCreateSubmit = async (project: IProject) => {
-    createProject(project);
+  const handleOnSubmit = async (project: IProject) => {
+    project.id ? await updateProject(project) : await createProject(project);
+    setSelectedItem(initialSelectedItemData);
+    setIsModalOpen(false);
+    getProjects(selectedTab);
   };
 
   const validationSchema = yup.object().shape({
@@ -85,23 +103,13 @@ export default function Projects() {
   }, [isModalOpen]);
 
   useEffect(() => {
-    const getProjects = async (status: string) => {
-      const [errors, resProjects] = await getProjectsByStatus(status);
-      if (!errors) {
-        setTableData(resProjects);
-      } else {
-        toast({
-          title: 'Error al extraer la informacion',
-          description: errors + '',
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-          position: 'top-right',
-        });
-      }
-    };
+    let abortController = new AbortController();
+
     getProjects(selectedTab);
-  }, [selectedTab, toast]);
+    return () => {
+      abortController.abort();
+    };
+  }, [getProjects, selectedTab, toast]);
 
   return (
     <>
@@ -137,11 +145,7 @@ export default function Projects() {
                   validationSchema={validationSchema}
                   validateOnChange
                   validateOnBlur
-                  onSubmit={async data =>
-                    data.id
-                      ? await handleOnUpdateSubmit(data)
-                      : await handleOnCreateSubmit(data)
-                  }
+                  onSubmit={handleOnSubmit}
                 >
                   <Input name="name" label="name" placeholder="Project name" />
                   <Input

@@ -60,16 +60,17 @@ export const getProjectMaterialDeliveredById = async (
 
 export const createProjectMaterialDelivered = async (
   projectId: string,
-  project: IProjectMaterialDelivered,
+  projectMaterialDelivered: IProjectMaterialDelivered,
 ): Promise<String | null> => {
   try {
+    const { id, subtotal, diference, ...rest } = projectMaterialDelivered;
     const userRef = collection(
       db,
       'projects',
       projectId,
       'projectMaterialsDelivered',
     );
-    const result = await addDoc(userRef, project);
+    const result = await addDoc(userRef, rest);
 
     console.log(result.id);
 
@@ -84,7 +85,7 @@ export const updateProjectMaterialDelivered = async (
   projectMaterialDelivered: IProjectMaterialDelivered,
 ): Promise<String | null> => {
   try {
-    const { id, ...rest } = projectMaterialDelivered;
+    const { id, subtotal, diference, ...rest } = projectMaterialDelivered;
     const userRef = doc(
       db,
       'projects',

@@ -5,5 +5,5 @@ export interface IProjectExpense {
   owner: string;
   amount: number;
   work: string;
-  date: string;
+  date: Date;
 }

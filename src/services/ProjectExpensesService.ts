@@ -18,7 +18,7 @@ export const getProjectExpenses = async (
     const data = result.docs.map(doc => ({
       ...doc.data(),
       id: doc.id,
-      date: new Date(doc.data().date.toDate()).toDateString(),
+      date: doc.data().date.toDate(),
     })) as IProjectExpense[];
 
     return [null, data];
@@ -42,6 +42,8 @@ export const getProjectExpenseById = async (
     const result = await getDoc(userRef);
     const data = {
       ...result.data(),
+      id: result.id,
+      date: result.data()?.date.toDate(),
     } as IProjectExpense;
 
     return [null, data];
@@ -52,11 +54,12 @@ export const getProjectExpenseById = async (
 
 export const createProjectExpense = async (
   projectId: string,
-  projectExpenseId: IProjectExpense,
+  projectExpense: IProjectExpense,
 ): Promise<String | null> => {
   try {
+    const { id, ...rest } = projectExpense;
     const userRef = collection(db, 'projects', projectId, 'projectExpenses');
-    const result = await addDoc(userRef, projectExpenseId);
+    const result = await addDoc(userRef, rest);
 
     console.log(result.id);
 
