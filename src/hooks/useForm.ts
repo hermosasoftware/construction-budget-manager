@@ -77,6 +77,16 @@ const useForm = <T extends TObject = TObject>(
     if (isValid) onSubmit?.(formData as T);
   };
 
+  useEffect(() => {
+    if (
+      initialFormData &&
+      Object.keys(initialFormData).length !== 0 &&
+      initialFormData !== formData
+    ) {
+      setFormData(initialFormData);
+    }
+  }, [initialFormData]);
+
   const handleOnChange: IUseFormHook<T>['handleOnChange'] = data => {
     updateFormData?.(data);
   };

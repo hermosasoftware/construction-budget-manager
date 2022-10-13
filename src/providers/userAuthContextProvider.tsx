@@ -11,6 +11,8 @@ import {
 import { query, where, collection, addDoc, getDocs } from 'firebase/firestore';
 import { auth, db } from '../config/firebaseConfig';
 import { login, logout } from '../redux/reducers/sessionSlice';
+import { changeMaterials } from '../redux/reducers/materialsSlice';
+import { getMaterials } from '../services/materialsService';
 
 export const verifyEmail = async (email: string): Promise<String | null> => {
   try {
@@ -85,7 +87,7 @@ export const logOut = async () => {
 };
 
 export const handleAuthChange = (dispatch: Function) => {
-  onAuthStateChanged(auth, userAuth => {
+  onAuthStateChanged(auth, async userAuth => {
     if (userAuth) {
       // user is logged in, send the user's details to redux, store the current user in the state
       dispatch(
@@ -96,6 +98,8 @@ export const handleAuthChange = (dispatch: Function) => {
           // photoUrl: userAuth.photoURL,
         }),
       );
+      const materials = await getMaterials();
+      if (materials) dispatch(changeMaterials(materials.map(m => m.material)));
     } else {
       dispatch(logout());
     }

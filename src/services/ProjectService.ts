@@ -9,6 +9,7 @@ import {
   orderBy,
   getDoc,
   doc,
+  setDoc,
 } from 'firebase/firestore';
 import { db } from '../config/firebaseConfig';
 import { IProject } from '../types/project';
@@ -45,7 +46,7 @@ export const getProjectById = async (
 };
 
 export const getProjectsByStatus = async (
-  status: boolean,
+  status: string,
 ): Promise<[String | null, IProject[]]> => {
   try {
     const userRef = query(
@@ -89,10 +90,25 @@ export const createProject = async (
   project: IProject,
 ): Promise<String | null> => {
   try {
+    const { id, ...rest } = project;
     const userRef = collection(db, 'projects');
-    const result = await addDoc(userRef, project);
+    const result = await addDoc(userRef, rest);
 
     console.log(result.id);
+
+    return null;
+  } catch (error) {
+    return error + '';
+  }
+};
+
+export const updateProject = async (
+  project: IProject,
+): Promise<String | null> => {
+  try {
+    const { id, ...rest } = project;
+    const userRef = doc(db, 'projects', id);
+    await setDoc(userRef, rest);
 
     return null;
   } catch (error) {

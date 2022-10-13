@@ -8,6 +8,7 @@ interface ISearchSelect extends IFormControl, IFormElementProps {
   options?: Array<ISearchSelectOption>;
   placeholder?: string;
   isClearable?: boolean;
+  isDisabled?: boolean;
 }
 
 export type ISearchSelectOption = {
@@ -26,6 +27,7 @@ const SearchSelect: React.FC<ISearchSelect> = props => {
     options = [],
     placeholder,
     isClearable = true,
+    isDisabled = false,
     value,
     onChange,
     onBlur,
@@ -70,6 +72,7 @@ const SearchSelect: React.FC<ISearchSelect> = props => {
         options={options}
         value={currentValue}
         isClearable={isClearable}
+        isDisabled={isDisabled}
         placeholder={placeholder}
         selectedOptionStyle="check"
         chakraStyles={searchSelectStyles}
