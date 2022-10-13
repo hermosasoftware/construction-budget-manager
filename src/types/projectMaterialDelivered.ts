@@ -8,5 +8,5 @@ export interface IProjectMaterialDelivered {
   activity: string;
   invoice: string;
   delivered: number;
-  diference: number;
+  difference: number;
 }
