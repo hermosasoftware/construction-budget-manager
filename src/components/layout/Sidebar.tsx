@@ -8,6 +8,7 @@ import {
   DrawerOverlay,
   DrawerContent,
   Box,
+  Button,
 } from '@chakra-ui/react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import SearchInput from '../common/SearchInput/SearchInput';
@@ -48,21 +49,22 @@ const Sidebar = () => {
       <Stack className={styles.sideBar_container}>
         <Stack className="center-content-cross">
           <Logo className={styles.logo} />
-          <SearchInput placeholder={appStrings?.Global?.search} />
+          <SearchInput placeholder={appStrings?.search} />
           <MenuBar menuItems={menuItems(appStrings)} />
         </Stack>
-        <button onClick={singOut}>Logout</button>
+
         <HStack className={styles.account}>
           <Image
             className={styles.account_image}
             src="https://picsum.photos/24/24"
           />
           <VStack className={styles.account_info}>
-            <Text>{appStrings?.Global?.testUserName}</Text>
+            <Text>{appStrings?.testUserName}</Text>
             <Text className={styles.account_job__text}>
-              {appStrings?.Global?.testUserJob}
+              {appStrings?.testUserJob}
             </Text>
           </VStack>
+          <Button onClick={singOut}>{appStrings?.logOut}</Button>
         </HStack>
       </Stack>
     </Box>

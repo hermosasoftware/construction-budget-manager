@@ -23,37 +23,37 @@ const SignUpForm: React.FC<ISignUpForm> = props => {
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
   const idTypeSelectOptions: Array<{ id: TIdType; name: string }> = [
-    { id: 'national', name: appStrings?.Global?.national },
+    { id: 'national', name: appStrings?.national },
   ];
 
   const validationSchema = yup.object().shape({
-    name: yup.string().required(appStrings?.Global?.requiredField),
-    lastName: yup.string().required(appStrings?.Global?.requiredField),
+    name: yup.string().required(appStrings?.requiredField),
+    lastName: yup.string().required(appStrings?.requiredField),
     id: yup
       .string()
-      .required(appStrings?.Global?.requiredField)
+      .required(appStrings?.requiredField)
       .test({
         test: async value => validateKey(value),
-        message: appStrings?.Global?.idAlreadyTaken,
+        message: appStrings?.idAlreadyTaken,
       }),
     email: yup
       .string()
-      .required(appStrings?.Global?.requiredField)
-      .email(appStrings?.Global?.validEmailRequired)
+      .required(appStrings?.requiredField)
+      .email(appStrings?.validEmailRequired)
       .test({
         test: async value => validateKey(value),
-        message: appStrings?.Global?.emailAlreadyTaken,
+        message: appStrings?.emailAlreadyTaken,
       }),
     password: yup
       .string()
-      .required(appStrings?.Global?.requiredField)
-      .min(6, appStrings?.Global?.passwordTooShort),
+      .required(appStrings?.requiredField)
+      .min(6, appStrings?.passwordTooShort),
     passwordVerification: yup.string().when('password', (password, schema) => {
       if (!password?.length) return schema;
       return schema.test({
         test: (passwordVerification: string) =>
           passwordVerification === password,
-        message: appStrings?.Global?.passwordsDontMatch,
+        message: appStrings?.passwordsDontMatch,
       });
     }),
   });
@@ -71,49 +71,49 @@ const SignUpForm: React.FC<ISignUpForm> = props => {
       <Input
         isRequired
         name="name"
-        label={appStrings?.Global?.firstName}
-        placeholder={appStrings?.Global?.name}
+        label={appStrings?.firstName}
+        placeholder={appStrings?.name}
       />
       <Input
         isRequired
         name="lastName"
-        label={appStrings?.Global?.lastName}
-        placeholder={appStrings?.Global?.lastName}
+        label={appStrings?.lastName}
+        placeholder={appStrings?.lastName}
       />
       <Select
         isRequired
         name="idType"
-        label={appStrings?.Global?.idType}
+        label={appStrings?.idType}
         options={idTypeSelectOptions}
       />
       <Input
         isRequired
         name="id"
-        label={appStrings?.Global?.id}
-        placeholder={appStrings?.Global?.idNumber}
+        label={appStrings?.id}
+        placeholder={appStrings?.idNumber}
       />
       <Input
         isRequired
         name="email"
-        label={appStrings?.Global?.email}
-        placeholder={appStrings?.Global?.mail}
+        label={appStrings?.email}
+        placeholder={appStrings?.mail}
       />
       <Input
         isRequired
         name="password"
         type="password"
-        label={appStrings?.Global?.password}
-        placeholder={appStrings?.Global?.password}
+        label={appStrings?.password}
+        placeholder={appStrings?.password}
       />
       <Input
         isRequired
         name="passwordVerification"
         type="password"
-        label={appStrings?.Auth?.verifyPassword}
-        placeholder={appStrings?.Global?.enterAgain}
+        label={appStrings?.verifyPassword}
+        placeholder={appStrings?.enterAgain}
       />
       <Button type="submit" className="submit-button">
-        {appStrings?.Auth?.signUp}
+        {appStrings?.signUp}
       </Button>
     </Form>
   );

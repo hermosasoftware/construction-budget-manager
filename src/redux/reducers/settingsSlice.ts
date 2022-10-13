@@ -7,7 +7,7 @@ interface ISettingsState {
 }
 
 const initialState: ISettingsState = {
-  appLang: 'es',
+  appLang: 'en',
   appStrings: {},
 };
 

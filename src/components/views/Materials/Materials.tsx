@@ -21,13 +21,7 @@ import Sidebar from '../../layout/Sidebar';
 import MaterialsTableView, {
   TTableHeader,
 } from '../../layout/MaterialsTableView/MaterialsTableView';
-
-const tableHeader: TTableHeader[] = [
-  { name: 'name', value: 'Name' },
-  { name: 'unit', value: 'Unit' },
-  { name: 'quantity', value: 'Quantity' },
-  { name: 'cost', value: 'Cost' },
-];
+import app from '../../../config/firebaseConfig';
 
 const initialSelectedMaterialData = {
   id: '',
@@ -49,6 +43,12 @@ export default function Materials() {
   );
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
+  const tableHeader: TTableHeader[] = [
+    { name: 'name', value: appStrings.name },
+    { name: 'unit', value: appStrings.unit },
+    { name: 'quantity', value: appStrings.quantity },
+    { name: 'cost', value: appStrings.cost },
+  ];
   useEffect(() => {
     (async function () {
       const data = await getMaterials();
@@ -62,9 +62,9 @@ export default function Materials() {
   };
 
   const validationSchema = yup.object().shape({
-    name: yup.string().required(appStrings?.Global?.requiredField),
-    unit: yup.string().required(appStrings?.Global?.requiredField),
-    cost: yup.string().required(appStrings?.Global?.requiredField),
+    name: yup.string().required(appStrings?.requiredField),
+    unit: yup.string().required(appStrings?.requiredField),
+    cost: yup.string().required(appStrings?.requiredField),
   });
 
   const onSubmit = async (data: any) => {
@@ -105,31 +105,33 @@ export default function Materials() {
           <div style={{ display: 'flex' }}>
             <Input
               name="name"
-              label="Material"
+              label={appStrings.materials}
               innerStyle={{ width: '200px', marginRight: '5px' }}
             />
             <Input
               name="unit"
-              label="Unit"
+              label={appStrings.unit}
               innerStyle={{ width: '200px', marginRight: '5px' }}
             />
             <Input
               name="cost"
               type={'number'}
-              label="Cost"
+              label={appStrings.cost}
               innerStyle={{ width: '200px', marginRight: '5px' }}
             />
           </div>
           <div>
             <Button type="submit" style={{ width: '75px' }}>
-              {selectedMaterial.material.id ? 'Update' : 'Add'}
+              {selectedMaterial.material.id
+                ? appStrings.update
+                : appStrings.add}
             </Button>
             {selectedMaterial.material.id && (
               <Button
                 onClick={() => setSelectedMaterial(initialSelectedMaterialData)}
                 style={{ width: '75px', marginLeft: '5px' }}
               >
-                Clear
+                {appStrings.clear}
               </Button>
             )}
           </div>

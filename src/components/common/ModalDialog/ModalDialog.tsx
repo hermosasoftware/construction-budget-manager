@@ -45,9 +45,9 @@ const ModalDialog: React.FC<IModalDialog> = ({
           <ModalBody className={styles.body}>{content}</ModalBody>
           <ModalFooter className={styles.footer}>
             <Button variant="outline" onClick={() => closeModalDialog()}>
-              {appStrings?.Global?.back}
+              {appStrings?.back}
             </Button>
-            <Button>{appStrings?.Global?.confirm}</Button>
+            <Button>{appStrings?.confirm}</Button>
           </ModalFooter>
         </ModalContent>
       </Modal>

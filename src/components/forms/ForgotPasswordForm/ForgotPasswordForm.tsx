@@ -22,14 +22,14 @@ const ForgotPasswordForm: React.FC<IForgotPasswordForm> = props => {
     {
       id: yup.string().when('email', (email, schema) => {
         if (email?.length) return schema;
-        return schema.required(appStrings?.Global?.oneIdRequired);
+        return schema.required(appStrings?.oneIdRequired);
       }),
       email: yup
         .string()
-        .email(appStrings?.Global?.validEmailRequired)
+        .email(appStrings?.validEmailRequired)
         .when('id', (id, schema) => {
           if (id?.length) return schema;
-          return schema.required(appStrings?.Global?.oneIdRequired);
+          return schema.required(appStrings?.oneIdRequired);
         }),
     },
     [['id', 'email']],
@@ -44,17 +44,17 @@ const ForgotPasswordForm: React.FC<IForgotPasswordForm> = props => {
     >
       <Input
         name="id"
-        label={appStrings?.Global?.idNumber}
-        placeholder={appStrings?.Global?.id}
-        helperText={appStrings?.Global?.orCanAlsoUse}
+        label={appStrings?.idNumber}
+        placeholder={appStrings?.id}
+        helperText={appStrings?.orCanAlsoUse}
       />
       <Input
         name="email"
-        label={appStrings?.Global?.email}
-        placeholder={appStrings?.Global?.mail}
+        label={appStrings?.email}
+        placeholder={appStrings?.mail}
       />
       <Button type="submit" className="submit-button">
-        {appStrings?.Global?.sendRecovery}
+        {appStrings?.sendRecovery}
       </Button>
     </Form>
   );

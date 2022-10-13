@@ -100,9 +100,7 @@ const Input: React.FC<IInput> = props => {
         {type === 'password' && viewPassword ? (
           <InputRightElement width={'var(--form-inner-input-width);'}>
             <Button {...showPasswordButtonStyles} onClick={handleOnClick}>
-              {showPassword
-                ? appStrings?.Global?.hide
-                : appStrings?.Global?.show}
+              {showPassword ? appStrings?.hide : appStrings?.show}
             </Button>
           </InputRightElement>
         ) : null}
