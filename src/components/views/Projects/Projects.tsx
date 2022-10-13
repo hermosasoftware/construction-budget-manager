@@ -19,12 +19,6 @@ import {
 import { IProject } from '../../../types/project';
 import { useAppSelector } from '../../../redux/hooks';
 
-const tableHeader: TTableHeader[] = [
-  { name: 'name', value: 'Name' },
-  { name: 'client', value: 'Client', isGreen: true },
-  { name: 'location', value: 'Location' },
-];
-
 const initialSelectedItemData = {
   id: '',
   name: '',
@@ -41,9 +35,14 @@ export default function Projects() {
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const appStrings = useAppSelector(state => state.settings.appStrings);
   const toast = useToast();
   const navigate = useNavigate();
-  const appStrings = useAppSelector(state => state.settings.appStrings);
+  const tableHeader: TTableHeader[] = [
+    { name: 'name', value: appStrings.name },
+    { name: 'client', value: appStrings.client, isGreen: true },
+    { name: 'location', value: appStrings.location },
+  ];
 
   const getProjects = useCallback(
     async (status: string) => {
@@ -92,10 +91,10 @@ export default function Projects() {
   };
 
   const validationSchema = yup.object().shape({
-    name: yup.string().required(appStrings?.Global?.requiredField),
-    client: yup.string().required(appStrings?.Global?.requiredField),
-    location: yup.string().required(appStrings?.Global?.requiredField),
-    status: yup.string().required(appStrings?.Global?.requiredField),
+    name: yup.string().required(appStrings?.requiredField),
+    client: yup.string().required(appStrings?.requiredField),
+    location: yup.string().required(appStrings?.requiredField),
+    status: yup.string().required(appStrings?.requiredField),
   });
 
   useEffect(() => {
@@ -110,19 +109,18 @@ export default function Projects() {
       abortController.abort();
     };
   }, [getProjects, selectedTab, toast]);
-
   return (
     <>
       <Sidebar />
       <div className={`${styles.projects_container}`}>
         <Box p={5} borderWidth="1px">
-          <h1 className={`${styles.title}`}>Projects Management</h1>
+          <h1 className={`${styles.title}`}>{appStrings.projectsManagement}</h1>
         </Box>
         <TabGroup
           className={`${styles.tabs}`}
           tabs={[
-            { id: 'active', name: 'Active Projects', selected: true },
-            { id: 'inactive', name: 'Inactive Projects' },
+            { id: 'active', name: appStrings.activeProjects, selected: true },
+            { id: 'inactive', name: appStrings.inactiveProjects },
           ]}
           onSelectedTabChange={activeTabs => setSelectedTab(activeTabs[0])}
         />
@@ -130,14 +128,16 @@ export default function Projects() {
           <Flex marginBottom="5px">
             <SearchInput
               style={{ margin: '0 10px 0 0', maxWidth: '500px' }}
-              placeholder="Search"
+              placeholder={appStrings.search}
               onChange={handleSearch}
             ></SearchInput>
             <div style={{ textAlign: 'end' }}>
               <Button onClick={() => setIsModalOpen(true)}>+</Button>
               <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
                 <Heading as="h2" size="lg">
-                  {selectedItem.id ? 'Edit Project' : 'Create Project'}
+                  {selectedItem.id
+                    ? appStrings.editProject
+                    : appStrings.createProject}
                 </Heading>
                 <Form
                   id="project-form"
@@ -147,29 +147,33 @@ export default function Projects() {
                   validateOnBlur
                   onSubmit={handleOnSubmit}
                 >
-                  <Input name="name" label="name" placeholder="Project name" />
+                  <Input
+                    name="name"
+                    label={appStrings.name}
+                    placeholder={appStrings.projectName}
+                  />
                   <Input
                     name="client"
-                    label="client"
-                    placeholder="Client name"
+                    label={appStrings.client}
+                    placeholder={appStrings.clientName}
                   />
                   <Input
                     name="location"
-                    label="location"
-                    placeholder="Location description"
+                    label={appStrings.location}
+                    placeholder={appStrings.locationDescription}
                   />
                   <Select
                     name="status"
-                    label="Status"
+                    label={appStrings.status}
                     options={[
-                      { id: 'active', name: 'Active' },
-                      { id: 'inactive', name: 'Inactive' },
+                      { id: 'active', name: appStrings.active },
+                      { id: 'inactive', name: appStrings.inactive },
                     ]}
                     containerStyle={{ width: '30%', alignSelf: 'start' }}
                   />
                   <br />
                   <Button width="full" type="submit">
-                    Submit
+                    {appStrings.submit}
                   </Button>
                 </Form>
               </Modal>
@@ -185,7 +189,7 @@ export default function Projects() {
             onClickEdit={id => editButton(id)}
             onClickDelete={id => deleteButton(id)}
           />
-          {!tableData.length ? <h1>No records found</h1> : null}
+          {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
         </div>
       </div>
     </>

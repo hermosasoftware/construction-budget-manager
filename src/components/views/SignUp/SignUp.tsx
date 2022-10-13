@@ -33,12 +33,12 @@ const SignUp: React.FC<ISignUp> = props => {
   const toggleOptions = [
     {
       id: 'login',
-      name: appStrings?.Auth?.logIn,
+      name: appStrings?.logIn,
       onClick: () => navigate('/login'),
     },
     {
       id: 'signUp',
-      name: appStrings?.Auth?.signUpFree,
+      name: appStrings?.signUpFree,
       onClick: handleOnSignUpToggleClick,
     },
   ];

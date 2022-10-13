@@ -36,7 +36,7 @@ const LogIn: React.FC<ILogin> = props => {
       //navigate('/onboarding');
     } else {
       toast({
-        title: appStrings?.Global?.errorWhileLogIn,
+        title: appStrings?.errorWhileLogIn,
         description: response,
         status: 'error',
         duration: 5000,
@@ -54,7 +54,7 @@ const LogIn: React.FC<ILogin> = props => {
       navigate('/onboarding');
     } else {
       toast({
-        title: appStrings?.Global?.errorWhileLogIn,
+        title: appStrings?.errorWhileLogIn,
         description: errors,
         status: 'error',
         duration: 5000,

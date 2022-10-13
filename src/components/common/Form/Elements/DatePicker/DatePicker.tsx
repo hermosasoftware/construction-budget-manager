@@ -85,7 +85,7 @@ const DatePicker: React.FC<IDatePicker> = props => {
     id: uuid,
     name,
     customInput: <CustomInput />,
-    placeholderText: appStrings?.Global?.shortDateFormatPlaceholder,
+    placeholderText: appStrings?.shortDateFormatPlaceholder,
     allowSameDay: true,
     onChange: handleOnDateChange,
     onChangeRaw: handleOnInputChange,

@@ -99,7 +99,7 @@ export const handleAuthChange = (dispatch: Function) => {
         }),
       );
       const materials = await getMaterials();
-      if (materials) dispatch(changeMaterials(materials));
+      if (materials) dispatch(changeMaterials(materials.map(m => m.material)));
     } else {
       dispatch(logout());
     }

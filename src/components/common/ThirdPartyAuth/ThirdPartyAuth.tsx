@@ -22,7 +22,7 @@ const ThirdPartyAuth: React.FC<IThirdPartyAuth> = props => {
     const [errors, user] = await googleSignIn();
     if (errors && !user) {
       toast({
-        title: appStrings?.Global?.errorWhileLogIn,
+        title: appStrings?.errorWhileLogIn,
         description: errors + '',
         status: 'error',
         duration: 5000,
@@ -37,9 +37,7 @@ const ThirdPartyAuth: React.FC<IThirdPartyAuth> = props => {
       className={`center-content-cross ${styles.main_container} ${className}`}
       style={style}
     >
-      <p className={styles.content_label}>
-        {appStrings?.Auth?.continueWithSocials}
-      </p>
+      <p className={styles.content_label}>{appStrings?.continueWithSocials}</p>
       <div className={`center-content ${styles.content_container}`}>
         <Button
           variant="outline"

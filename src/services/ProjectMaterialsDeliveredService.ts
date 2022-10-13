@@ -24,7 +24,7 @@ export const getProjectMaterialsDelivered = async (
       ...doc.data(),
       id: doc.id,
       subtotal: doc.data().cost * doc.data().quantity,
-      diference: doc.data().quantity - doc.data().delivered,
+      difference: doc.data().quantity - doc.data().delivered,
     })) as IProjectMaterialDelivered[];
 
     return [null, data];
@@ -63,7 +63,7 @@ export const createProjectMaterialDelivered = async (
   projectMaterialDelivered: IProjectMaterialDelivered,
 ): Promise<String | null> => {
   try {
-    const { id, subtotal, diference, ...rest } = projectMaterialDelivered;
+    const { id, subtotal, difference, ...rest } = projectMaterialDelivered;
     const userRef = collection(
       db,
       'projects',
@@ -85,7 +85,7 @@ export const updateProjectMaterialDelivered = async (
   projectMaterialDelivered: IProjectMaterialDelivered,
 ): Promise<String | null> => {
   try {
-    const { id, subtotal, diference, ...rest } = projectMaterialDelivered;
+    const { id, subtotal, difference, ...rest } = projectMaterialDelivered;
     const userRef = doc(
       db,
       'projects',

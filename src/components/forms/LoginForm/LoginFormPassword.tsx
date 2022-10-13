@@ -20,7 +20,7 @@ const LoginForm: React.FC<ILoginForm> = props => {
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
   const validationSchema = yup.object().shape({
-    password: yup.string().required(appStrings?.Global?.requiredField),
+    password: yup.string().required(appStrings?.requiredField),
   });
 
   return (
@@ -36,15 +36,15 @@ const LoginForm: React.FC<ILoginForm> = props => {
         isRequired
         name="password"
         type="password"
-        label={appStrings?.Global?.password}
-        placeholder={appStrings?.Global?.password}
+        label={appStrings?.password}
+        placeholder={appStrings?.password}
         containerClassName={styles.password_input}
       />
       <Link to="/forgot-password" className={styles.restore_link}>
-        {appStrings?.Auth?.restoreForgottenPassword}
+        {appStrings?.restoreForgottenPassword}
       </Link>
       <Button type="submit" className="submit-button">
-        {appStrings?.Auth?.logIn}
+        {appStrings?.logIn}
       </Button>
     </Form>
   );

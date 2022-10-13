@@ -14,7 +14,7 @@ const EmailSentConfirmation: React.FC<IEmailSentConfirmation> = props => {
   const navigate = useNavigate();
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
-  const confirmationMessage = interpolate(appStrings?.Auth?.weHaveSentAnEmail, {
+  const confirmationMessage = interpolate(appStrings?.weHaveSentAnEmail, {
     formEmail: email,
   });
 
@@ -24,7 +24,7 @@ const EmailSentConfirmation: React.FC<IEmailSentConfirmation> = props => {
     <div className={`center-content ${className}`} style={style}>
       <p>{confirmationMessage}</p>
       <Button className="submit-button" onClick={handleOnClick}>
-        {appStrings?.Global?.goToLogin}
+        {appStrings?.goToLogin}
       </Button>
     </div>
   );

@@ -20,15 +20,6 @@ interface IExpensesReport {
   projectId: string;
 }
 
-const tableHeader: TTableHeader[] = [
-  { name: 'name', value: 'Name' },
-  { name: 'docNumber', value: 'Doc Number' },
-  { name: 'date', value: 'Date', isGreen: true },
-  { name: 'owner', value: 'Owner' },
-  { name: 'work', value: 'Work' },
-  { name: 'amount', value: 'Amount', isGreen: true },
-];
-
 const initialSelectedItemData = {
   id: '',
   docNumber: 0,
@@ -49,6 +40,15 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
   const { projectId } = props;
   const toast = useToast();
   const appStrings = useAppSelector(state => state.settings.appStrings);
+
+  const tableHeader: TTableHeader[] = [
+    { name: 'name', value: appStrings.name },
+    { name: 'docNumber', value: appStrings.docNumber },
+    { name: 'date', value: appStrings.date, isGreen: true },
+    { name: 'owner', value: appStrings.owner },
+    { name: 'work', value: appStrings.work },
+    { name: 'amount', value: appStrings.amount, isGreen: true },
+  ];
 
   const getExpenses = useCallback(async () => {
     const [errors, response] = await getProjectExpenses(projectId);
@@ -90,15 +90,12 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
   };
 
   const validationSchema = yup.object().shape({
-    docNumber: yup
-      .number()
-      .positive()
-      .required(appStrings?.Global?.requiredField),
-    name: yup.string().required(appStrings?.Global?.requiredField),
-    owner: yup.string().required(appStrings?.Global?.requiredField),
-    amount: yup.number().positive().required(appStrings?.Global?.requiredField),
-    work: yup.string().required(appStrings?.Global?.requiredField),
-    date: yup.date().required(appStrings?.Global?.requiredField),
+    docNumber: yup.number().positive().required(appStrings?.requiredField),
+    name: yup.string().required(appStrings?.requiredField),
+    owner: yup.string().required(appStrings?.requiredField),
+    amount: yup.number().positive().required(appStrings?.requiredField),
+    work: yup.string().required(appStrings?.requiredField),
+    date: yup.date().required(appStrings?.requiredField),
   });
 
   useEffect(() => {
@@ -128,7 +125,9 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
             }}
           >
             <Heading as="h2" size="lg">
-              {selectedItem.id ? 'Edit Expense' : 'Create Expense'}
+              {selectedItem.id
+                ? appStrings.editExpense
+                : appStrings.createExpense}
             </Heading>
             <Form
               id="project-form"
@@ -138,15 +137,19 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
               validateOnBlur
               onSubmit={handleOnSubmit}
             >
-              <Input name="name" label="Name" />
-              <Input name="docNumber" type="number" label="Doc Number" />
-              <Input name="owner" label="Owner" />
-              <Input name="amount" type="number" label="Amount" />
-              <Input name="work" label="Work" />
-              <DatePicker name="date" label="Date"></DatePicker>
+              <Input name="name" label={appStrings.name} />
+              <Input
+                name="docNumber"
+                type="number"
+                label={appStrings.docNumber}
+              />
+              <Input name="owner" label={appStrings.owner} />
+              <Input name="amount" type="number" label={appStrings.amount} />
+              <Input name="work" label={appStrings.work} />
+              <DatePicker name="date" label={appStrings.date}></DatePicker>
               <br />
               <Button width="full" type="submit">
-                Submit
+                {appStrings.submit}
               </Button>
             </Form>
           </Modal>
@@ -164,7 +167,7 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
         onClickEdit={id => editButton(id)}
         onClickDelete={id => deleteButton(id)}
       />
-      {!tableData.length ? <h1>No records found</h1> : null}
+      {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
     </div>
   );
 };

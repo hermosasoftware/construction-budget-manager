@@ -25,14 +25,14 @@ const LoginForm: React.FC<ILoginForm> = props => {
     {
       id: yup.string().when('email', (email, schema) => {
         if (email?.length) return schema;
-        return schema.required(appStrings?.Global?.oneIdRequired);
+        return schema.required(appStrings?.oneIdRequired);
       }),
       email: yup
         .string()
-        .email(appStrings?.Global?.validEmailRequired)
+        .email(appStrings?.validEmailRequired)
         .when('id', (id, schema) => {
           if (id?.length) return schema;
-          return schema.required(appStrings?.Global?.oneIdRequired);
+          return schema.required(appStrings?.oneIdRequired);
         }),
     },
     [['id', 'email']],
@@ -49,15 +49,15 @@ const LoginForm: React.FC<ILoginForm> = props => {
     >
       <Input
         name="email"
-        label={appStrings?.Global?.email}
-        placeholder={appStrings?.Global?.mail}
+        label={appStrings?.email}
+        placeholder={appStrings?.email}
       />
 
       <Link to="/forgot-password" className={styles.restore_link}>
-        {appStrings?.Auth?.restoreForgottenPassword}
+        {appStrings?.restoreForgottenPassword}
       </Link>
       <Button type="submit" className="submit-button">
-        {appStrings?.Auth?.logIn}
+        {appStrings?.logIn}
       </Button>
     </Form>
   );

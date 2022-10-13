@@ -9,12 +9,14 @@ import ExpensesReport from './ExpensesReport/ExpensesReport';
 import MaterialsDelivered from './MaterialsDelivered/MaterialsDelivered';
 import InitialPlan from './InitialPlan/InitialPlan';
 import Sidebar from '../../layout/Sidebar';
+import { useAppSelector } from '../../../redux/hooks';
 
 export default function Projects() {
   const [selectedTab, setSelectedTab] = useState('initial');
   const [project, setProject] = useState<IProject>();
   const projectId = useParams().id as string;
   const toast = useToast();
+  const appStrings = useAppSelector(state => state.settings.appStrings);
 
   useEffect(() => {
     let abortController = new AbortController();
@@ -45,11 +47,19 @@ export default function Projects() {
       <div className={`${styles.projects_container}`}>
         <Box p={5} borderWidth="1px">
           <Flex>
-            <h1 className={`${styles.title}`}>Project: {project?.name}</h1>
-            <h1 className={`${styles.title}`}>Client: {project?.client}</h1>
-            <h1 className={`${styles.title}`}>Location: {project?.location}</h1>
             <h1 className={`${styles.title}`}>
-              Status: {project?.status ? 'Active' : 'Inactive'}
+              {`${appStrings.project}: ${project?.name}`}
+            </h1>
+            <h1 className={`${styles.title}`}>
+              {`${appStrings.client}: ${project?.client}`}
+            </h1>
+            <h1 className={`${styles.title}`}>
+              {`${appStrings.location}: ${project?.location}`}
+            </h1>
+            <h1 className={`${styles.title}`}>
+              {`${appStrings.status}: ${
+                project?.status ? appStrings.active : appStrings.inactive
+              }`}
             </h1>
           </Flex>
         </Box>
@@ -57,9 +67,9 @@ export default function Projects() {
         <TabGroup
           className={`${styles.tabs}`}
           tabs={[
-            { id: 'initial', name: 'Initial Planning', selected: true },
-            { id: 'delivered', name: 'Materials Delivered' },
-            { id: 'expenses', name: 'Expenses Report' },
+            { id: 'initial', name: appStrings.initialPlanning, selected: true },
+            { id: 'delivered', name: appStrings.materialDelivered },
+            { id: 'expenses', name: appStrings.expensesReport },
           ]}
           onSelectedTabChange={activeTabs => setSelectedTab(activeTabs[0])}
         />

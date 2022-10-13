@@ -4,15 +4,15 @@ const menuItems = (appStrings: TObject) => {
   return [
     {
       id: 1,
-      title: 'Home',
+      title: appStrings.home,
       options: [
         {
-          name: 'Projects',
+          name: appStrings.projects,
           redirectTo: '/projects',
           hasIcon: true,
         },
         {
-          name: 'Materials',
+          name: appStrings.materials,
           redirectTo: '/materials',
           hasIcon: true,
         },

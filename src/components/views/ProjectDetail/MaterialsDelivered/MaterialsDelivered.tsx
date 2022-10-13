@@ -20,18 +20,6 @@ interface IMaterialsDelivered {
   projectId: string;
 }
 
-const tableHeader: TTableHeader[] = [
-  { name: 'order', value: 'Order' },
-  { name: 'quantity', value: 'Quantity', isGreen: true },
-  { name: 'name', value: 'Name' },
-  { name: 'cost', value: 'Cost' },
-  { name: 'subtotal', value: 'Subtotal' },
-  { name: 'activity', value: 'Activity' },
-  { name: 'invoice', value: 'Invoice' },
-  { name: 'delivered', value: 'Delivered' },
-  { name: 'diference', value: 'Diference' },
-];
-
 const initialSelectedItemData = {
   id: '',
   order: 0,
@@ -42,7 +30,7 @@ const initialSelectedItemData = {
   activity: '',
   invoice: '',
   delivered: 0,
-  diference: 0,
+  difference: 0,
 };
 
 const MaterialsDelivered: React.FC<IMaterialsDelivered> = props => {
@@ -55,6 +43,18 @@ const MaterialsDelivered: React.FC<IMaterialsDelivered> = props => {
   const { projectId } = props;
   const toast = useToast();
   const appStrings = useAppSelector(state => state.settings.appStrings);
+
+  const tableHeader: TTableHeader[] = [
+    { name: 'order', value: appStrings.order },
+    { name: 'quantity', value: appStrings.quantity, isGreen: true },
+    { name: 'name', value: appStrings.name },
+    { name: 'cost', value: appStrings.cost },
+    { name: 'subtotal', value: appStrings.subtotal },
+    { name: 'activity', value: appStrings.activity },
+    { name: 'invoice', value: appStrings.invoice },
+    { name: 'delivered', value: appStrings.delivered },
+    { name: 'difference', value: appStrings.difference },
+  ];
 
   const getMaterialsDelivered = useCallback(async () => {
     const [errors, response] = await getProjectMaterialsDelivered(projectId);
@@ -107,19 +107,13 @@ const MaterialsDelivered: React.FC<IMaterialsDelivered> = props => {
   };
 
   const validationSchema = yup.object().shape({
-    order: yup.number().positive().required(appStrings?.Global?.requiredField),
-    quantity: yup
-      .number()
-      .positive()
-      .required(appStrings?.Global?.requiredField),
-    name: yup.string().required(appStrings?.Global?.requiredField),
-    cost: yup.number().positive().required(appStrings?.Global?.requiredField),
-    activity: yup.string().required(appStrings?.Global?.requiredField),
-    invoice: yup.string().required(appStrings?.Global?.requiredField),
-    delivered: yup
-      .number()
-      .positive()
-      .required(appStrings?.Global?.requiredField),
+    order: yup.number().positive().required(appStrings?.requiredField),
+    quantity: yup.number().positive().required(appStrings?.requiredField),
+    name: yup.string().required(appStrings?.requiredField),
+    cost: yup.number().positive().required(appStrings?.requiredField),
+    activity: yup.string().required(appStrings?.requiredField),
+    invoice: yup.string().required(appStrings?.requiredField),
+    delivered: yup.number().positive().required(appStrings?.requiredField),
   });
 
   useEffect(() => {
@@ -148,7 +142,9 @@ const MaterialsDelivered: React.FC<IMaterialsDelivered> = props => {
             }}
           >
             <Heading as="h2" size="lg">
-              {selectedItem.id ? 'Edit Material' : 'Create Material'}
+              {selectedItem.id
+                ? appStrings.editMaterial
+                : appStrings.createMaterial}
             </Heading>
             <Form
               id="project-form"
@@ -158,16 +154,24 @@ const MaterialsDelivered: React.FC<IMaterialsDelivered> = props => {
               validateOnBlur
               onSubmit={handleOnSubmit}
             >
-              <Input name="order" label="Order" placeholder="Metric Unit" />
-              <Input name="quantity" type="number" label="Quantity" />
-              <Input name="name" label="Name" />
-              <Input name="cost" label="Cost" placeholder="Metric Unit" />
-              <Input name="activity" label="Activity" />
-              <Input name="invoice" type="number" label="Invoice" />
-              <Input name="delivered" type="number" label="Delivered" />
+              <Input name="order" label={appStrings.order} />
+              <Input
+                name="quantity"
+                type="number"
+                label={appStrings.quantity}
+              />
+              <Input name="name" label={appStrings.name} />
+              <Input name="cost" label={appStrings.cost} />
+              <Input name="activity" label={appStrings.activity} />
+              <Input name="invoice" type="number" label={appStrings.invoice} />
+              <Input
+                name="delivered"
+                type="number"
+                label={appStrings.delivered}
+              />
               <br />
               <Button width="full" type="submit">
-                Submit
+                {appStrings.submit}
               </Button>
             </Form>
           </Modal>
@@ -182,7 +186,7 @@ const MaterialsDelivered: React.FC<IMaterialsDelivered> = props => {
         onClickEdit={id => editButton(id)}
         onClickDelete={id => deleteButton(id)}
       />
-      {!tableData.length ? <h1>No records found</h1> : null}
+      {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
     </div>
   );
 };

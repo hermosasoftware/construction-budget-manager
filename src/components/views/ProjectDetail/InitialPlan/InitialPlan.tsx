@@ -25,14 +25,6 @@ interface IItem extends Omit<IProjectMaterialPlan, 'name'> {
   name: { value: string; label: string };
 }
 
-const tableHeader: TTableHeader[] = [
-  { name: 'name', value: 'Name' },
-  { name: 'unit', value: 'Unit' },
-  { name: 'quantity', value: 'Quantity' },
-  { name: 'cost', value: 'Cost', isGreen: true },
-  { name: 'subtotal', value: 'SubTotal', isGreen: true },
-];
-
 const initialSelectedItemData = {
   id: '',
   name: { value: '', label: '' },
@@ -53,6 +45,14 @@ const InitialPlan: React.FC<IInitialPlan> = props => {
   const toast = useToast();
   const appStrings = useAppSelector(state => state.settings.appStrings);
   const materials = useAppSelector(state => state.materials.materials);
+
+  const tableHeader: TTableHeader[] = [
+    { name: 'name', value: appStrings.name },
+    { name: 'unit', value: appStrings.unit },
+    { name: 'quantity', value: appStrings.quantity },
+    { name: 'cost', value: appStrings.cost, isGreen: true },
+    { name: 'subtotal', value: appStrings.subtotal, isGreen: true },
+  ];
 
   const getMaterialsPlan = useCallback(async () => {
     const [errors, response] = await getProjectMaterialsPlan(projectId);
@@ -112,15 +112,12 @@ const InitialPlan: React.FC<IInitialPlan> = props => {
 
   const validationSchema = yup.object().shape({
     name: yup.object().shape({
-      value: yup.string().required(appStrings?.Global?.requiredField),
-      label: yup.string().required(appStrings?.Global?.requiredField),
+      value: yup.string().required(appStrings?.requiredField),
+      label: yup.string().required(appStrings?.requiredField),
     }),
-    unit: yup.string().required(appStrings?.Global?.requiredField),
-    quantity: yup
-      .number()
-      .positive()
-      .required(appStrings?.Global?.requiredField),
-    cost: yup.number().positive().required(appStrings?.Global?.requiredField),
+    unit: yup.string().required(appStrings?.requiredField),
+    quantity: yup.number().positive().required(appStrings?.requiredField),
+    cost: yup.number().positive().required(appStrings?.requiredField),
   });
 
   useEffect(() => {
@@ -149,7 +146,9 @@ const InitialPlan: React.FC<IInitialPlan> = props => {
             }}
           >
             <Heading as="h2" size="lg">
-              {selectedItem.id ? 'Edit Material' : 'Create Material'}
+              {selectedItem.id
+                ? appStrings.editMaterial
+                : appStrings.createMaterial}
             </Heading>
             <Form
               id="project-form"
@@ -161,8 +160,8 @@ const InitialPlan: React.FC<IInitialPlan> = props => {
             >
               <SearchSelect
                 name="name"
-                label="Material"
-                placeholder="Project name"
+                label={appStrings.material}
+                placeholder={appStrings.projectName}
                 isDisabled={!!selectedItem.id}
                 options={materials.map(material => ({
                   value: material.id,
@@ -173,13 +172,21 @@ const InitialPlan: React.FC<IInitialPlan> = props => {
                   handleSearchSelect(item?.value?.value);
                 }}
               />
-              <Input name="unit" label="Unit" placeholder="Metric Unit" />
-              <Input name="quantity" type="number" label="Quantity" />
-              <Input name="cost" type="number" label="Cost" />
+              <Input
+                name="unit"
+                label="Unit"
+                placeholder={appStrings.metricUnit}
+              />
+              <Input
+                name="quantity"
+                type="number"
+                label={appStrings.quantity}
+              />
+              <Input name="cost" type="number" label={appStrings.cost} />
 
               <br />
               <Button width="full" type="submit">
-                Submit
+                {appStrings.submit}
               </Button>
             </Form>
           </Modal>
@@ -194,7 +201,7 @@ const InitialPlan: React.FC<IInitialPlan> = props => {
         onClickEdit={id => editButton(id)}
         onClickDelete={id => deleteButton(id)}
       />
-      {!tableData.length ? <h1>No records found</h1> : null}
+      {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
     </div>
   );
 };

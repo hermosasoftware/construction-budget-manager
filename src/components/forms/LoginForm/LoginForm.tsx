@@ -26,20 +26,19 @@ const LoginForm: React.FC<ILoginForm> = props => {
     {
       id: yup.string().when('email', (email, schema) => {
         if (email?.length) return schema;
-        return schema.required(appStrings?.Global?.oneIdRequired);
+        return schema.required(appStrings?.oneIdRequired);
       }),
       email: yup
         .string()
-        .email(appStrings?.Global?.validEmailRequired)
+        .email(appStrings?.validEmailRequired)
         .when('id', (id, schema) => {
           if (id?.length) return schema;
-          return schema.required(appStrings?.Global?.oneIdRequired);
+          return schema.required(appStrings?.oneIdRequired);
         }),
-      password: yup.string().required(appStrings?.Global?.requiredField),
+      password: yup.string().required(appStrings?.requiredField),
     },
     [['id', 'email']],
   );
-
   return (
     <Form<ILoginFormData>
       validationSchema={validationSchema}
@@ -52,28 +51,28 @@ const LoginForm: React.FC<ILoginForm> = props => {
     >
       <Input
         name="id"
-        label={appStrings?.Global?.idNumber}
-        placeholder={appStrings?.Global?.id}
-        helperText={appStrings?.Global?.orCanAlsoUse}
+        label={appStrings?.idNumber}
+        placeholder={appStrings?.id}
+        helperText={appStrings?.orCanAlsoUse}
       />
       <Input
         name="email"
-        label={appStrings?.Global?.email}
-        placeholder={appStrings?.Global?.mail}
+        label={appStrings?.email}
+        placeholder={appStrings?.email}
       />
       <Input
         isRequired
         name="password"
         type="password"
-        label={appStrings?.Global?.password}
-        placeholder={appStrings?.Global?.password}
+        label={appStrings?.password}
+        placeholder={appStrings?.password}
         containerClassName={styles.password_input}
       />
       <Link to="/forgot-password" className={styles.restore_link}>
-        {appStrings?.Auth?.restoreForgottenPassword}
+        {appStrings?.restoreForgottenPassword}
       </Link>
       <Button type="submit" className="submit-button">
-        {appStrings?.Auth?.logIn}
+        {appStrings?.logIn}
       </Button>
     </Form>
   );

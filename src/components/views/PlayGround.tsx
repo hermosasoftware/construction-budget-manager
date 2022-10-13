@@ -84,7 +84,7 @@ const Home = () => {
         ways to style the application.
       </p>
       <label>
-        {appStrings.PlayGround.changeLang}{' '}
+        {appStrings.changeLang}{' '}
         <select
           value={appLang}
           onChange={event =>

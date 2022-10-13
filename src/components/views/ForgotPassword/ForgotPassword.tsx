@@ -31,7 +31,7 @@ const ForgotPassword: React.FC<IForgotPassword> = props => {
   const toggleOptions = [
     {
       id: 'restorePassword',
-      name: appStrings?.Global?.restorePassword,
+      name: appStrings?.restorePassword,
       onClick: handleOnRestorePasswordToggleClick,
     },
   ];
