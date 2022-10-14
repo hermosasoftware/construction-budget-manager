@@ -109,6 +109,7 @@ export const createProjectExpense = async ({
     const userRef = collection(db, 'projects', projectId, 'projectExpenses');
     const result = await addDoc(userRef, rest);
     const data = { ...projectExpense, id: result.id } as IProjectExpense;
+
     toast({
       title: appStrings.success,
       description: appStrings.saveSuccess,

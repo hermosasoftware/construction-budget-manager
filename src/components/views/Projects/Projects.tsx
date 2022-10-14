@@ -1,5 +1,5 @@
 import styles from './Projects.module.css';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Box, Flex, Heading, useToast } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import * as yup from 'yup';
@@ -44,13 +44,10 @@ export default function Projects() {
     { name: 'location', value: appStrings.location },
   ];
 
-  const getProjects = useCallback(
-    async (status: string) => {
-      const response = await getProjectsByStatus({ status, toast, appStrings });
-      setTableData(response);
-    },
-    [appStrings, toast],
-  );
+  const getProjects = async (status: string) => {
+    const response = await getProjectsByStatus({ status, toast, appStrings });
+    setTableData(response);
+  };
 
   const handleSearch = async (event: { target: { value: string } }) => {
     setSearchTerm(event.target.value.toUpperCase());
@@ -96,12 +93,12 @@ export default function Projects() {
 
   useEffect(() => {
     let abortController = new AbortController();
-
     getProjects(selectedTab);
     return () => {
       abortController.abort();
     };
-  }, [getProjects, selectedTab, toast]);
+  }, [selectedTab]);
+
   return (
     <>
       <Sidebar />

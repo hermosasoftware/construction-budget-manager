@@ -1,5 +1,5 @@
 import styles from './InitialPlan.module.css';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Flex, Heading, useToast } from '@chakra-ui/react';
 import * as yup from 'yup';
 import Button from '../../../common/Button/Button';
@@ -54,14 +54,14 @@ const InitialPlan: React.FC<IInitialPlan> = props => {
     { name: 'subtotal', value: appStrings.subtotal, isGreen: true },
   ];
 
-  const getMaterialsPlan = useCallback(async () => {
+  const getMaterialsPlan = async () => {
     const response = await getProjectMaterialsPlan({
       projectId,
       toast,
       appStrings,
     });
     setTableData(response);
-  }, [projectId, toast, appStrings]);
+  };
 
   const editButton = async (projectMaterialPlanId: string) => {
     const response = await getProjectMaterialPlanById({
@@ -138,7 +138,7 @@ const InitialPlan: React.FC<IInitialPlan> = props => {
     return () => {
       abortController.abort();
     };
-  }, [getMaterialsPlan, projectId, toast]);
+  }, []);
 
   return (
     <div className={`${styles.operations_container}`}>

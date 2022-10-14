@@ -119,11 +119,11 @@ export const createProjectMaterialDelivered = async ({
       'projectMaterialsDelivered',
     );
     const result = await addDoc(userRef, rest);
-
     const data = {
       ...projectMaterialDelivered,
       id: result.id,
     } as IProjectMaterialDelivered;
+
     toast({
       title: appStrings.success,
       description: appStrings.saveSuccess,

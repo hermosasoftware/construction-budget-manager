@@ -1,5 +1,5 @@
 import styles from './ExpensesReport.module.css';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Flex, Heading, useToast } from '@chakra-ui/react';
 import * as yup from 'yup';
 import Button from '../../../common/Button/Button';
@@ -50,10 +50,10 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
     { name: 'amount', value: appStrings.amount, isGreen: true },
   ];
 
-  const getExpenses = useCallback(async () => {
+  const getExpenses = async () => {
     const response = await getProjectExpenses({ projectId, toast, appStrings });
     setTableData(response);
-  }, [projectId, toast, appStrings]);
+  };
 
   const handleSearch = async (event: { target: { value: string } }) => {
     setSearchTerm(event.target.value.toUpperCase());
@@ -108,12 +108,11 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
 
   useEffect(() => {
     let abortController = new AbortController();
-
     getExpenses();
     return () => {
       abortController.abort();
     };
-  }, [getExpenses, projectId, toast]);
+  }, []);
 
   return (
     <div className={`${styles.operations_container}`}>

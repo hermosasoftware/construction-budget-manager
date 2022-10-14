@@ -1,4 +1,3 @@
-import { FirebaseError } from 'firebase/app';
 import {
   query,
   where,
@@ -12,6 +11,7 @@ import {
   doc,
   setDoc,
 } from 'firebase/firestore';
+import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
 import { IProject } from '../types/project';
 import { IService } from '../types/service';
@@ -93,13 +93,13 @@ export const getProjectsByStatus = async ({
     const userRef = query(
       collection(db, 'projects'),
       where('status', '==', status),
-      orderBy('status'),
     );
     const result = await getDocs(userRef);
     const data = result.docs.map(doc => ({
       ...doc.data(),
       id: doc.id,
     })) as IProject[];
+
     successCallback && successCallback();
     return data;
   } catch (error) {
@@ -172,6 +172,7 @@ export const createProject = async ({
     const userRef = collection(db, 'projects');
     const result = await addDoc(userRef, rest);
     const data = { ...project, id: result.id } as IProject;
+
     toast({
       title: appStrings.success,
       description: appStrings.saveSuccess,

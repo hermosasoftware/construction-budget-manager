@@ -122,6 +122,7 @@ export const createProjectMaterialPlan = async ({
       ...projectMaterialPlan,
       id: result.id,
     } as IProjectMaterialPlan;
+
     toast({
       title: appStrings.success,
       description: appStrings.saveSuccess,

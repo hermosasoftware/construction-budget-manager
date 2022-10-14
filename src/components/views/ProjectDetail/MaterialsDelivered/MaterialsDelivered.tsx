@@ -1,6 +1,6 @@
 import styles from './MaterialsDelivered.module.css';
 import { Flex, Heading, useToast } from '@chakra-ui/react';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import * as yup from 'yup';
 import Button from '../../../common/Button/Button';
 import Modal from '../../../common/Modal/Modal';
@@ -56,14 +56,14 @@ const MaterialsDelivered: React.FC<IMaterialsDelivered> = props => {
     { name: 'difference', value: appStrings.difference },
   ];
 
-  const getMaterialsDelivered = useCallback(async () => {
+  const getMaterialsDelivered = async () => {
     const response = await getProjectMaterialsDelivered({
       projectId,
       toast,
       appStrings,
     });
     setTableData(response);
-  }, [projectId, toast, appStrings]);
+  };
 
   const handleSearch = async (event: { target: { value: string } }) => {
     setSearchTerm(event.target.value.toUpperCase());
@@ -125,7 +125,7 @@ const MaterialsDelivered: React.FC<IMaterialsDelivered> = props => {
     return () => {
       abortController.abort();
     };
-  }, [getMaterialsDelivered, projectId, toast]);
+  }, []);
 
   return (
     <div className={`${styles.operations_container}`}>

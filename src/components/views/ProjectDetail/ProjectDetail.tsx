@@ -28,7 +28,7 @@ export default function Projects() {
     return () => {
       abortController.abort();
     };
-  }, [projectId, toast, appStrings]);
+  }, [projectId]);
 
   return (
     <>
