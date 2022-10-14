@@ -51,28 +51,22 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
   ];
 
   const getExpenses = useCallback(async () => {
-    const [errors, response] = await getProjectExpenses(projectId);
-    if (!errors) {
-      setTableData(response);
-    } else {
-      toast({
-        title: 'Error al extraer la informacion',
-        description: errors + '',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-        position: 'top-right',
-      });
-    }
-  }, [projectId, toast]);
+    const response = await getProjectExpenses({ projectId, toast, appStrings });
+    setTableData(response);
+  }, [projectId, toast, appStrings]);
 
   const handleSearch = async (event: { target: { value: string } }) => {
     setSearchTerm(event.target.value.toUpperCase());
   };
 
-  const editButton = async (id: string) => {
-    const [errors, response] = await getProjectExpenseById(projectId, id);
-    if (!errors && response) {
+  const editButton = async (projectExpenseId: string) => {
+    const response = await getProjectExpenseById({
+      projectId,
+      projectExpenseId,
+      toast,
+      appStrings,
+    });
+    if (response) {
       setSelectedItem(response);
       setIsModalOpen(true);
     }
@@ -81,12 +75,26 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
   const deleteButton = (id: string) => {};
 
   const handleOnSubmit = async (projectExpense: IProjectExpense) => {
+    const successCallback = () => {
+      setSelectedItem(initialSelectedItemData);
+      setIsModalOpen(false);
+      getExpenses();
+    };
     projectExpense.id
-      ? await updateProjectExpense(projectId, projectExpense)
-      : await createProjectExpense(projectId, projectExpense);
-    setSelectedItem(initialSelectedItemData);
-    setIsModalOpen(false);
-    getExpenses();
+      ? await updateProjectExpense({
+          projectId,
+          projectExpense,
+          toast,
+          appStrings,
+          successCallback,
+        })
+      : await createProjectExpense({
+          projectId,
+          projectExpense,
+          toast,
+          appStrings,
+          successCallback,
+        });
   };
 
   const validationSchema = yup.object().shape({
