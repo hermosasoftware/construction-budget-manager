@@ -57,31 +57,26 @@ const MaterialsDelivered: React.FC<IMaterialsDelivered> = props => {
   ];
 
   const getMaterialsDelivered = useCallback(async () => {
-    const [errors, response] = await getProjectMaterialsDelivered(projectId);
-    if (!errors) {
-      setTableData(response);
-    } else {
-      toast({
-        title: 'Error al extraer la informacion',
-        description: errors + '',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-        position: 'top-right',
-      });
-    }
-  }, [projectId, toast]);
+    const response = await getProjectMaterialsDelivered({
+      projectId,
+      toast,
+      appStrings,
+    });
+    setTableData(response);
+  }, [projectId, toast, appStrings]);
 
   const handleSearch = async (event: { target: { value: string } }) => {
     setSearchTerm(event.target.value.toUpperCase());
   };
 
-  const editButton = async (id: string) => {
-    const [errors, response] = await getProjectMaterialDeliveredById(
+  const editButton = async (projectMaterialDeliveredId: string) => {
+    const response = await getProjectMaterialDeliveredById({
       projectId,
-      id,
-    );
-    if (!errors && response) {
+      projectMaterialDeliveredId,
+      toast,
+      appStrings,
+    });
+    if (response) {
       setSelectedItem(response);
       setIsModalOpen(true);
     }
@@ -92,18 +87,26 @@ const MaterialsDelivered: React.FC<IMaterialsDelivered> = props => {
   const handleOnSubmit = async (
     projectMaterialDelivered: IProjectMaterialDelivered,
   ) => {
+    const successCallback = () => {
+      setSelectedItem(initialSelectedItemData);
+      setIsModalOpen(false);
+      getMaterialsDelivered();
+    };
     projectMaterialDelivered.id
-      ? await updateProjectMaterialDelivered(
+      ? await updateProjectMaterialDelivered({
           projectId,
           projectMaterialDelivered,
-        )
-      : await createProjectMaterialDelivered(
+          toast,
+          appStrings,
+          successCallback,
+        })
+      : await createProjectMaterialDelivered({
           projectId,
           projectMaterialDelivered,
-        );
-    setSelectedItem(initialSelectedItemData);
-    setIsModalOpen(false);
-    getMaterialsDelivered();
+          toast,
+          appStrings,
+          successCallback,
+        });
   };
 
   const validationSchema = yup.object().shape({

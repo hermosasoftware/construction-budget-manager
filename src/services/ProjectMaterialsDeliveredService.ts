@@ -6,12 +6,18 @@ import {
   setDoc,
   getDoc,
 } from 'firebase/firestore';
+import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
 import { IProjectMaterialDelivered } from '../types/projectMaterialDelivered';
+import { IService } from '../types/service';
 
-export const getProjectMaterialsDelivered = async (
-  projectId: string,
-): Promise<[String | null, IProjectMaterialDelivered[]]> => {
+export const getProjectMaterialsDelivered = async ({
+  projectId,
+  toast,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: { projectId: string } & IService): Promise<IProjectMaterialDelivered[]> => {
   try {
     const userRef = collection(
       db,
@@ -27,16 +33,37 @@ export const getProjectMaterialsDelivered = async (
       difference: doc.data().quantity - doc.data().delivered,
     })) as IProjectMaterialDelivered[];
 
-    return [null, data];
+    successCallback && successCallback();
+    return data;
   } catch (error) {
-    return [error + '', []];
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toast({
+      title: appStrings.getInformationError,
+      description: errorMessage,
+      status: 'error',
+      duration: 5000,
+      isClosable: true,
+      position: 'top-right',
+    });
+
+    errorCallback && errorCallback();
+    return [];
   }
 };
 
-export const getProjectMaterialDeliveredById = async (
-  projectId: string,
-  projectMaterialDeliveredId: string,
-): Promise<[String | null, IProjectMaterialDelivered | null]> => {
+export const getProjectMaterialDeliveredById = async ({
+  projectId,
+  projectMaterialDeliveredId,
+  toast,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: {
+  projectId: string;
+  projectMaterialDeliveredId: string;
+} & IService): Promise<IProjectMaterialDelivered | null> => {
   try {
     const userRef = doc(
       db,
@@ -52,16 +79,37 @@ export const getProjectMaterialDeliveredById = async (
       subtotal: result.data()?.cost * result.data()?.quantity,
     } as IProjectMaterialDelivered;
 
-    return [null, data];
+    successCallback && successCallback();
+    return data;
   } catch (error) {
-    return [error + '', null];
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toast({
+      title: appStrings.getInformationError,
+      description: errorMessage,
+      status: 'error',
+      duration: 5000,
+      isClosable: true,
+      position: 'top-right',
+    });
+
+    errorCallback && errorCallback();
+    return null;
   }
 };
 
-export const createProjectMaterialDelivered = async (
-  projectId: string,
-  projectMaterialDelivered: IProjectMaterialDelivered,
-): Promise<String | null> => {
+export const createProjectMaterialDelivered = async ({
+  projectId,
+  projectMaterialDelivered,
+  toast,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: {
+  projectId: string;
+  projectMaterialDelivered: IProjectMaterialDelivered;
+} & IService): Promise<IProjectMaterialDelivered | null> => {
   try {
     const { id, subtotal, difference, ...rest } = projectMaterialDelivered;
     const userRef = collection(
@@ -72,18 +120,50 @@ export const createProjectMaterialDelivered = async (
     );
     const result = await addDoc(userRef, rest);
 
-    console.log(result.id);
+    const data = {
+      ...projectMaterialDelivered,
+      id: result.id,
+    } as IProjectMaterialDelivered;
+    toast({
+      title: appStrings.success,
+      description: appStrings.saveSuccess,
+      status: 'success',
+      duration: 3000,
+      isClosable: true,
+      position: 'top-right',
+    });
 
-    return null;
+    successCallback && successCallback();
+    return data;
   } catch (error) {
-    return error + '';
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toast({
+      title: appStrings.saveError,
+      description: errorMessage,
+      status: 'error',
+      duration: 5000,
+      isClosable: true,
+      position: 'top-right',
+    });
+
+    errorCallback && errorCallback();
+    return null;
   }
 };
 
-export const updateProjectMaterialDelivered = async (
-  projectId: string,
-  projectMaterialDelivered: IProjectMaterialDelivered,
-): Promise<String | null> => {
+export const updateProjectMaterialDelivered = async ({
+  projectId,
+  projectMaterialDelivered,
+  toast,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: {
+  projectId: string;
+  projectMaterialDelivered: IProjectMaterialDelivered;
+} & IService) => {
   try {
     const { id, subtotal, difference, ...rest } = projectMaterialDelivered;
     const userRef = doc(
@@ -95,8 +175,29 @@ export const updateProjectMaterialDelivered = async (
     );
     await setDoc(userRef, rest);
 
-    return null;
+    toast({
+      title: appStrings.success,
+      description: appStrings.saveSuccess,
+      status: 'success',
+      duration: 3000,
+      isClosable: true,
+      position: 'top-right',
+    });
+
+    successCallback && successCallback();
   } catch (error) {
-    return error + '';
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toast({
+      title: appStrings.saveError,
+      description: errorMessage,
+      status: 'error',
+      duration: 5000,
+      isClosable: true,
+      position: 'top-right',
+    });
+
+    errorCallback && errorCallback();
   }
 };
