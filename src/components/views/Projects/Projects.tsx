@@ -46,21 +46,10 @@ export default function Projects() {
 
   const getProjects = useCallback(
     async (status: string) => {
-      const [errors, response] = await getProjectsByStatus(status);
-      if (!errors) {
-        setTableData(response);
-      } else {
-        toast({
-          title: 'Error al extraer la informacion',
-          description: errors + '',
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-          position: 'top-right',
-        });
-      }
+      const response = await getProjectsByStatus({ status, toast, appStrings });
+      setTableData(response);
     },
-    [toast],
+    [appStrings, toast],
   );
 
   const handleSearch = async (event: { target: { value: string } }) => {
@@ -73,9 +62,9 @@ export default function Projects() {
     navigate(`/project-detail/${projectId}`);
   };
 
-  const editButton = async (id: string) => {
-    const [errors, response] = await getProjectById(id);
-    if (!errors && response) {
+  const editButton = async (projectId: string) => {
+    const response = await getProjectById({ projectId, toast, appStrings });
+    if (response) {
       setSelectedItem(response);
       setIsModalOpen(true);
     }
@@ -84,10 +73,14 @@ export default function Projects() {
   const deleteButton = (id: string) => {};
 
   const handleOnSubmit = async (project: IProject) => {
-    project.id ? await updateProject(project) : await createProject(project);
-    setSelectedItem(initialSelectedItemData);
-    setIsModalOpen(false);
-    getProjects(selectedTab);
+    const successCallback = () => {
+      setSelectedItem(initialSelectedItemData);
+      setIsModalOpen(false);
+      getProjects(selectedTab);
+    };
+    project.id
+      ? await updateProject({ project, toast, appStrings, successCallback })
+      : await createProject({ project, toast, appStrings, successCallback });
   };
 
   const validationSchema = yup.object().shape({

@@ -21,25 +21,14 @@ export default function Projects() {
   useEffect(() => {
     let abortController = new AbortController();
     const getProjectbyId = async () => {
-      const [errors, resProject] = await getProjectById(projectId);
-      if (!errors && resProject) {
-        setProject(resProject);
-      } else {
-        toast({
-          title: 'Error al extraer la informacion',
-          description: errors + '',
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-          position: 'top-right',
-        });
-      }
+      const response = await getProjectById({ projectId, toast, appStrings });
+      if (response) setProject(response);
     };
     getProjectbyId();
     return () => {
       abortController.abort();
     };
-  }, [projectId, toast]);
+  }, [projectId, toast, appStrings]);
 
   return (
     <>
