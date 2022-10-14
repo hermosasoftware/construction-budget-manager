@@ -55,24 +55,22 @@ const InitialPlan: React.FC<IInitialPlan> = props => {
   ];
 
   const getMaterialsPlan = useCallback(async () => {
-    const [errors, response] = await getProjectMaterialsPlan(projectId);
-    if (!errors) {
-      setTableData(response);
-    } else {
-      toast({
-        title: 'Error al extraer la informacion',
-        description: errors + '',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-        position: 'top-right',
-      });
-    }
-  }, [projectId, toast]);
+    const response = await getProjectMaterialsPlan({
+      projectId,
+      toast,
+      appStrings,
+    });
+    setTableData(response);
+  }, [projectId, toast, appStrings]);
 
-  const editButton = async (id: string) => {
-    const [errors, response] = await getProjectMaterialPlanById(projectId, id);
-    if (!errors && response) {
+  const editButton = async (projectMaterialPlanId: string) => {
+    const response = await getProjectMaterialPlanById({
+      projectId,
+      projectMaterialPlanId,
+      toast,
+      appStrings,
+    });
+    if (response) {
       setSelectedItem({
         ...response,
         name: { value: response.id, label: response.name },
@@ -102,12 +100,26 @@ const InitialPlan: React.FC<IInitialPlan> = props => {
   const handleOnSubmit = async (data: IItem) => {
     const { name, ...rest } = data;
     const projectMaterialPlan = { ...rest, name: name.label };
+    const successCallback = () => {
+      setSelectedItem(initialSelectedItemData);
+      setIsModalOpen(false);
+      getMaterialsPlan();
+    };
     projectMaterialPlan.id
-      ? await updateProjectMaterialPlan(projectId, projectMaterialPlan)
-      : await createProjectMaterialPlan(projectId, projectMaterialPlan);
-    setSelectedItem(initialSelectedItemData);
-    setIsModalOpen(false);
-    getMaterialsPlan();
+      ? await updateProjectMaterialPlan({
+          projectId,
+          projectMaterialPlan,
+          toast,
+          appStrings,
+          successCallback,
+        })
+      : await createProjectMaterialPlan({
+          projectId,
+          projectMaterialPlan,
+          toast,
+          appStrings,
+          successCallback,
+        });
   };
 
   const validationSchema = yup.object().shape({
