@@ -54,26 +54,29 @@ const InitialPlan: React.FC<IInitialPlan> = props => {
   ];
 
   const getMaterialsPlan = async () => {
-    const response = await getProjectMaterialsPlan({
+    const successCallback = (response: IProjectMaterialPlan[]) =>
+      setTableData(response);
+    await getProjectMaterialsPlan({
       projectId,
       appStrings,
+      successCallback,
     });
-    setTableData(response);
   };
 
   const editButton = async (projectMaterialPlanId: string) => {
-    const response = await getProjectMaterialPlanById({
-      projectId,
-      projectMaterialPlanId,
-      appStrings,
-    });
-    if (response) {
+    const successCallback = (response: IProjectMaterialPlan) => {
       setSelectedItem({
         ...response,
         name: { value: response.id, label: response.name },
       });
       setIsModalOpen(true);
-    }
+    };
+    await getProjectMaterialPlanById({
+      projectId,
+      projectMaterialPlanId,
+      appStrings,
+      successCallback,
+    });
   };
 
   const deleteButton = (id: string) => {};

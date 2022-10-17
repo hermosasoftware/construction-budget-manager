@@ -44,8 +44,8 @@ export default function Projects() {
   ];
 
   const getProjects = async (status: string) => {
-    const response = await getProjectsByStatus({ status, appStrings });
-    setTableData(response);
+    const successCallback = (response: IProject[]) => setTableData(response);
+    await getProjectsByStatus({ status, appStrings, successCallback });
   };
 
   const handleSearch = async (event: { target: { value: string } }) => {
@@ -59,11 +59,11 @@ export default function Projects() {
   };
 
   const editButton = async (projectId: string) => {
-    const response = await getProjectById({ projectId, appStrings });
-    if (response) {
+    const successCallback = (response: IProject) => {
       setSelectedItem(response);
       setIsModalOpen(true);
-    }
+    };
+    await getProjectById({ projectId, appStrings, successCallback });
   };
 
   const deleteButton = (id: string) => {};

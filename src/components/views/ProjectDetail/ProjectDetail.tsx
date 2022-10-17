@@ -20,8 +20,8 @@ export default function Projects() {
   useEffect(() => {
     let abortController = new AbortController();
     const getProjectbyId = async () => {
-      const response = await getProjectById({ projectId, appStrings });
-      if (response) setProject(response);
+      const successCallback = (response: IProject) => setProject(response);
+      await getProjectById({ projectId, appStrings, successCallback });
     };
     getProjectbyId();
     return () => {

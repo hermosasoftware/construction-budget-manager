@@ -56,11 +56,13 @@ const MaterialsDelivered: React.FC<IMaterialsDelivered> = props => {
   ];
 
   const getMaterialsDelivered = async () => {
-    const response = await getProjectMaterialsDelivered({
+    const successCallback = (response: IProjectMaterialDelivered[]) =>
+      setTableData(response);
+    await getProjectMaterialsDelivered({
       projectId,
       appStrings,
+      successCallback,
     });
-    setTableData(response);
   };
 
   const handleSearch = async (event: { target: { value: string } }) => {
@@ -68,15 +70,16 @@ const MaterialsDelivered: React.FC<IMaterialsDelivered> = props => {
   };
 
   const editButton = async (projectMaterialDeliveredId: string) => {
-    const response = await getProjectMaterialDeliveredById({
+    const successCallback = (response: IProjectMaterialDelivered) => {
+      setSelectedItem(response);
+      setIsModalOpen(true);
+    };
+    await getProjectMaterialDeliveredById({
       projectId,
       projectMaterialDeliveredId,
       appStrings,
+      successCallback,
     });
-    if (response) {
-      setSelectedItem(response);
-      setIsModalOpen(true);
-    }
   };
 
   const deleteButton = (id: string) => {};

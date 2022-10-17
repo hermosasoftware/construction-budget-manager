@@ -17,7 +17,7 @@ export const getProjectMaterialsDelivered = async ({
   appStrings,
   successCallback,
   errorCallback,
-}: { projectId: string } & IService): Promise<IProjectMaterialDelivered[]> => {
+}: { projectId: string } & IService) => {
   try {
     const userRef = collection(
       db,
@@ -33,8 +33,7 @@ export const getProjectMaterialsDelivered = async ({
       difference: doc.data().quantity - doc.data().delivered,
     })) as IProjectMaterialDelivered[];
 
-    successCallback && successCallback();
-    return data;
+    successCallback && successCallback(data);
   } catch (error) {
     let errorMessage = appStrings.genericError;
     if (error instanceof FirebaseError) errorMessage = error.message;
@@ -42,7 +41,6 @@ export const getProjectMaterialsDelivered = async ({
     toastError(appStrings.getInformationError, errorMessage);
 
     errorCallback && errorCallback();
-    return [];
   }
 };
 
@@ -55,7 +53,7 @@ export const getProjectMaterialDeliveredById = async ({
 }: {
   projectId: string;
   projectMaterialDeliveredId: string;
-} & IService): Promise<IProjectMaterialDelivered | null> => {
+} & IService) => {
   try {
     const userRef = doc(
       db,
@@ -71,8 +69,7 @@ export const getProjectMaterialDeliveredById = async ({
       subtotal: result.data()?.cost * result.data()?.quantity,
     } as IProjectMaterialDelivered;
 
-    successCallback && successCallback();
-    return data;
+    successCallback && successCallback(data);
   } catch (error) {
     let errorMessage = appStrings.genericError;
     if (error instanceof FirebaseError) errorMessage = error.message;
@@ -80,7 +77,6 @@ export const getProjectMaterialDeliveredById = async ({
     toastError(appStrings.getInformationError, errorMessage);
 
     errorCallback && errorCallback();
-    return null;
   }
 };
 
@@ -93,7 +89,7 @@ export const createProjectMaterialDelivered = async ({
 }: {
   projectId: string;
   projectMaterialDelivered: IProjectMaterialDelivered;
-} & IService): Promise<IProjectMaterialDelivered | null> => {
+} & IService) => {
   try {
     const { id, subtotal, difference, ...rest } = projectMaterialDelivered;
     const userRef = collection(
@@ -110,8 +106,7 @@ export const createProjectMaterialDelivered = async ({
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
-    successCallback && successCallback();
-    return data;
+    successCallback && successCallback(data);
   } catch (error) {
     let errorMessage = appStrings.genericError;
     if (error instanceof FirebaseError) errorMessage = error.message;
@@ -119,7 +114,6 @@ export const createProjectMaterialDelivered = async ({
     toastError(appStrings.saveError, errorMessage);
 
     errorCallback && errorCallback();
-    return null;
   }
 };
 

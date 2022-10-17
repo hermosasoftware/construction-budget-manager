@@ -17,7 +17,7 @@ export const getProjectMaterialsPlan = async ({
   appStrings,
   successCallback,
   errorCallback,
-}: { projectId: string } & IService): Promise<IProjectMaterialPlan[]> => {
+}: { projectId: string } & IService) => {
   try {
     const userRef = collection(
       db,
@@ -32,8 +32,7 @@ export const getProjectMaterialsPlan = async ({
       subtotal: doc.data().cost * doc.data().quantity,
     })) as IProjectMaterialPlan[];
 
-    successCallback && successCallback();
-    return data;
+    successCallback && successCallback(data);
   } catch (error) {
     let errorMessage = appStrings.genericError;
     if (error instanceof FirebaseError) errorMessage = error.message;
@@ -41,7 +40,6 @@ export const getProjectMaterialsPlan = async ({
     toastError(appStrings.getInformationError, errorMessage);
 
     errorCallback && errorCallback();
-    return [];
   }
 };
 
@@ -54,7 +52,7 @@ export const getProjectMaterialPlanById = async ({
 }: {
   projectId: string;
   projectMaterialPlanId: string;
-} & IService): Promise<IProjectMaterialPlan | null> => {
+} & IService) => {
   try {
     const userRef = doc(
       db,
@@ -70,8 +68,7 @@ export const getProjectMaterialPlanById = async ({
       subtotal: result.data()?.cost * result.data()?.quantity,
     } as IProjectMaterialPlan;
 
-    successCallback && successCallback();
-    return data;
+    successCallback && successCallback(data);
   } catch (error) {
     let errorMessage = appStrings.genericError;
     if (error instanceof FirebaseError) errorMessage = error.message;
@@ -79,7 +76,6 @@ export const getProjectMaterialPlanById = async ({
     toastError(appStrings.getInformationError, errorMessage);
 
     errorCallback && errorCallback();
-    return null;
   }
 };
 
@@ -92,7 +88,7 @@ export const createProjectMaterialPlan = async ({
 }: {
   projectId: string;
   projectMaterialPlan: IProjectMaterialPlan;
-} & IService): Promise<IProjectMaterialPlan | null> => {
+} & IService) => {
   try {
     const { id, subtotal, ...rest } = projectMaterialPlan;
     const userRef = collection(
@@ -109,8 +105,7 @@ export const createProjectMaterialPlan = async ({
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
-    successCallback && successCallback();
-    return data;
+    successCallback && successCallback(data);
   } catch (error) {
     let errorMessage = appStrings.genericError;
     if (error instanceof FirebaseError) errorMessage = error.message;
@@ -118,7 +113,6 @@ export const createProjectMaterialPlan = async ({
     toastError(appStrings.saveError, errorMessage);
 
     errorCallback && errorCallback();
-    return null;
   }
 };
 

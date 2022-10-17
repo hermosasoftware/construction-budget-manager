@@ -17,7 +17,7 @@ export const getProjectExpenses = async ({
   appStrings,
   successCallback,
   errorCallback,
-}: { projectId: string } & IService): Promise<IProjectExpense[]> => {
+}: { projectId: string } & IService) => {
   try {
     const userRef = collection(db, 'projects', projectId, 'projectExpenses');
     const result = await getDocs(userRef);
@@ -27,8 +27,7 @@ export const getProjectExpenses = async ({
       date: doc.data().date.toDate(),
     })) as IProjectExpense[];
 
-    successCallback && successCallback();
-    return data;
+    successCallback && successCallback(data);
   } catch (error) {
     let errorMessage = appStrings.genericError;
     if (error instanceof FirebaseError) errorMessage = error.message;
@@ -36,7 +35,6 @@ export const getProjectExpenses = async ({
     toastError(appStrings.getInformationError, errorMessage);
 
     errorCallback && errorCallback();
-    return [];
   }
 };
 
@@ -49,7 +47,7 @@ export const getProjectExpenseById = async ({
 }: {
   projectId: string;
   projectExpenseId: string;
-} & IService): Promise<IProjectExpense | null> => {
+} & IService) => {
   try {
     const userRef = doc(
       db,
@@ -65,8 +63,7 @@ export const getProjectExpenseById = async ({
       date: result.data()?.date.toDate(),
     } as IProjectExpense;
 
-    successCallback && successCallback();
-    return data;
+    successCallback && successCallback(data);
   } catch (error) {
     let errorMessage = appStrings.genericError;
     if (error instanceof FirebaseError) errorMessage = error.message;
@@ -74,7 +71,6 @@ export const getProjectExpenseById = async ({
     toastError(appStrings.getInformationError, errorMessage);
 
     errorCallback && errorCallback();
-    return null;
   }
 };
 
@@ -87,7 +83,7 @@ export const createProjectExpense = async ({
 }: {
   projectId: string;
   projectExpense: IProjectExpense;
-} & IService): Promise<IProjectExpense | null> => {
+} & IService) => {
   try {
     const { id, ...rest } = projectExpense;
     const userRef = collection(db, 'projects', projectId, 'projectExpenses');
@@ -96,8 +92,7 @@ export const createProjectExpense = async ({
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
-    successCallback && successCallback();
-    return data;
+    successCallback && successCallback(data);
   } catch (error) {
     let errorMessage = appStrings.genericError;
     if (error instanceof FirebaseError) errorMessage = error.message;
@@ -105,7 +100,6 @@ export const createProjectExpense = async ({
     toastError(appStrings.saveError, errorMessage);
 
     errorCallback && errorCallback();
-    return null;
   }
 };
 

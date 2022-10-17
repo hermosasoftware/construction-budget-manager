@@ -21,7 +21,7 @@ export const getAllProjects = async ({
   appStrings,
   successCallback,
   errorCallback,
-}: IService): Promise<IProject[]> => {
+}: IService) => {
   try {
     const userRef = collection(db, 'projects');
     const result = await getDocs(userRef);
@@ -30,8 +30,7 @@ export const getAllProjects = async ({
       id: doc.id,
     })) as IProject[];
 
-    successCallback && successCallback();
-    return data;
+    successCallback && successCallback(data);
   } catch (error) {
     let errorMessage = appStrings.genericError;
     if (error instanceof FirebaseError) errorMessage = error.message;
@@ -39,7 +38,6 @@ export const getAllProjects = async ({
     toastError(appStrings.getInformationError, errorMessage);
 
     errorCallback && errorCallback();
-    return [];
   }
 };
 
@@ -48,14 +46,13 @@ export const getProjectById = async ({
   appStrings,
   successCallback,
   errorCallback,
-}: { projectId: string } & IService): Promise<IProject | null> => {
+}: { projectId: string } & IService) => {
   try {
     const userRef = doc(db, 'projects', projectId);
     const result = await getDoc(userRef);
     const data = { ...result.data(), id: result.id } as IProject;
 
-    successCallback && successCallback();
-    return data;
+    successCallback && successCallback(data);
   } catch (error) {
     let errorMessage = appStrings.genericError;
     if (error instanceof FirebaseError) errorMessage = error.message;
@@ -63,7 +60,6 @@ export const getProjectById = async ({
     toastError(appStrings.getInformationError, errorMessage);
 
     errorCallback && errorCallback();
-    return null;
   }
 };
 
@@ -72,7 +68,7 @@ export const getProjectsByStatus = async ({
   appStrings,
   successCallback,
   errorCallback,
-}: { status: string } & IService): Promise<IProject[]> => {
+}: { status: string } & IService) => {
   try {
     const userRef = query(
       collection(db, 'projects'),
@@ -84,8 +80,7 @@ export const getProjectsByStatus = async ({
       id: doc.id,
     })) as IProject[];
 
-    successCallback && successCallback();
-    return data;
+    successCallback && successCallback(data);
   } catch (error) {
     let errorMessage = appStrings.genericError;
     if (error instanceof FirebaseError) errorMessage = error.message;
@@ -93,7 +88,6 @@ export const getProjectsByStatus = async ({
     toastError(appStrings.getInformationError, errorMessage);
 
     errorCallback && errorCallback();
-    return [];
   }
 };
 
@@ -102,7 +96,7 @@ export const getProjectsByName = async ({
   appStrings,
   successCallback,
   errorCallback,
-}: { name: String } & IService): Promise<IProject[]> => {
+}: { name: String } & IService) => {
   try {
     const userRef = query(
       collection(db, 'projects'),
@@ -116,8 +110,7 @@ export const getProjectsByName = async ({
       id: doc.id,
     })) as IProject[];
 
-    successCallback && successCallback();
-    return data;
+    successCallback && successCallback(data);
   } catch (error) {
     let errorMessage = appStrings.genericError;
     if (error instanceof FirebaseError) errorMessage = error.message;
@@ -125,7 +118,6 @@ export const getProjectsByName = async ({
     toastError(appStrings.getInformationError, errorMessage);
 
     errorCallback && errorCallback();
-    return [];
   }
 };
 
@@ -134,7 +126,7 @@ export const createProject = async ({
   appStrings,
   successCallback,
   errorCallback,
-}: { project: IProject } & IService): Promise<IProject | null> => {
+}: { project: IProject } & IService) => {
   try {
     const { id, ...rest } = project;
     const userRef = collection(db, 'projects');
@@ -143,8 +135,7 @@ export const createProject = async ({
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
-    successCallback && successCallback();
-    return data;
+    successCallback && successCallback(data);
   } catch (error) {
     let errorMessage = appStrings.genericError;
     if (error instanceof FirebaseError) errorMessage = error.message;
@@ -152,7 +143,6 @@ export const createProject = async ({
     toastError(appStrings.saveError, errorMessage);
 
     errorCallback && errorCallback();
-    return null;
   }
 };
 

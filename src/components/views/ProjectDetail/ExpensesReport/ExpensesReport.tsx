@@ -50,8 +50,9 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
   ];
 
   const getExpenses = async () => {
-    const response = await getProjectExpenses({ projectId, appStrings });
-    setTableData(response);
+    const successCallback = (response: IProjectExpense[]) =>
+      setTableData(response);
+    await getProjectExpenses({ projectId, appStrings, successCallback });
   };
 
   const handleSearch = async (event: { target: { value: string } }) => {
@@ -59,15 +60,16 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
   };
 
   const editButton = async (projectExpenseId: string) => {
-    const response = await getProjectExpenseById({
+    const successCallback = (response: IProjectExpense) => {
+      setSelectedItem(response);
+      setIsModalOpen(true);
+    };
+    await getProjectExpenseById({
       projectId,
       projectExpenseId,
       appStrings,
+      successCallback,
     });
-    if (response) {
-      setSelectedItem(response);
-      setIsModalOpen(true);
-    }
   };
 
   const deleteButton = (id: string) => {};
