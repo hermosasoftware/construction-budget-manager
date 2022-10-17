@@ -1,6 +1,6 @@
 import styles from './Projects.module.css';
 import { useEffect, useState } from 'react';
-import { Box, Flex, Heading, useToast } from '@chakra-ui/react';
+import { Box, Flex, Heading } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import * as yup from 'yup';
 import Button from '../../common/Button/Button';
@@ -36,7 +36,6 @@ export default function Projects() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const appStrings = useAppSelector(state => state.settings.appStrings);
-  const toast = useToast();
   const navigate = useNavigate();
   const tableHeader: TTableHeader[] = [
     { name: 'name', value: appStrings.name },
@@ -45,7 +44,7 @@ export default function Projects() {
   ];
 
   const getProjects = async (status: string) => {
-    const response = await getProjectsByStatus({ status, toast, appStrings });
+    const response = await getProjectsByStatus({ status, appStrings });
     setTableData(response);
   };
 
@@ -60,7 +59,7 @@ export default function Projects() {
   };
 
   const editButton = async (projectId: string) => {
-    const response = await getProjectById({ projectId, toast, appStrings });
+    const response = await getProjectById({ projectId, appStrings });
     if (response) {
       setSelectedItem(response);
       setIsModalOpen(true);
@@ -76,8 +75,8 @@ export default function Projects() {
       getProjects(selectedTab);
     };
     project.id
-      ? await updateProject({ project, toast, appStrings, successCallback })
-      : await createProject({ project, toast, appStrings, successCallback });
+      ? await updateProject({ project, appStrings, successCallback })
+      : await createProject({ project, appStrings, successCallback });
   };
 
   const validationSchema = yup.object().shape({

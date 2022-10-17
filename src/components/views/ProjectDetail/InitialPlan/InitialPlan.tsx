@@ -1,6 +1,6 @@
 import styles from './InitialPlan.module.css';
 import React, { useEffect, useState } from 'react';
-import { Flex, Heading, useToast } from '@chakra-ui/react';
+import { Flex, Heading } from '@chakra-ui/react';
 import * as yup from 'yup';
 import Button from '../../../common/Button/Button';
 import Modal from '../../../common/Modal/Modal';
@@ -42,7 +42,6 @@ const InitialPlan: React.FC<IInitialPlan> = props => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const { projectId } = props;
-  const toast = useToast();
   const appStrings = useAppSelector(state => state.settings.appStrings);
   const materials = useAppSelector(state => state.materials.materials);
 
@@ -57,7 +56,6 @@ const InitialPlan: React.FC<IInitialPlan> = props => {
   const getMaterialsPlan = async () => {
     const response = await getProjectMaterialsPlan({
       projectId,
-      toast,
       appStrings,
     });
     setTableData(response);
@@ -67,7 +65,6 @@ const InitialPlan: React.FC<IInitialPlan> = props => {
     const response = await getProjectMaterialPlanById({
       projectId,
       projectMaterialPlanId,
-      toast,
       appStrings,
     });
     if (response) {
@@ -109,14 +106,12 @@ const InitialPlan: React.FC<IInitialPlan> = props => {
       ? await updateProjectMaterialPlan({
           projectId,
           projectMaterialPlan,
-          toast,
           appStrings,
           successCallback,
         })
       : await createProjectMaterialPlan({
           projectId,
           projectMaterialPlan,
-          toast,
           appStrings,
           successCallback,
         });

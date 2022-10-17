@@ -1,5 +1,5 @@
 import styles from './MaterialsDelivered.module.css';
-import { Flex, Heading, useToast } from '@chakra-ui/react';
+import { Flex, Heading } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import * as yup from 'yup';
 import Button from '../../../common/Button/Button';
@@ -41,7 +41,6 @@ const MaterialsDelivered: React.FC<IMaterialsDelivered> = props => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const { projectId } = props;
-  const toast = useToast();
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
   const tableHeader: TTableHeader[] = [
@@ -59,7 +58,6 @@ const MaterialsDelivered: React.FC<IMaterialsDelivered> = props => {
   const getMaterialsDelivered = async () => {
     const response = await getProjectMaterialsDelivered({
       projectId,
-      toast,
       appStrings,
     });
     setTableData(response);
@@ -73,7 +71,6 @@ const MaterialsDelivered: React.FC<IMaterialsDelivered> = props => {
     const response = await getProjectMaterialDeliveredById({
       projectId,
       projectMaterialDeliveredId,
-      toast,
       appStrings,
     });
     if (response) {
@@ -96,14 +93,12 @@ const MaterialsDelivered: React.FC<IMaterialsDelivered> = props => {
       ? await updateProjectMaterialDelivered({
           projectId,
           projectMaterialDelivered,
-          toast,
           appStrings,
           successCallback,
         })
       : await createProjectMaterialDelivered({
           projectId,
           projectMaterialDelivered,
-          toast,
           appStrings,
           successCallback,
         });

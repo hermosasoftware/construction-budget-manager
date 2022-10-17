@@ -1,6 +1,6 @@
 import styles from './ProjectDetail.module.css';
 import { useEffect, useState } from 'react';
-import { Box, Flex, useToast } from '@chakra-ui/react';
+import { Box, Flex } from '@chakra-ui/react';
 import { useParams } from 'react-router-dom';
 import TabGroup from '../../common/TabGroup/TabGroup';
 import { getProjectById } from '../../../services/ProjectService';
@@ -15,13 +15,12 @@ export default function Projects() {
   const [selectedTab, setSelectedTab] = useState('initial');
   const [project, setProject] = useState<IProject>();
   const projectId = useParams().id as string;
-  const toast = useToast();
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
   useEffect(() => {
     let abortController = new AbortController();
     const getProjectbyId = async () => {
-      const response = await getProjectById({ projectId, toast, appStrings });
+      const response = await getProjectById({ projectId, appStrings });
       if (response) setProject(response);
     };
     getProjectbyId();

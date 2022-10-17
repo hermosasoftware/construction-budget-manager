@@ -10,10 +10,10 @@ import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
 import { IProjectMaterialPlan } from '../types/projectMaterialPlan';
 import { IService } from '../types/service';
+import { toastSuccess, toastError } from '../utils/toast';
 
 export const getProjectMaterialsPlan = async ({
   projectId,
-  toast,
   appStrings,
   successCallback,
   errorCallback,
@@ -38,14 +38,7 @@ export const getProjectMaterialsPlan = async ({
     let errorMessage = appStrings.genericError;
     if (error instanceof FirebaseError) errorMessage = error.message;
 
-    toast({
-      title: appStrings.getInformationError,
-      description: errorMessage,
-      status: 'error',
-      duration: 5000,
-      isClosable: true,
-      position: 'top-right',
-    });
+    toastError(appStrings.getInformationError, errorMessage);
 
     errorCallback && errorCallback();
     return [];
@@ -55,7 +48,6 @@ export const getProjectMaterialsPlan = async ({
 export const getProjectMaterialPlanById = async ({
   projectId,
   projectMaterialPlanId,
-  toast,
   appStrings,
   successCallback,
   errorCallback,
@@ -84,14 +76,7 @@ export const getProjectMaterialPlanById = async ({
     let errorMessage = appStrings.genericError;
     if (error instanceof FirebaseError) errorMessage = error.message;
 
-    toast({
-      title: appStrings.getInformationError,
-      description: errorMessage,
-      status: 'error',
-      duration: 5000,
-      isClosable: true,
-      position: 'top-right',
-    });
+    toastError(appStrings.getInformationError, errorMessage);
 
     errorCallback && errorCallback();
     return null;
@@ -101,7 +86,6 @@ export const getProjectMaterialPlanById = async ({
 export const createProjectMaterialPlan = async ({
   projectId,
   projectMaterialPlan,
-  toast,
   appStrings,
   successCallback,
   errorCallback,
@@ -123,14 +107,7 @@ export const createProjectMaterialPlan = async ({
       id: result.id,
     } as IProjectMaterialPlan;
 
-    toast({
-      title: appStrings.success,
-      description: appStrings.saveSuccess,
-      status: 'success',
-      duration: 3000,
-      isClosable: true,
-      position: 'top-right',
-    });
+    toastSuccess(appStrings.success, appStrings.saveSuccess);
 
     successCallback && successCallback();
     return data;
@@ -138,14 +115,7 @@ export const createProjectMaterialPlan = async ({
     let errorMessage = appStrings.genericError;
     if (error instanceof FirebaseError) errorMessage = error.message;
 
-    toast({
-      title: appStrings.saveError,
-      description: errorMessage,
-      status: 'error',
-      duration: 5000,
-      isClosable: true,
-      position: 'top-right',
-    });
+    toastError(appStrings.saveError, errorMessage);
 
     errorCallback && errorCallback();
     return null;
@@ -155,7 +125,6 @@ export const createProjectMaterialPlan = async ({
 export const updateProjectMaterialPlan = async ({
   projectId,
   projectMaterialPlan,
-  toast,
   appStrings,
   successCallback,
   errorCallback,
@@ -168,28 +137,14 @@ export const updateProjectMaterialPlan = async ({
     const userRef = doc(db, 'projects', projectId, 'projectMaterialsPlan', id);
     await setDoc(userRef, rest);
 
-    toast({
-      title: appStrings.success,
-      description: appStrings.saveSuccess,
-      status: 'success',
-      duration: 3000,
-      isClosable: true,
-      position: 'top-right',
-    });
+    toastSuccess(appStrings.success, appStrings.saveSuccess);
 
     successCallback && successCallback();
   } catch (error) {
     let errorMessage = appStrings.genericError;
     if (error instanceof FirebaseError) errorMessage = error.message;
 
-    toast({
-      title: appStrings.saveError,
-      description: errorMessage,
-      status: 'error',
-      duration: 5000,
-      isClosable: true,
-      position: 'top-right',
-    });
+    toastError(appStrings.saveError, errorMessage);
 
     errorCallback && errorCallback();
   }

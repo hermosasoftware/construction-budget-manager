@@ -1,6 +1,6 @@
 import styles from './ExpensesReport.module.css';
 import React, { useEffect, useState } from 'react';
-import { Flex, Heading, useToast } from '@chakra-ui/react';
+import { Flex, Heading } from '@chakra-ui/react';
 import * as yup from 'yup';
 import Button from '../../../common/Button/Button';
 import Modal from '../../../common/Modal/Modal';
@@ -38,7 +38,6 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const { projectId } = props;
-  const toast = useToast();
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
   const tableHeader: TTableHeader[] = [
@@ -51,7 +50,7 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
   ];
 
   const getExpenses = async () => {
-    const response = await getProjectExpenses({ projectId, toast, appStrings });
+    const response = await getProjectExpenses({ projectId, appStrings });
     setTableData(response);
   };
 
@@ -63,7 +62,6 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
     const response = await getProjectExpenseById({
       projectId,
       projectExpenseId,
-      toast,
       appStrings,
     });
     if (response) {
@@ -84,14 +82,12 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
       ? await updateProjectExpense({
           projectId,
           projectExpense,
-          toast,
           appStrings,
           successCallback,
         })
       : await createProjectExpense({
           projectId,
           projectExpense,
-          toast,
           appStrings,
           successCallback,
         });
