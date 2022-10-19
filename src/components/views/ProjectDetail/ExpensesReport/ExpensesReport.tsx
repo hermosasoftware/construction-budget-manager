@@ -80,19 +80,15 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
       setIsModalOpen(false);
       getExpenses();
     };
+    const serviceCallParameters = {
+      projectId,
+      projectExpense,
+      appStrings,
+      successCallback,
+    };
     projectExpense.id
-      ? await updateProjectExpense({
-          projectId,
-          projectExpense,
-          appStrings,
-          successCallback,
-        })
-      : await createProjectExpense({
-          projectId,
-          projectExpense,
-          appStrings,
-          successCallback,
-        });
+      ? await updateProjectExpense(serviceCallParameters)
+      : await createProjectExpense(serviceCallParameters);
   };
 
   const validationSchema = yup.object().shape({

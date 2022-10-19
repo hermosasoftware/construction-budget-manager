@@ -105,19 +105,15 @@ const InitialPlan: React.FC<IInitialPlan> = props => {
       setIsModalOpen(false);
       getMaterialsPlan();
     };
+    const serviceCallParameters = {
+      projectId,
+      projectMaterialPlan,
+      appStrings,
+      successCallback,
+    };
     projectMaterialPlan.id
-      ? await updateProjectMaterialPlan({
-          projectId,
-          projectMaterialPlan,
-          appStrings,
-          successCallback,
-        })
-      : await createProjectMaterialPlan({
-          projectId,
-          projectMaterialPlan,
-          appStrings,
-          successCallback,
-        });
+      ? await updateProjectMaterialPlan(serviceCallParameters)
+      : await createProjectMaterialPlan(serviceCallParameters);
   };
 
   const validationSchema = yup.object().shape({

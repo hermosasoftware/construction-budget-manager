@@ -74,9 +74,10 @@ export default function Projects() {
       setIsModalOpen(false);
       getProjects(selectedTab);
     };
+    const serviceCallParameters = { project, appStrings, successCallback };
     project.id
-      ? await updateProject({ project, appStrings, successCallback })
-      : await createProject({ project, appStrings, successCallback });
+      ? await updateProject(serviceCallParameters)
+      : await createProject(serviceCallParameters);
   };
 
   const validationSchema = yup.object().shape({

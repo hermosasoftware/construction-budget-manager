@@ -92,19 +92,15 @@ const MaterialsDelivered: React.FC<IMaterialsDelivered> = props => {
       setIsModalOpen(false);
       getMaterialsDelivered();
     };
+    const serviceCallParameters = {
+      projectId,
+      projectMaterialDelivered,
+      appStrings,
+      successCallback,
+    };
     projectMaterialDelivered.id
-      ? await updateProjectMaterialDelivered({
-          projectId,
-          projectMaterialDelivered,
-          appStrings,
-          successCallback,
-        })
-      : await createProjectMaterialDelivered({
-          projectId,
-          projectMaterialDelivered,
-          appStrings,
-          successCallback,
-        });
+      ? await updateProjectMaterialDelivered(serviceCallParameters)
+      : await createProjectMaterialDelivered(serviceCallParameters);
   };
 
   const validationSchema = yup.object().shape({
