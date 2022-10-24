@@ -11,12 +11,17 @@ import {
   doc,
   setDoc,
 } from 'firebase/firestore';
+import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
 import { IProject } from '../types/project';
+import { IService } from '../types/service';
+import { toastSuccess, toastError } from '../utils/toast';
 
-export const getAllProjects = async (): Promise<
-  [String | null, IProject[]]
-> => {
+export const getAllProjects = async ({
+  appStrings,
+  successCallback,
+  errorCallback,
+}: IService) => {
   try {
     const userRef = collection(db, 'projects');
     const result = await getDocs(userRef);
@@ -25,29 +30,45 @@ export const getAllProjects = async (): Promise<
       id: doc.id,
     })) as IProject[];
 
-    return [null, data];
+    successCallback && successCallback(data);
   } catch (error) {
-    return [error + '', []];
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.getInformationError, errorMessage);
+
+    errorCallback && errorCallback();
   }
 };
 
-export const getProjectById = async (
-  id: string,
-): Promise<[String | null, IProject | null]> => {
+export const getProjectById = async ({
+  projectId,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: { projectId: string } & IService) => {
   try {
-    const userRef = doc(db, 'projects', id);
+    const userRef = doc(db, 'projects', projectId);
     const result = await getDoc(userRef);
     const data = { ...result.data(), id: result.id } as IProject;
 
-    return [null, data];
+    successCallback && successCallback(data);
   } catch (error) {
-    return [error + '', null];
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.getInformationError, errorMessage);
+
+    errorCallback && errorCallback();
   }
 };
 
-export const getProjectsByStatus = async (
-  status: string,
-): Promise<[String | null, IProject[]]> => {
+export const getProjectsByStatus = async ({
+  status,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: { status: string } & IService) => {
   try {
     const userRef = query(
       collection(db, 'projects'),
@@ -58,15 +79,24 @@ export const getProjectsByStatus = async (
       ...doc.data(),
       id: doc.id,
     })) as IProject[];
-    return [null, data];
+
+    successCallback && successCallback(data);
   } catch (error) {
-    return [error + '', []];
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.getInformationError, errorMessage);
+
+    errorCallback && errorCallback();
   }
 };
 
-export const getProjectsByName = async (
-  name: String,
-): Promise<[String | null, IProject[]]> => {
+export const getProjectsByName = async ({
+  name,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: { name: String } & IService) => {
   try {
     const userRef = query(
       collection(db, 'projects'),
@@ -80,38 +110,62 @@ export const getProjectsByName = async (
       id: doc.id,
     })) as IProject[];
 
-    return [null, data];
+    successCallback && successCallback(data);
   } catch (error) {
-    return [error + '', []];
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.getInformationError, errorMessage);
+
+    errorCallback && errorCallback();
   }
 };
 
-export const createProject = async (
-  project: IProject,
-): Promise<String | null> => {
+export const createProject = async ({
+  project,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: { project: IProject } & IService) => {
   try {
     const { id, ...rest } = project;
     const userRef = collection(db, 'projects');
     const result = await addDoc(userRef, rest);
+    const data = { ...project, id: result.id } as IProject;
 
-    console.log(result.id);
+    toastSuccess(appStrings.success, appStrings.saveSuccess);
 
-    return null;
+    successCallback && successCallback(data);
   } catch (error) {
-    return error + '';
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.saveError, errorMessage);
+
+    errorCallback && errorCallback();
   }
 };
 
-export const updateProject = async (
-  project: IProject,
-): Promise<String | null> => {
+export const updateProject = async ({
+  project,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: { project: IProject } & IService) => {
   try {
     const { id, ...rest } = project;
     const userRef = doc(db, 'projects', id);
     await setDoc(userRef, rest);
 
-    return null;
+    toastSuccess(appStrings.success, appStrings.saveSuccess);
+
+    successCallback && successCallback();
   } catch (error) {
-    return error + '';
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.saveError, errorMessage);
+
+    errorCallback && errorCallback();
   }
 };

@@ -6,12 +6,18 @@ import {
   setDoc,
   getDoc,
 } from 'firebase/firestore';
+import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
 import { IProjectExpense } from '../types/projectExpense';
+import { IService } from '../types/service';
+import { toastSuccess, toastError } from '../utils/toast';
 
-export const getProjectExpenses = async (
-  projectId: string,
-): Promise<[String | null, IProjectExpense[]]> => {
+export const getProjectExpenses = async ({
+  projectId,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: { projectId: string } & IService) => {
   try {
     const userRef = collection(db, 'projects', projectId, 'projectExpenses');
     const result = await getDocs(userRef);
@@ -21,16 +27,27 @@ export const getProjectExpenses = async (
       date: doc.data().date.toDate(),
     })) as IProjectExpense[];
 
-    return [null, data];
+    successCallback && successCallback(data);
   } catch (error) {
-    return [error + '', []];
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.getInformationError, errorMessage);
+
+    errorCallback && errorCallback();
   }
 };
 
-export const getProjectExpenseById = async (
-  projectId: string,
-  projectExpenseId: string,
-): Promise<[String | null, IProjectExpense | null]> => {
+export const getProjectExpenseById = async ({
+  projectId,
+  projectExpenseId,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: {
+  projectId: string;
+  projectExpenseId: string;
+} & IService) => {
   try {
     const userRef = doc(
       db,
@@ -46,40 +63,67 @@ export const getProjectExpenseById = async (
       date: result.data()?.date.toDate(),
     } as IProjectExpense;
 
-    return [null, data];
+    successCallback && successCallback(data);
   } catch (error) {
-    return [error + '', null];
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.getInformationError, errorMessage);
+
+    errorCallback && errorCallback();
   }
 };
 
-export const createProjectExpense = async (
-  projectId: string,
-  projectExpense: IProjectExpense,
-): Promise<String | null> => {
+export const createProjectExpense = async ({
+  projectId,
+  projectExpense,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: {
+  projectId: string;
+  projectExpense: IProjectExpense;
+} & IService) => {
   try {
     const { id, ...rest } = projectExpense;
     const userRef = collection(db, 'projects', projectId, 'projectExpenses');
     const result = await addDoc(userRef, rest);
+    const data = { ...projectExpense, id: result.id } as IProjectExpense;
 
-    console.log(result.id);
+    toastSuccess(appStrings.success, appStrings.saveSuccess);
 
-    return null;
+    successCallback && successCallback(data);
   } catch (error) {
-    return error + '';
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.saveError, errorMessage);
+
+    errorCallback && errorCallback();
   }
 };
 
-export const updateProjectExpense = async (
-  projectId: string,
-  projectExpense: IProjectExpense,
-): Promise<String | null> => {
+export const updateProjectExpense = async ({
+  projectId,
+  projectExpense,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: { projectId: string; projectExpense: IProjectExpense } & IService) => {
   try {
     const { id, ...rest } = projectExpense;
     const userRef = doc(db, 'projects', projectId, 'projectExpenses', id);
     await setDoc(userRef, rest);
 
-    return null;
+    toastSuccess(appStrings.success, appStrings.saveSuccess);
+
+    successCallback && successCallback();
   } catch (error) {
-    return error + '';
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.saveError, errorMessage);
+
+    errorCallback && errorCallback();
   }
 };

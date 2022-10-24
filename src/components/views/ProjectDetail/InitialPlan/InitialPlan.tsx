@@ -1,6 +1,6 @@
 import styles from './InitialPlan.module.css';
-import React, { useCallback, useEffect, useState } from 'react';
-import { Flex, Heading, useToast } from '@chakra-ui/react';
+import React, { useEffect, useState } from 'react';
+import { Flex, Heading } from '@chakra-ui/react';
 import * as yup from 'yup';
 import Button from '../../../common/Button/Button';
 import Modal from '../../../common/Modal/Modal';
@@ -42,7 +42,6 @@ const InitialPlan: React.FC<IInitialPlan> = props => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const { projectId } = props;
-  const toast = useToast();
   const appStrings = useAppSelector(state => state.settings.appStrings);
   const materials = useAppSelector(state => state.materials.materials);
 
@@ -54,31 +53,30 @@ const InitialPlan: React.FC<IInitialPlan> = props => {
     { name: 'subtotal', value: appStrings.subtotal, isGreen: true },
   ];
 
-  const getMaterialsPlan = useCallback(async () => {
-    const [errors, response] = await getProjectMaterialsPlan(projectId);
-    if (!errors) {
+  const getMaterialsPlan = async () => {
+    const successCallback = (response: IProjectMaterialPlan[]) =>
       setTableData(response);
-    } else {
-      toast({
-        title: 'Error al extraer la informacion',
-        description: errors + '',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-        position: 'top-right',
-      });
-    }
-  }, [projectId, toast]);
+    await getProjectMaterialsPlan({
+      projectId,
+      appStrings,
+      successCallback,
+    });
+  };
 
-  const editButton = async (id: string) => {
-    const [errors, response] = await getProjectMaterialPlanById(projectId, id);
-    if (!errors && response) {
+  const editButton = async (projectMaterialPlanId: string) => {
+    const successCallback = (response: IProjectMaterialPlan) => {
       setSelectedItem({
         ...response,
         name: { value: response.id, label: response.name },
       });
       setIsModalOpen(true);
-    }
+    };
+    await getProjectMaterialPlanById({
+      projectId,
+      projectMaterialPlanId,
+      appStrings,
+      successCallback,
+    });
   };
 
   const deleteButton = (id: string) => {};
@@ -102,12 +100,20 @@ const InitialPlan: React.FC<IInitialPlan> = props => {
   const handleOnSubmit = async (data: IItem) => {
     const { name, ...rest } = data;
     const projectMaterialPlan = { ...rest, name: name.label };
+    const successCallback = () => {
+      setSelectedItem(initialSelectedItemData);
+      setIsModalOpen(false);
+      getMaterialsPlan();
+    };
+    const serviceCallParameters = {
+      projectId,
+      projectMaterialPlan,
+      appStrings,
+      successCallback,
+    };
     projectMaterialPlan.id
-      ? await updateProjectMaterialPlan(projectId, projectMaterialPlan)
-      : await createProjectMaterialPlan(projectId, projectMaterialPlan);
-    setSelectedItem(initialSelectedItemData);
-    setIsModalOpen(false);
-    getMaterialsPlan();
+      ? await updateProjectMaterialPlan(serviceCallParameters)
+      : await createProjectMaterialPlan(serviceCallParameters);
   };
 
   const validationSchema = yup.object().shape({
@@ -126,7 +132,7 @@ const InitialPlan: React.FC<IInitialPlan> = props => {
     return () => {
       abortController.abort();
     };
-  }, [getMaterialsPlan, projectId, toast]);
+  }, []);
 
   return (
     <div className={`${styles.operations_container}`}>

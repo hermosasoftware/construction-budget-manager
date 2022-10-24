@@ -6,12 +6,18 @@ import {
   setDoc,
   getDoc,
 } from 'firebase/firestore';
+import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
 import { IProjectMaterialDelivered } from '../types/projectMaterialDelivered';
+import { IService } from '../types/service';
+import { toastSuccess, toastError } from '../utils/toast';
 
-export const getProjectMaterialsDelivered = async (
-  projectId: string,
-): Promise<[String | null, IProjectMaterialDelivered[]]> => {
+export const getProjectMaterialsDelivered = async ({
+  projectId,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: { projectId: string } & IService) => {
   try {
     const userRef = collection(
       db,
@@ -27,16 +33,27 @@ export const getProjectMaterialsDelivered = async (
       difference: doc.data().quantity - doc.data().delivered,
     })) as IProjectMaterialDelivered[];
 
-    return [null, data];
+    successCallback && successCallback(data);
   } catch (error) {
-    return [error + '', []];
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.getInformationError, errorMessage);
+
+    errorCallback && errorCallback();
   }
 };
 
-export const getProjectMaterialDeliveredById = async (
-  projectId: string,
-  projectMaterialDeliveredId: string,
-): Promise<[String | null, IProjectMaterialDelivered | null]> => {
+export const getProjectMaterialDeliveredById = async ({
+  projectId,
+  projectMaterialDeliveredId,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: {
+  projectId: string;
+  projectMaterialDeliveredId: string;
+} & IService) => {
   try {
     const userRef = doc(
       db,
@@ -52,16 +69,27 @@ export const getProjectMaterialDeliveredById = async (
       subtotal: result.data()?.cost * result.data()?.quantity,
     } as IProjectMaterialDelivered;
 
-    return [null, data];
+    successCallback && successCallback(data);
   } catch (error) {
-    return [error + '', null];
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.getInformationError, errorMessage);
+
+    errorCallback && errorCallback();
   }
 };
 
-export const createProjectMaterialDelivered = async (
-  projectId: string,
-  projectMaterialDelivered: IProjectMaterialDelivered,
-): Promise<String | null> => {
+export const createProjectMaterialDelivered = async ({
+  projectId,
+  projectMaterialDelivered,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: {
+  projectId: string;
+  projectMaterialDelivered: IProjectMaterialDelivered;
+} & IService) => {
   try {
     const { id, subtotal, difference, ...rest } = projectMaterialDelivered;
     const userRef = collection(
@@ -71,19 +99,34 @@ export const createProjectMaterialDelivered = async (
       'projectMaterialsDelivered',
     );
     const result = await addDoc(userRef, rest);
+    const data = {
+      ...projectMaterialDelivered,
+      id: result.id,
+    } as IProjectMaterialDelivered;
 
-    console.log(result.id);
+    toastSuccess(appStrings.success, appStrings.saveSuccess);
 
-    return null;
+    successCallback && successCallback(data);
   } catch (error) {
-    return error + '';
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.saveError, errorMessage);
+
+    errorCallback && errorCallback();
   }
 };
 
-export const updateProjectMaterialDelivered = async (
-  projectId: string,
-  projectMaterialDelivered: IProjectMaterialDelivered,
-): Promise<String | null> => {
+export const updateProjectMaterialDelivered = async ({
+  projectId,
+  projectMaterialDelivered,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: {
+  projectId: string;
+  projectMaterialDelivered: IProjectMaterialDelivered;
+} & IService) => {
   try {
     const { id, subtotal, difference, ...rest } = projectMaterialDelivered;
     const userRef = doc(
@@ -95,8 +138,15 @@ export const updateProjectMaterialDelivered = async (
     );
     await setDoc(userRef, rest);
 
-    return null;
+    toastSuccess(appStrings.success, appStrings.saveSuccess);
+
+    successCallback && successCallback();
   } catch (error) {
-    return error + '';
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.saveError, errorMessage);
+
+    errorCallback && errorCallback();
   }
 };

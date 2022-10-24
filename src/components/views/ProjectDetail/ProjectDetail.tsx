@@ -1,6 +1,6 @@
 import styles from './ProjectDetail.module.css';
 import { useEffect, useState } from 'react';
-import { Box, Flex, useToast } from '@chakra-ui/react';
+import { Box, Flex } from '@chakra-ui/react';
 import { useParams } from 'react-router-dom';
 import TabGroup from '../../common/TabGroup/TabGroup';
 import { getProjectById } from '../../../services/ProjectService';
@@ -15,31 +15,19 @@ export default function Projects() {
   const [selectedTab, setSelectedTab] = useState('initial');
   const [project, setProject] = useState<IProject>();
   const projectId = useParams().id as string;
-  const toast = useToast();
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
   useEffect(() => {
     let abortController = new AbortController();
     const getProjectbyId = async () => {
-      const [errors, resProject] = await getProjectById(projectId);
-      if (!errors && resProject) {
-        setProject(resProject);
-      } else {
-        toast({
-          title: 'Error al extraer la informacion',
-          description: errors + '',
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-          position: 'top-right',
-        });
-      }
+      const successCallback = (response: IProject) => setProject(response);
+      await getProjectById({ projectId, appStrings, successCallback });
     };
     getProjectbyId();
     return () => {
       abortController.abort();
     };
-  }, [projectId, toast]);
+  }, [projectId]);
 
   return (
     <>

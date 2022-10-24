@@ -1,6 +1,6 @@
 import styles from './Projects.module.css';
-import { useCallback, useEffect, useState } from 'react';
-import { Box, Flex, Heading, useToast } from '@chakra-ui/react';
+import { useEffect, useState } from 'react';
+import { Box, Flex, Heading } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import * as yup from 'yup';
 import Button from '../../common/Button/Button';
@@ -36,7 +36,6 @@ export default function Projects() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const appStrings = useAppSelector(state => state.settings.appStrings);
-  const toast = useToast();
   const navigate = useNavigate();
   const tableHeader: TTableHeader[] = [
     { name: 'name', value: appStrings.name },
@@ -44,24 +43,10 @@ export default function Projects() {
     { name: 'location', value: appStrings.location },
   ];
 
-  const getProjects = useCallback(
-    async (status: string) => {
-      const [errors, response] = await getProjectsByStatus(status);
-      if (!errors) {
-        setTableData(response);
-      } else {
-        toast({
-          title: 'Error al extraer la informacion',
-          description: errors + '',
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-          position: 'top-right',
-        });
-      }
-    },
-    [toast],
-  );
+  const getProjects = async (status: string) => {
+    const successCallback = (response: IProject[]) => setTableData(response);
+    await getProjectsByStatus({ status, appStrings, successCallback });
+  };
 
   const handleSearch = async (event: { target: { value: string } }) => {
     setSearchTerm(event.target.value.toUpperCase());
@@ -73,21 +58,26 @@ export default function Projects() {
     navigate(`/project-detail/${projectId}`);
   };
 
-  const editButton = async (id: string) => {
-    const [errors, response] = await getProjectById(id);
-    if (!errors && response) {
+  const editButton = async (projectId: string) => {
+    const successCallback = (response: IProject) => {
       setSelectedItem(response);
       setIsModalOpen(true);
-    }
+    };
+    await getProjectById({ projectId, appStrings, successCallback });
   };
 
   const deleteButton = (id: string) => {};
 
   const handleOnSubmit = async (project: IProject) => {
-    project.id ? await updateProject(project) : await createProject(project);
-    setSelectedItem(initialSelectedItemData);
-    setIsModalOpen(false);
-    getProjects(selectedTab);
+    const successCallback = () => {
+      setSelectedItem(initialSelectedItemData);
+      setIsModalOpen(false);
+      getProjects(selectedTab);
+    };
+    const serviceCallParameters = { project, appStrings, successCallback };
+    project.id
+      ? await updateProject(serviceCallParameters)
+      : await createProject(serviceCallParameters);
   };
 
   const validationSchema = yup.object().shape({
@@ -103,12 +93,12 @@ export default function Projects() {
 
   useEffect(() => {
     let abortController = new AbortController();
-
     getProjects(selectedTab);
     return () => {
       abortController.abort();
     };
-  }, [getProjects, selectedTab, toast]);
+  }, [selectedTab]);
+
   return (
     <>
       <Sidebar />

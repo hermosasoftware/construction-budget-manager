@@ -1,6 +1,6 @@
 import styles from './ExpensesReport.module.css';
-import React, { useCallback, useEffect, useState } from 'react';
-import { Flex, Heading, useToast } from '@chakra-ui/react';
+import React, { useEffect, useState } from 'react';
+import { Flex, Heading } from '@chakra-ui/react';
 import * as yup from 'yup';
 import Button from '../../../common/Button/Button';
 import Modal from '../../../common/Modal/Modal';
@@ -38,7 +38,6 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const { projectId } = props;
-  const toast = useToast();
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
   const tableHeader: TTableHeader[] = [
@@ -50,43 +49,46 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
     { name: 'amount', value: appStrings.amount, isGreen: true },
   ];
 
-  const getExpenses = useCallback(async () => {
-    const [errors, response] = await getProjectExpenses(projectId);
-    if (!errors) {
+  const getExpenses = async () => {
+    const successCallback = (response: IProjectExpense[]) =>
       setTableData(response);
-    } else {
-      toast({
-        title: 'Error al extraer la informacion',
-        description: errors + '',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-        position: 'top-right',
-      });
-    }
-  }, [projectId, toast]);
+    await getProjectExpenses({ projectId, appStrings, successCallback });
+  };
 
   const handleSearch = async (event: { target: { value: string } }) => {
     setSearchTerm(event.target.value.toUpperCase());
   };
 
-  const editButton = async (id: string) => {
-    const [errors, response] = await getProjectExpenseById(projectId, id);
-    if (!errors && response) {
+  const editButton = async (projectExpenseId: string) => {
+    const successCallback = (response: IProjectExpense) => {
       setSelectedItem(response);
       setIsModalOpen(true);
-    }
+    };
+    await getProjectExpenseById({
+      projectId,
+      projectExpenseId,
+      appStrings,
+      successCallback,
+    });
   };
 
   const deleteButton = (id: string) => {};
 
   const handleOnSubmit = async (projectExpense: IProjectExpense) => {
+    const successCallback = () => {
+      setSelectedItem(initialSelectedItemData);
+      setIsModalOpen(false);
+      getExpenses();
+    };
+    const serviceCallParameters = {
+      projectId,
+      projectExpense,
+      appStrings,
+      successCallback,
+    };
     projectExpense.id
-      ? await updateProjectExpense(projectId, projectExpense)
-      : await createProjectExpense(projectId, projectExpense);
-    setSelectedItem(initialSelectedItemData);
-    setIsModalOpen(false);
-    getExpenses();
+      ? await updateProjectExpense(serviceCallParameters)
+      : await createProjectExpense(serviceCallParameters);
   };
 
   const validationSchema = yup.object().shape({
@@ -100,12 +102,11 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
 
   useEffect(() => {
     let abortController = new AbortController();
-
     getExpenses();
     return () => {
       abortController.abort();
     };
-  }, [getExpenses, projectId, toast]);
+  }, []);
 
   return (
     <div className={`${styles.operations_container}`}>

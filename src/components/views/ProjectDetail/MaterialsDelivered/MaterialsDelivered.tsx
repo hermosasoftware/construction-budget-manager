@@ -1,6 +1,6 @@
 import styles from './MaterialsDelivered.module.css';
-import { Flex, Heading, useToast } from '@chakra-ui/react';
-import React, { useCallback, useEffect, useState } from 'react';
+import { Flex, Heading } from '@chakra-ui/react';
+import React, { useEffect, useState } from 'react';
 import * as yup from 'yup';
 import Button from '../../../common/Button/Button';
 import Modal from '../../../common/Modal/Modal';
@@ -41,7 +41,6 @@ const MaterialsDelivered: React.FC<IMaterialsDelivered> = props => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const { projectId } = props;
-  const toast = useToast();
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
   const tableHeader: TTableHeader[] = [
@@ -56,35 +55,31 @@ const MaterialsDelivered: React.FC<IMaterialsDelivered> = props => {
     { name: 'difference', value: appStrings.difference },
   ];
 
-  const getMaterialsDelivered = useCallback(async () => {
-    const [errors, response] = await getProjectMaterialsDelivered(projectId);
-    if (!errors) {
+  const getMaterialsDelivered = async () => {
+    const successCallback = (response: IProjectMaterialDelivered[]) =>
       setTableData(response);
-    } else {
-      toast({
-        title: 'Error al extraer la informacion',
-        description: errors + '',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-        position: 'top-right',
-      });
-    }
-  }, [projectId, toast]);
+    await getProjectMaterialsDelivered({
+      projectId,
+      appStrings,
+      successCallback,
+    });
+  };
 
   const handleSearch = async (event: { target: { value: string } }) => {
     setSearchTerm(event.target.value.toUpperCase());
   };
 
-  const editButton = async (id: string) => {
-    const [errors, response] = await getProjectMaterialDeliveredById(
-      projectId,
-      id,
-    );
-    if (!errors && response) {
+  const editButton = async (projectMaterialDeliveredId: string) => {
+    const successCallback = (response: IProjectMaterialDelivered) => {
       setSelectedItem(response);
       setIsModalOpen(true);
-    }
+    };
+    await getProjectMaterialDeliveredById({
+      projectId,
+      projectMaterialDeliveredId,
+      appStrings,
+      successCallback,
+    });
   };
 
   const deleteButton = (id: string) => {};
@@ -92,18 +87,20 @@ const MaterialsDelivered: React.FC<IMaterialsDelivered> = props => {
   const handleOnSubmit = async (
     projectMaterialDelivered: IProjectMaterialDelivered,
   ) => {
+    const successCallback = () => {
+      setSelectedItem(initialSelectedItemData);
+      setIsModalOpen(false);
+      getMaterialsDelivered();
+    };
+    const serviceCallParameters = {
+      projectId,
+      projectMaterialDelivered,
+      appStrings,
+      successCallback,
+    };
     projectMaterialDelivered.id
-      ? await updateProjectMaterialDelivered(
-          projectId,
-          projectMaterialDelivered,
-        )
-      : await createProjectMaterialDelivered(
-          projectId,
-          projectMaterialDelivered,
-        );
-    setSelectedItem(initialSelectedItemData);
-    setIsModalOpen(false);
-    getMaterialsDelivered();
+      ? await updateProjectMaterialDelivered(serviceCallParameters)
+      : await createProjectMaterialDelivered(serviceCallParameters);
   };
 
   const validationSchema = yup.object().shape({
@@ -122,7 +119,7 @@ const MaterialsDelivered: React.FC<IMaterialsDelivered> = props => {
     return () => {
       abortController.abort();
     };
-  }, [getMaterialsDelivered, projectId, toast]);
+  }, []);
 
   return (
     <div className={`${styles.operations_container}`}>
