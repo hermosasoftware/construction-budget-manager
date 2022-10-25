@@ -5,9 +5,9 @@ import * as yup from 'yup';
 import Button from '../../../../common/Button/Button';
 import Modal from '../../../../common/Modal/Modal';
 import SearchInput from '../../../../common/SearchInput/SearchInput';
-import TableView, {
+import MaterialsTableView, {
   TTableHeader,
-} from '../../../../common/TableView/TableView';
+} from '../../../../layout/MaterialsTableView/MaterialsTableView';
 import {
   createProjectMaterialPlan,
   getProjectMaterialPlanById,
@@ -18,6 +18,7 @@ import { IProjectMaterialPlan } from '../../../../../types/projectMaterialPlan';
 import Form, { Input } from '../../../../common/Form';
 import { useAppSelector } from '../../../../../redux/hooks';
 import SearchSelect from '../../../../common/Form/Elements/SearchSelect';
+import { IMaterialBreakdown } from '../../../../../types/collections';
 
 interface IMaterialPlan {
   projectId: string;
@@ -37,7 +38,7 @@ const initialSelectedItemData = {
 };
 
 const MaterialPlan: React.FC<IMaterialPlan> = props => {
-  const [tableData, setTableData] = useState<IProjectMaterialPlan[]>([]);
+  const [tableData, setTableData] = useState<IMaterialBreakdown[]>([]);
   const [selectedItem, setSelectedItem] = useState<IItem>(
     initialSelectedItemData,
   );
@@ -56,7 +57,7 @@ const MaterialPlan: React.FC<IMaterialPlan> = props => {
   ];
 
   const getMaterialsPlan = async () => {
-    const successCallback = (response: IProjectMaterialPlan[]) =>
+    const successCallback = (response: IMaterialBreakdown[]) =>
       setTableData(response);
     await getProjectMaterialsPlan({
       projectId,
@@ -200,11 +201,12 @@ const MaterialPlan: React.FC<IMaterialPlan> = props => {
           </Modal>
         </div>
       </Flex>
-      <TableView
+      <MaterialsTableView
         headers={tableHeader}
         items={tableData}
         filter={value =>
-          searchTerm === '' || value.name.toUpperCase().includes(searchTerm)
+          searchTerm === '' ||
+          value.material.name.toUpperCase().includes(searchTerm)
         }
         onClickEdit={id => editButton(id)}
         onClickDelete={id => deleteButton(id)}

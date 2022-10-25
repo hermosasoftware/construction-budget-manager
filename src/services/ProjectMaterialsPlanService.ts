@@ -5,6 +5,7 @@ import {
   getDoc,
   doc,
   setDoc,
+  query,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
@@ -32,7 +33,30 @@ export const getProjectMaterialsPlan = async ({
       subtotal: doc.data().cost * doc.data().quantity,
     })) as IProjectMaterialPlan[];
 
-    successCallback && successCallback(data);
+    let allMaterials = null;
+    let submaterialsPromise = data.map(async elem => {
+      const materialQ = query(
+        collection(
+          db,
+          'projects',
+          projectId,
+          'projectMaterialsPlan',
+          elem.id,
+          'subMaterials',
+        ),
+      );
+      const subMaterials = await getDocs(materialQ);
+      const data = subMaterials.docs.map(doc => ({
+        ...doc.data(),
+        id: doc.id,
+      }));
+      return { id: elem.id, material: elem, subMaterials: data };
+    });
+    await Promise.all(submaterialsPromise).then(resul => {
+      allMaterials = resul;
+    });
+
+    successCallback && successCallback(allMaterials);
   } catch (error) {
     let errorMessage = appStrings.genericError;
     if (error instanceof FirebaseError) errorMessage = error.message;
