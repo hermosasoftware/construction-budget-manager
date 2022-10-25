@@ -21,6 +21,7 @@ export const mavTheme = extendTheme({
     black: '#2D3748',
     success: '#38A169',
     light_success: '#C6F6D5',
+    dark_success: '#276749',
     primary: {
       50: '#00000015',
       500: '#000',

@@ -13,6 +13,7 @@ export type TTab = {
 interface ITabGroup extends IStyledComponent {
   tabs: Array<TTab>;
   selectionType?: 'single' | 'multiple';
+  variant?: 'rounded' | 'default';
   onSelectedTabChange?: (activeTabs: Array<string>) => void;
 }
 
@@ -28,6 +29,7 @@ const TabGroup: React.FC<ITabGroup> = props => {
   const {
     tabs = [],
     selectionType = 'single',
+    variant = 'default',
     onSelectedTabChange,
     className,
     style,
@@ -68,7 +70,7 @@ const TabGroup: React.FC<ITabGroup> = props => {
           key={`tab-group-option-${tab.id}`}
           role="tab"
           className={`${styles.tab_group__option} ${
-            toggles[tab.id] ? styles.active : ''
+            toggles[tab.id] ? styles?.[variant] : ''
           }`}
           onClick={() => handleTabClick(tab.id)}
         >

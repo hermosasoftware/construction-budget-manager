@@ -4,7 +4,7 @@
 
 .tab_group__option {
   background-color: transparent;
-  padding: calc(var(--padding-vertical-md) * 0.8) var(--padding-vertical-lg);
+  padding: calc(var(--padding-vertical-sm) * 0.8) var(--padding-vertical-md);
   cursor: pointer;
   border-bottom: 2px solid transparent;
 }
@@ -15,10 +15,19 @@
   line-height: var(--line-height-md);
 }
 
-.active {
+.default {
   border-bottom-color: var(--chakra-colors-success);
 }
 
-.active > p {
+.default > p {
   color: var(--chakra-colors-success);
+}
+
+.rounded {
+  background-color: var(--chakra-colors-light_success);
+  border-radius: 20px;
+}
+
+.rounded > p {
+  color: var(--chakra-colors-dark_success);
 }
