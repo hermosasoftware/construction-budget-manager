@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../../redux/hooks';
 import BrandPoster from '../../common/BrandPoster/BrandPoster';
-import ThirdPartyAuth from '../../common/ThirdPartyAuth/ThirdPartyAuth';
 import LoginFormEmail, {
   ILoginFormEmailData,
 } from '../../forms/LoginForm/LoginFormEmail';
@@ -86,7 +85,6 @@ const LogIn: React.FC<ILogin> = props => {
               onSubmit={handleOnPasswordSubmit}
             />
           )}
-          <ThirdPartyAuth className={styles.login__third_parties} />
         </div>
       </div>
     </div>

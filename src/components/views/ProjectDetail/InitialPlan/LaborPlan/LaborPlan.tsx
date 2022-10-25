@@ -128,7 +128,7 @@ const LaborPlan: React.FC<ILaborPlan> = props => {
             }}
           >
             <Heading as="h2" size="lg">
-              {selectedItem.id ? appStrings.editLabor : appStrings.createLabor}
+              {selectedItem.id ? appStrings.editLabor : appStrings.addLabor}
             </Heading>
             <Form
               id="project-form"

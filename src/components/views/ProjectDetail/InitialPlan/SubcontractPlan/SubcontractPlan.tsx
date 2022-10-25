@@ -129,7 +129,7 @@ const SubcontractPlan: React.FC<ISubcontractPlan> = props => {
             <Heading as="h2" size="lg">
               {selectedItem.id
                 ? appStrings.editSubcontract
-                : appStrings.createSubcontract}
+                : appStrings.addSubcontract}
             </Heading>
             <Form
               id="project-form"
