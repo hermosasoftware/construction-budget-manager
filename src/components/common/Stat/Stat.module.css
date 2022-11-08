@@ -1,0 +1,7 @@
+.stat__container {
+  padding: var(--padding-vertical-md);
+}
+
+.msg_wrapper {
+  white-space: pre-wrap;
+}

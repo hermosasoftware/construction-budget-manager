@@ -2,3 +2,31 @@
   margin: 20px;
   padding-top: 10px;
 }
+
+body div.bigButtons_container {
+  padding-top: calc(var(--padding-vertical-lg) * 1.1);
+  gap: var(--separator-gap-xxlg);
+  flex-wrap: wrap;
+}
+
+.bigButtons_container > div[role='button'] {
+  width: 260px;
+  height: 104px;
+}
+
+@media screen and (max-width: 930px) {
+  .bigButtons_container > div[role='button'] {
+    width: 100%;
+    margin: 0px calc(var(--margin-vertical-lg) * 1.1) 0px
+      calc(var(--margin-vertical-lg) * 1.1);
+  }
+
+  body div.tabs {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}
+
+.stats__container {
+  flex-wrap: wrap;
+}

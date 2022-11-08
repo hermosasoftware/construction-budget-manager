@@ -2,6 +2,7 @@ import React, { useContext, useState } from 'react';
 import {
   Input as ChakraInput,
   InputGroup,
+  InputLeftElement,
   InputProps,
   InputRightElement,
 } from '@chakra-ui/react';
@@ -12,7 +13,9 @@ import { useAppSelector } from '../../../../redux/hooks';
 import { IFormElementProps } from '../../../../types/forms';
 
 export interface IInput extends IFormControl, IFormElementProps {
+  icon?: any;
   placeholder?: string;
+  isDisabled?: boolean;
   type?: React.HTMLInputTypeAttribute;
   viewPassword?: boolean;
 }
@@ -21,10 +24,12 @@ const Input: React.FC<IInput> = props => {
   const formControlProps: IFormControl = props;
   const {
     name,
+    icon,
     innerId,
     innerClassName,
     innerStyle,
     placeholder,
+    isDisabled = false,
     type = 'text',
     viewPassword = true,
     value,
@@ -81,6 +86,7 @@ const Input: React.FC<IInput> = props => {
     type: type === 'password' ? (showPassword ? 'text' : 'password') : type,
     value: currentValue,
     placeholder,
+    isDisabled,
     onChange: triggerOnChangeHandlers,
     onBlur: triggerOnBlurHandlers,
     _placeholder: { color: 'text_ghost' },
@@ -96,6 +102,7 @@ const Input: React.FC<IInput> = props => {
       {...formControlProps}
     >
       <InputGroup>
+        {icon && <InputLeftElement children={icon}></InputLeftElement>}
         <ChakraInput {...finalInputProps} />
         {type === 'password' && viewPassword ? (
           <InputRightElement width={'var(--form-inner-input-width);'}>
