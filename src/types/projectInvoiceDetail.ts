@@ -1,4 +1,4 @@
-export interface IProjectMaterialDelivered {
+export interface IProjectInvoiceDetail {
   id: string;
   order: number;
   quantity: number;

@@ -1,4 +1,4 @@
-import styles from './MaterialsDelivered.module.css';
+import styles from './Invoicing.module.css';
 import { Flex, Heading } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import * as yup from 'yup';
@@ -8,15 +8,15 @@ import SearchInput from '../../../common/SearchInput/SearchInput';
 import TableView, { TTableHeader } from '../../../common/TableView/TableView';
 import Form, { Input } from '../../../common/Form';
 import {
-  createProjectMaterialDelivered,
-  getProjectMaterialDeliveredById,
-  getProjectMaterialsDelivered,
-  updateProjectMaterialDelivered,
-} from '../../../../services/ProjectMaterialsDeliveredService';
-import { IProjectMaterialDelivered } from '../../../../types/projectMaterialDelivered';
+  createProjectInvoiceDetail,
+  getProjectInvoiceDetailById,
+  getProjectInvoicing,
+  updateProjectInvoiceDetail,
+} from '../../../../services/ProjectInvoiceService';
+import { IProjectInvoiceDetail } from '../../../../types/projectInvoiceDetail';
 import { useAppSelector } from '../../../../redux/hooks';
 
-interface IMaterialsDelivered {
+interface IInvoicing {
   projectId: string;
 }
 
@@ -33,9 +33,9 @@ const initialSelectedItemData = {
   difference: 0,
 };
 
-const MaterialsDelivered: React.FC<IMaterialsDelivered> = props => {
-  const [tableData, setTableData] = useState<IProjectMaterialDelivered[]>([]);
-  const [selectedItem, setSelectedItem] = useState<IProjectMaterialDelivered>(
+const Invoicing: React.FC<IInvoicing> = props => {
+  const [tableData, setTableData] = useState<IProjectInvoiceDetail[]>([]);
+  const [selectedItem, setSelectedItem] = useState<IProjectInvoiceDetail>(
     initialSelectedItemData,
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -55,10 +55,10 @@ const MaterialsDelivered: React.FC<IMaterialsDelivered> = props => {
     { name: 'difference', value: appStrings.difference },
   ];
 
-  const getMaterialsDelivered = async () => {
-    const successCallback = (response: IProjectMaterialDelivered[]) =>
+  const getInvoicing = async () => {
+    const successCallback = (response: IProjectInvoiceDetail[]) =>
       setTableData(response);
-    await getProjectMaterialsDelivered({
+    await getProjectInvoicing({
       projectId,
       appStrings,
       successCallback,
@@ -69,14 +69,14 @@ const MaterialsDelivered: React.FC<IMaterialsDelivered> = props => {
     setSearchTerm(event.target.value.toUpperCase());
   };
 
-  const editButton = async (projectMaterialDeliveredId: string) => {
-    const successCallback = (response: IProjectMaterialDelivered) => {
+  const editButton = async (projectInvoiceDetailId: string) => {
+    const successCallback = (response: IProjectInvoiceDetail) => {
       setSelectedItem(response);
       setIsModalOpen(true);
     };
-    await getProjectMaterialDeliveredById({
+    await getProjectInvoiceDetailById({
       projectId,
-      projectMaterialDeliveredId,
+      projectInvoiceDetailId,
       appStrings,
       successCallback,
     });
@@ -85,22 +85,22 @@ const MaterialsDelivered: React.FC<IMaterialsDelivered> = props => {
   const deleteButton = (id: string) => {};
 
   const handleOnSubmit = async (
-    projectMaterialDelivered: IProjectMaterialDelivered,
+    projectInvoiceDetail: IProjectInvoiceDetail,
   ) => {
     const successCallback = () => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
-      getMaterialsDelivered();
+      getInvoicing();
     };
     const serviceCallParameters = {
       projectId,
-      projectMaterialDelivered,
+      projectInvoiceDetail,
       appStrings,
       successCallback,
     };
-    projectMaterialDelivered.id
-      ? await updateProjectMaterialDelivered(serviceCallParameters)
-      : await createProjectMaterialDelivered(serviceCallParameters);
+    projectInvoiceDetail.id
+      ? await updateProjectInvoiceDetail(serviceCallParameters)
+      : await createProjectInvoiceDetail(serviceCallParameters);
   };
 
   const validationSchema = yup.object().shape({
@@ -115,7 +115,7 @@ const MaterialsDelivered: React.FC<IMaterialsDelivered> = props => {
 
   useEffect(() => {
     let abortController = new AbortController();
-    getMaterialsDelivered();
+    getInvoicing();
     return () => {
       abortController.abort();
     };
@@ -188,4 +188,4 @@ const MaterialsDelivered: React.FC<IMaterialsDelivered> = props => {
   );
 };
 
-export default MaterialsDelivered;
+export default Invoicing;
