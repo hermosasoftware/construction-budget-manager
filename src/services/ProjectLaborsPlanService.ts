@@ -1,10 +1,9 @@
 import {
   collection,
-  addDoc,
   getDocs,
   getDoc,
   doc,
-  setDoc,
+  runTransaction,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
@@ -85,13 +84,26 @@ export const createProjectLaborPlan = async ({
   projectLaborPlan: IProjectLaborPlan;
 } & IService) => {
   try {
-    const { id, subtotal, ...rest } = projectLaborPlan;
-    const userRef = collection(db, 'projects', projectId, 'projectLaborsPlan');
-    const result = await addDoc(userRef, rest);
-    const data = {
-      ...projectLaborPlan,
-      id: result.id,
-    } as IProjectLaborPlan;
+    const data = await runTransaction(db, async transaction => {
+      const { id, subtotal, ...rest } = projectLaborPlan;
+      const laborRef = doc(
+        collection(db, 'projects', projectId, 'projectLaborsPlan'),
+      );
+      const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
+      const sumDoc = await transaction.get(sumRef);
+
+      if (!sumDoc.exists()) throw Error();
+
+      const total = sumDoc.data().sumLabors + subtotal;
+
+      transaction.update(sumRef, { sumLabors: total });
+      transaction.set(laborRef, rest);
+
+      return {
+        ...projectLaborPlan,
+        id: laborRef.id,
+      } as IProjectLaborPlan;
+    });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
@@ -117,9 +129,21 @@ export const updateProjectLaborPlan = async ({
   projectLaborPlan: IProjectLaborPlan;
 } & IService) => {
   try {
-    const { id, subtotal, ...rest } = projectLaborPlan;
-    const userRef = doc(db, 'projects', projectId, 'projectLaborsPlan', id);
-    await setDoc(userRef, rest);
+    await runTransaction(db, async transaction => {
+      const { id, subtotal, ...rest } = projectLaborPlan;
+      const laborRef = doc(db, 'projects', projectId, 'projectLaborsPlan', id);
+      const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
+      const laborDoc = await transaction.get(laborRef);
+      const sumDoc = await transaction.get(sumRef);
+
+      if (!laborDoc.exists() || !sumDoc.exists()) throw Error();
+
+      const newSum = subtotal - laborDoc.data().cost * laborDoc.data().quantity;
+      const total = sumDoc.data().sumLabors + newSum;
+
+      transaction.update(sumRef, { sumLabors: total });
+      transaction.set(laborRef, rest);
+    });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 

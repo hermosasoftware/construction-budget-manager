@@ -12,7 +12,7 @@ import Form from '../../../common/Form/Form';
 import ExchangeInput from '../../../common/ExchangeInput/ExchangeInput';
 import {
   getProjectBudget,
-  updateProjectBudget,
+  updateProjectBudgetExchange,
 } from '../../../../services/ProjectBudgetService';
 import { IProjectBudget } from '../../../../types/projectBudget';
 
@@ -39,11 +39,11 @@ const InitialPlan: React.FC<IInitialPlan> = props => {
     };
     const serviceCallParameters = {
       projectId,
-      projectBudget,
+      exchange: projectBudget.exchange,
       appStrings,
       successCallback,
     };
-    await updateProjectBudget(serviceCallParameters);
+    await updateProjectBudgetExchange(serviceCallParameters);
   };
 
   const validationSchema = yup.object().shape({

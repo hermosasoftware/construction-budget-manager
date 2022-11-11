@@ -7,6 +7,7 @@ import { getProjectBudget } from '../../../../../services/ProjectBudgetService';
 import { useAppSelector } from '../../../../../redux/hooks';
 import { IProjectBudget } from '../../../../../types/projectBudget';
 import Stat from '../../../../common/Stat/Stat';
+import { numberFormat } from '../../../../../utils/numbers';
 
 interface ISummaryPlan {
   projectId: string;
@@ -55,16 +56,24 @@ const SummaryPlan: React.FC<ISummaryPlan> = props => {
           title={appStrings.materials}
           description={`${
             appStrings.total
-          }: ₡ ${budget.sumMaterials.toFixed()}\n${appStrings.dollars}: $ ${(
+          }: ₡ ${budget.sumMaterials.toLocaleString(
+            undefined,
+            numberFormat,
+          )}\n${appStrings.dollars}: $ ${(
             budget.sumMaterials / budget.exchange
-          ).toFixed()}`}
+          ).toLocaleString(undefined, numberFormat)}`}
           illustration={<Wall color="var(--chakra-colors-red-300)" size={25} />}
         />
         <BigButton
           title={appStrings.labors}
-          description={`${appStrings.total}: ₡ ${budget.sumLabors.toFixed()}\n${
+          description={`${
+            appStrings.total
+          }: ₡ ${budget.sumLabors.toLocaleString(undefined, numberFormat)}\n${
             appStrings.dollars
-          }: $ ${(budget.sumLabors / budget.exchange).toFixed()}`}
+          }: $ ${(budget.sumLabors / budget.exchange).toLocaleString(
+            undefined,
+            numberFormat,
+          )}`}
           illustration={
             <BagSimple
               color="var(--chakra-colors-teal-500)"
@@ -77,9 +86,12 @@ const SummaryPlan: React.FC<ISummaryPlan> = props => {
           title={appStrings.subcontracts}
           description={`${
             appStrings.total
-          }: ₡ ${budget.sumSubcontracts.toFixed()}\n${appStrings.dollars}: $ ${(
+          }: ₡ ${budget.sumSubcontracts.toLocaleString(
+            undefined,
+            numberFormat,
+          )}\n${appStrings.dollars}: $ ${(
             budget.sumSubcontracts / budget.exchange
-          ).toFixed()}`}
+          ).toLocaleString(undefined, numberFormat)}`}
           illustration={
             <Handshake
               color="var(--chakra-colors-blue-400)"
@@ -105,21 +117,33 @@ const SummaryPlan: React.FC<ISummaryPlan> = props => {
       <div className={`center-content ${styles.stats__container}`}>
         <Stat
           title={appStrings.totalDirectCost}
-          content={`₡ ${budget.totalDirectCost.toFixed(2)}\n$ ${(
-            budget.totalDirectCost / budget.exchange
-          ).toFixed(2)}`}
+          content={`₡ ${budget.totalDirectCost.toLocaleString(
+            undefined,
+            numberFormat,
+          )}\n$ ${(budget.totalDirectCost / budget.exchange).toLocaleString(
+            undefined,
+            numberFormat,
+          )}`}
         ></Stat>
         <Stat
           title={appStrings.adminFee}
-          content={`₡ ${budget.adminFee.toFixed(2)}\n$ ${(
-            budget.adminFee / budget.exchange
-          ).toFixed(2)}`}
+          content={`₡ ${budget.adminFee.toLocaleString(
+            undefined,
+            numberFormat,
+          )}\n$ ${(budget.adminFee / budget.exchange).toLocaleString(
+            undefined,
+            numberFormat,
+          )}`}
         ></Stat>
         <Stat
           title={appStrings.grandTotal}
-          content={`₡ ${budget.grandTotal.toFixed(2)}\n$ ${(
-            budget.grandTotal / budget.exchange
-          ).toFixed(2)}`}
+          content={`₡ ${budget.grandTotal.toLocaleString(
+            undefined,
+            numberFormat,
+          )}\n$ ${(budget.grandTotal / budget.exchange).toLocaleString(
+            undefined,
+            numberFormat,
+          )}`}
         ></Stat>
       </div>
     </>

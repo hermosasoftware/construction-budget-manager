@@ -86,7 +86,10 @@ const SubcontractPlan: React.FC<ISubcontractPlan> = props => {
     };
     const serviceCallParameters = {
       projectId,
-      projectSubcontractPlan,
+      projectSubcontractPlan: {
+        ...projectSubcontractPlan,
+        subtotal: projectSubcontractPlan.cost * projectSubcontractPlan.quantity,
+      },
       appStrings,
       successCallback,
     };

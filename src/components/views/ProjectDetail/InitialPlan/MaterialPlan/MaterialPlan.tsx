@@ -102,7 +102,11 @@ const MaterialPlan: React.FC<IMaterialPlan> = props => {
 
   const handleOnSubmit = async (data: IItem) => {
     const { name, ...rest } = data;
-    const projectMaterialPlan = { ...rest, name: name.label };
+    const projectMaterialPlan = {
+      ...rest,
+      subtotal: rest.cost * rest.quantity,
+      name: name.label,
+    };
     const successCallback = () => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);

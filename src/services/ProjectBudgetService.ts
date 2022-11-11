@@ -1,4 +1,4 @@
-import { getDoc, doc, setDoc } from 'firebase/firestore';
+import { getDoc, doc, updateDoc } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
 import { IProjectBudget } from '../types/projectBudget';
@@ -27,19 +27,19 @@ export const getProjectBudget = async ({
   }
 };
 
-export const updateProjectBudget = async ({
+export const updateProjectBudgetExchange = async ({
   projectId,
-  projectBudget,
+  exchange,
   appStrings,
   successCallback,
   errorCallback,
 }: {
   projectId: string;
-  projectBudget: IProjectBudget;
+  exchange: number;
 } & IService) => {
   try {
     const userRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
-    await setDoc(userRef, projectBudget);
+    await updateDoc(userRef, { exchange });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 

@@ -1,11 +1,10 @@
 import {
   collection,
-  addDoc,
   getDocs,
   getDoc,
   doc,
-  setDoc,
   query,
+  runTransaction,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
@@ -114,18 +113,26 @@ export const createProjectMaterialPlan = async ({
   projectMaterialPlan: IProjectMaterialPlan;
 } & IService) => {
   try {
-    const { id, subtotal, ...rest } = projectMaterialPlan;
-    const userRef = collection(
-      db,
-      'projects',
-      projectId,
-      'projectMaterialsPlan',
-    );
-    const result = await addDoc(userRef, rest);
-    const data = {
-      ...projectMaterialPlan,
-      id: result.id,
-    } as IProjectMaterialPlan;
+    const data = await runTransaction(db, async transaction => {
+      const { id, subtotal, ...rest } = projectMaterialPlan;
+      const matRef = doc(
+        collection(db, 'projects', projectId, 'projectMaterialsPlan'),
+      );
+      const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
+      const sumDoc = await transaction.get(sumRef);
+
+      if (!sumDoc.exists()) throw Error();
+
+      const total = sumDoc.data().sumMaterials + subtotal;
+
+      transaction.update(sumRef, { sumMaterials: total });
+      transaction.set(matRef, rest);
+
+      return {
+        ...projectMaterialPlan,
+        id: matRef.id,
+      } as IProjectMaterialPlan;
+    });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
@@ -151,9 +158,21 @@ export const updateProjectMaterialPlan = async ({
   projectMaterialPlan: IProjectMaterialPlan;
 } & IService) => {
   try {
-    const { id, subtotal, ...rest } = projectMaterialPlan;
-    const userRef = doc(db, 'projects', projectId, 'projectMaterialsPlan', id);
-    await setDoc(userRef, rest);
+    await runTransaction(db, async transaction => {
+      const { id, subtotal, ...rest } = projectMaterialPlan;
+      const matRef = doc(db, 'projects', projectId, 'projectMaterialsPlan', id);
+      const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
+      const matDoc = await transaction.get(matRef);
+      const sumDoc = await transaction.get(sumRef);
+
+      if (!matDoc.exists() || !sumDoc.exists()) throw Error();
+
+      const newSum = subtotal - matDoc.data().cost * matDoc.data().quantity;
+      const total = sumDoc.data().sumMaterials + newSum;
+
+      transaction.update(sumRef, { sumMaterials: total });
+      transaction.set(matRef, rest);
+    });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 

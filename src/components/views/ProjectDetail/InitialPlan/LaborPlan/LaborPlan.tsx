@@ -86,7 +86,10 @@ const LaborPlan: React.FC<ILaborPlan> = props => {
     };
     const serviceCallParameters = {
       projectId,
-      projectLaborPlan,
+      projectLaborPlan: {
+        ...projectLaborPlan,
+        subtotal: projectLaborPlan.cost * projectLaborPlan.quantity,
+      },
       appStrings,
       successCallback,
     };

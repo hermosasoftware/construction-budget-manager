@@ -1,10 +1,9 @@
 import {
   collection,
-  addDoc,
   getDocs,
   getDoc,
   doc,
-  setDoc,
+  runTransaction,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
@@ -90,18 +89,26 @@ export const createProjectSubcontractPlan = async ({
   projectSubcontractPlan: IProjectSubcontractPlan;
 } & IService) => {
   try {
-    const { id, subtotal, ...rest } = projectSubcontractPlan;
-    const userRef = collection(
-      db,
-      'projects',
-      projectId,
-      'projectSubcontractsPlan',
-    );
-    const result = await addDoc(userRef, rest);
-    const data = {
-      ...projectSubcontractPlan,
-      id: result.id,
-    } as IProjectSubcontractPlan;
+    const data = await runTransaction(db, async transaction => {
+      const { id, subtotal, ...rest } = projectSubcontractPlan;
+      const subCtRef = doc(
+        collection(db, 'projects', projectId, 'projectSubcontractsPlan'),
+      );
+      const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
+      const sumDoc = await transaction.get(sumRef);
+
+      if (!sumDoc.exists()) throw Error();
+
+      const total = sumDoc.data().sumSubcontracts + subtotal;
+
+      transaction.update(sumRef, { sumSubcontracts: total });
+      transaction.set(subCtRef, rest);
+
+      return {
+        ...projectSubcontractPlan,
+        id: subCtRef.id,
+      } as IProjectSubcontractPlan;
+    });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
@@ -127,15 +134,27 @@ export const updateProjectSubcontractPlan = async ({
   projectSubcontractPlan: IProjectSubcontractPlan;
 } & IService) => {
   try {
-    const { id, subtotal, ...rest } = projectSubcontractPlan;
-    const userRef = doc(
-      db,
-      'projects',
-      projectId,
-      'projectSubcontractsPlan',
-      id,
-    );
-    await setDoc(userRef, rest);
+    await runTransaction(db, async transaction => {
+      const { id, subtotal, ...rest } = projectSubcontractPlan;
+      const subcontRef = doc(
+        db,
+        'projects',
+        projectId,
+        'projectSubcontractsPlan',
+        id,
+      );
+      const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
+      const subCtDoc = await transaction.get(subcontRef);
+      const sumDoc = await transaction.get(sumRef);
+
+      if (!subCtDoc.exists() || !sumDoc.exists()) throw Error();
+
+      const newSum = subtotal - subCtDoc.data().cost * subCtDoc.data().quantity;
+      const total = sumDoc.data().sumSubcontracts + newSum;
+
+      transaction.update(sumRef, { sumSubcontracts: total });
+      transaction.set(subcontRef, rest);
+    });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
