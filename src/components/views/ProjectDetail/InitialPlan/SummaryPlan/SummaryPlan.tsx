@@ -3,25 +3,25 @@ import { BagSimple, DotsThreeOutline, Handshake, Wall } from 'phosphor-react';
 import React, { useEffect, useState } from 'react';
 import { Divider } from '@chakra-ui/react';
 import BigButton from '../../../../common/BigButton/BigButton';
-import { getProjectBudget } from '../../../../../services/ProjectBudgetService';
 import { useAppSelector } from '../../../../../redux/hooks';
 import { IProjectBudget } from '../../../../../types/projectBudget';
 import Stat from '../../../../common/Stat/Stat';
-import { numberFormat } from '../../../../../utils/numbers';
+import { colonFormat, dolarFormat } from '../../../../../utils/numbers';
 
 interface ISummaryPlan {
   projectId: string;
+  budget: IProjectBudget;
 }
 
-interface IBudget extends IProjectBudget {
+interface IBudgetTotals extends IProjectBudget {
   totalDirectCost: number;
   adminFee: number;
   grandTotal: number;
 }
 
 const SummaryPlan: React.FC<ISummaryPlan> = props => {
-  const { projectId } = props;
-  const [budget, setBudget] = useState<IBudget>();
+  const { budget } = props;
+  const [budgetTotals, setBudgetTotals] = useState<IBudgetTotals>();
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
   const calcTotals = ({
@@ -36,43 +36,27 @@ const SummaryPlan: React.FC<ISummaryPlan> = props => {
   };
 
   useEffect(() => {
-    let abortController = new AbortController();
-    const getBudget = async () => {
-      const successCallback = (response: IProjectBudget) =>
-        setBudget({ ...response, ...calcTotals(response) });
+    setBudgetTotals({ ...budget, ...calcTotals(budget) });
+  }, [budget]);
 
-      await getProjectBudget({ projectId, appStrings, successCallback });
-    };
-    getBudget();
-    return () => {
-      abortController.abort();
-    };
-  }, [projectId]);
-
-  return budget ? (
+  return budgetTotals ? (
     <>
       <div className={`center-content ${styles.bigButtons_container}`}>
         <BigButton
           title={appStrings.materials}
-          description={`${
-            appStrings.total
-          }: ₡ ${budget.sumMaterials.toLocaleString(
-            undefined,
-            numberFormat,
-          )}\n${appStrings.dollars}: $ ${(
-            budget.sumMaterials / budget.exchange
-          ).toLocaleString(undefined, numberFormat)}`}
+          description={`${appStrings.total}: ${colonFormat(
+            budgetTotals.sumMaterials,
+          )}\n${appStrings.dollars}: ${dolarFormat(
+            budgetTotals.sumMaterials / budgetTotals.exchange,
+          )}`}
           illustration={<Wall color="var(--chakra-colors-red-300)" size={25} />}
         />
         <BigButton
           title={appStrings.labors}
-          description={`${
-            appStrings.total
-          }: ₡ ${budget.sumLabors.toLocaleString(undefined, numberFormat)}\n${
-            appStrings.dollars
-          }: $ ${(budget.sumLabors / budget.exchange).toLocaleString(
-            undefined,
-            numberFormat,
+          description={`${appStrings.total}: ${colonFormat(
+            budgetTotals.sumLabors,
+          )}\n${appStrings.dollars}: ${dolarFormat(
+            budgetTotals.sumLabors / budgetTotals.exchange,
           )}`}
           illustration={
             <BagSimple
@@ -84,14 +68,11 @@ const SummaryPlan: React.FC<ISummaryPlan> = props => {
         />
         <BigButton
           title={appStrings.subcontracts}
-          description={`${
-            appStrings.total
-          }: ₡ ${budget.sumSubcontracts.toLocaleString(
-            undefined,
-            numberFormat,
-          )}\n${appStrings.dollars}: $ ${(
-            budget.sumSubcontracts / budget.exchange
-          ).toLocaleString(undefined, numberFormat)}`}
+          description={`${appStrings.total}: ${colonFormat(
+            budgetTotals.sumSubcontracts,
+          )}\n${appStrings.dollars}: ${dolarFormat(
+            budgetTotals.sumSubcontracts / budgetTotals.exchange,
+          )}`}
           illustration={
             <Handshake
               color="var(--chakra-colors-blue-400)"
@@ -117,32 +98,20 @@ const SummaryPlan: React.FC<ISummaryPlan> = props => {
       <div className={`center-content ${styles.stats__container}`}>
         <Stat
           title={appStrings.totalDirectCost}
-          content={`₡ ${budget.totalDirectCost.toLocaleString(
-            undefined,
-            numberFormat,
-          )}\n$ ${(budget.totalDirectCost / budget.exchange).toLocaleString(
-            undefined,
-            numberFormat,
+          content={`${colonFormat(budgetTotals.totalDirectCost)}\n${dolarFormat(
+            budgetTotals.totalDirectCost / budgetTotals.exchange,
           )}`}
         ></Stat>
         <Stat
           title={appStrings.adminFee}
-          content={`₡ ${budget.adminFee.toLocaleString(
-            undefined,
-            numberFormat,
-          )}\n$ ${(budget.adminFee / budget.exchange).toLocaleString(
-            undefined,
-            numberFormat,
+          content={`${colonFormat(budgetTotals.adminFee)}\n${dolarFormat(
+            budgetTotals.adminFee / budgetTotals.exchange,
           )}`}
         ></Stat>
         <Stat
           title={appStrings.grandTotal}
-          content={`₡ ${budget.grandTotal.toLocaleString(
-            undefined,
-            numberFormat,
-          )}\n$ ${(budget.grandTotal / budget.exchange).toLocaleString(
-            undefined,
-            numberFormat,
+          content={`${colonFormat(budgetTotals.grandTotal)}\n${dolarFormat(
+            budgetTotals.grandTotal / budgetTotals.exchange,
           )}`}
         ></Stat>
       </div>

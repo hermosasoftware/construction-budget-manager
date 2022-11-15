@@ -87,14 +87,16 @@ const InitialPlan: React.FC<IInitialPlan> = props => {
             ></ExchangeInput>
           </Form>
         </div>
-        {selectedTab === 'summary' ? (
-          <SummaryPlan projectId={projectId}></SummaryPlan>
-        ) : selectedTab === 'materials' ? (
-          <MaterialPlan projectId={projectId}></MaterialPlan>
-        ) : selectedTab === 'labor' ? (
-          <LaborPlan projectId={projectId}></LaborPlan>
-        ) : selectedTab === 'subcontracts' ? (
-          <SubcontractPlan projectId={projectId}></SubcontractPlan>
+        {budget ? (
+          selectedTab === 'summary' ? (
+            <SummaryPlan budget={budget} projectId={projectId}></SummaryPlan>
+          ) : selectedTab === 'materials' ? (
+            <MaterialPlan projectId={projectId}></MaterialPlan>
+          ) : selectedTab === 'labor' ? (
+            <LaborPlan projectId={projectId}></LaborPlan>
+          ) : selectedTab === 'subcontracts' ? (
+            <SubcontractPlan projectId={projectId}></SubcontractPlan>
+          ) : null
         ) : null}
       </Box>
     </div>
