@@ -1,4 +1,3 @@
-import styles from './MaterialPlan.module.css';
 import React, { useEffect, useState } from 'react';
 import { Flex, Heading } from '@chakra-ui/react';
 import * as yup from 'yup';
@@ -19,6 +18,8 @@ import Form, { Input } from '../../../../common/Form';
 import { useAppSelector } from '../../../../../redux/hooks';
 import SearchSelect from '../../../../common/Form/Elements/SearchSelect';
 import { IMaterialBreakdown } from '../../../../../types/collections';
+
+import styles from './MaterialPlan.module.css';
 
 interface IMaterialPlan {
   projectId: string;
@@ -142,14 +143,14 @@ const MaterialPlan: React.FC<IMaterialPlan> = props => {
   }, []);
 
   return (
-    <div className={`${styles.operations_container}`}>
+    <div className={styles.operations_container}>
       <Flex marginBottom="5px">
         <SearchInput
-          style={{ margin: '0 10px 0 0', maxWidth: '500px' }}
+          className={styles.search_button}
           placeholder="Search"
           onChange={handleSearch}
-        ></SearchInput>
-        <div style={{ textAlign: 'end' }}>
+        />
+        <div className={styles.form_container}>
           <Button onClick={() => setIsModalOpen(true)}>+</Button>
           <Modal
             isOpen={isModalOpen}

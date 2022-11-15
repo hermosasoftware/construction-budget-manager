@@ -121,7 +121,7 @@ export const createProjectMaterialPlan = async ({
       const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
       const sumDoc = await transaction.get(sumRef);
 
-      if (!sumDoc.exists()) throw Error();
+      if (!sumDoc.exists()) throw Error(appStrings.noRecords);
 
       const total = sumDoc.data().sumMaterials + subtotal;
 
@@ -165,7 +165,8 @@ export const updateProjectMaterialPlan = async ({
       const matDoc = await transaction.get(matRef);
       const sumDoc = await transaction.get(sumRef);
 
-      if (!matDoc.exists() || !sumDoc.exists()) throw Error();
+      if (!matDoc.exists() || !sumDoc.exists())
+        throw Error(appStrings.noRecords);
 
       const newSum = subtotal - matDoc.data().cost * matDoc.data().quantity;
       const total = sumDoc.data().sumMaterials + newSum;

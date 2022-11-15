@@ -1,10 +1,10 @@
+import React from 'react';
 import {
   Stat as ChakraStat,
   StatHelpText,
   StatLabel,
   StatNumber,
 } from '@chakra-ui/react';
-import React from 'react';
 import { IStyledComponent } from '../../../types/global';
 
 import styles from './Stat.module.css';

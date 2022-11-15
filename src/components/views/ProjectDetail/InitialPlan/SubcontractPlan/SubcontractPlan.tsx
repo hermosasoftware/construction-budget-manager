@@ -1,4 +1,3 @@
-import styles from './SubcontractPlan.module.css';
 import React, { useEffect, useState } from 'react';
 import { Flex, Heading } from '@chakra-ui/react';
 import * as yup from 'yup';
@@ -17,6 +16,8 @@ import {
 import { IProjectSubcontractPlan } from '../../../../../types/projectSubcontractPlan';
 import Form, { Input } from '../../../../common/Form';
 import { useAppSelector } from '../../../../../redux/hooks';
+
+import styles from './SubcontractPlan.module.css';
 
 interface ISubcontractPlan {
   projectId: string;
@@ -113,14 +114,14 @@ const SubcontractPlan: React.FC<ISubcontractPlan> = props => {
   }, []);
 
   return (
-    <div className={`${styles.operations_container}`}>
+    <div className={styles.operations_container}>
       <Flex marginBottom="5px">
         <SearchInput
-          style={{ margin: '0 10px 0 0', maxWidth: '500px' }}
+          className={styles.search_button}
           placeholder="Search"
           onChange={handleSearch}
-        ></SearchInput>
-        <div style={{ textAlign: 'end' }}>
+        />
+        <div className={styles.form_container}>
           <Button onClick={() => setIsModalOpen(true)}>+</Button>
           <Modal
             isOpen={isModalOpen}

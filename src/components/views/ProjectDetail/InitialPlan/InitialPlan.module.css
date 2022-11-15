@@ -3,11 +3,16 @@
 }
 
 .toolBar__container {
-  margin-bottom: '5px';
+  margin-bottom: 5px;
   flex-wrap: wrap;
   display: flex;
 }
 .tabs {
   flex-wrap: wrap;
   min-width: 250px;
+}
+
+.form {
+  align-items: end;
+  flex: 1;
 }

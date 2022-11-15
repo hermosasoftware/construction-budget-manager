@@ -1,4 +1,3 @@
-import styles from './InitialPlan.module.css';
 import React, { useEffect, useState } from 'react';
 import { Box } from '@chakra-ui/react';
 import * as yup from 'yup';
@@ -15,6 +14,8 @@ import {
   updateProjectBudgetExchange,
 } from '../../../../services/ProjectBudgetService';
 import { IProjectBudget } from '../../../../types/projectBudget';
+
+import styles from './InitialPlan.module.css';
 
 interface IInitialPlan {
   projectId: string;
@@ -58,12 +59,22 @@ const InitialPlan: React.FC<IInitialPlan> = props => {
     };
   }, []);
 
+  const contentToDisplay = (option: string) => {
+    const contentOptions: any = {
+      summary: <SummaryPlan budget={budget!} projectId={projectId} />,
+      materials: <MaterialPlan projectId={projectId} />,
+      labors: <LaborPlan projectId={projectId} />,
+      subcontracts: <SubcontractPlan projectId={projectId} />,
+    };
+    return contentOptions[option];
+  };
+
   return (
-    <div className={`${styles.operations_container}`}>
+    <div className={styles.operations_container}>
       <Box p={5} borderWidth="1px" borderRadius={12}>
-        <div className={`${styles.toolBar__container}`}>
+        <div className={styles.toolBar__container}>
           <TabGroup
-            className={`${styles.tabs}`}
+            className={styles.tabs}
             tabs={[
               { id: 'summary', name: 'Summary', selected: true },
               { id: 'materials', name: appStrings.materials },
@@ -78,26 +89,16 @@ const InitialPlan: React.FC<IInitialPlan> = props => {
             initialFormData={budget}
             validationSchema={validationSchema}
             validateOnBlur
-            style={{ alignItems: 'end', flex: 1 }}
+            className={styles.form}
             onSubmit={handleOnSubmit}
           >
             <ExchangeInput
               editExchange={editExchange}
               onClick={() => setEditExchange(true)}
-            ></ExchangeInput>
+            />
           </Form>
         </div>
-        {budget ? (
-          selectedTab === 'summary' ? (
-            <SummaryPlan budget={budget} projectId={projectId}></SummaryPlan>
-          ) : selectedTab === 'materials' ? (
-            <MaterialPlan projectId={projectId}></MaterialPlan>
-          ) : selectedTab === 'labors' ? (
-            <LaborPlan projectId={projectId}></LaborPlan>
-          ) : selectedTab === 'subcontracts' ? (
-            <SubcontractPlan projectId={projectId}></SubcontractPlan>
-          ) : null
-        ) : null}
+        {budget ? contentToDisplay(selectedTab) : null}
       </Box>
     </div>
   );

@@ -1,12 +1,13 @@
-import styles from './SummaryPlan.module.css';
-import { BagSimple, DotsThreeOutline, Handshake, Wall } from 'phosphor-react';
 import React, { useEffect, useState } from 'react';
+import { BagSimple, DotsThreeOutline, Handshake, Wall } from 'phosphor-react';
 import { Divider } from '@chakra-ui/react';
 import BigButton from '../../../../common/BigButton/BigButton';
 import { useAppSelector } from '../../../../../redux/hooks';
 import { IProjectBudget } from '../../../../../types/projectBudget';
 import Stat from '../../../../common/Stat/Stat';
 import { colonFormat, dolarFormat } from '../../../../../utils/numbers';
+
+import styles from './SummaryPlan.module.css';
 
 interface ISummaryPlan {
   projectId: string;
@@ -94,26 +95,26 @@ const SummaryPlan: React.FC<ISummaryPlan> = props => {
           }
         />
       </div>
-      <Divider marginTop={5}></Divider>
+      <Divider marginTop={5} />
       <div className={`center-content ${styles.stats__container}`}>
         <Stat
           title={appStrings.totalDirectCost}
           content={`${colonFormat(budgetTotals.totalDirectCost)}\n${dolarFormat(
             budgetTotals.totalDirectCost / budgetTotals.exchange,
           )}`}
-        ></Stat>
+        />
         <Stat
           title={appStrings.adminFee}
           content={`${colonFormat(budgetTotals.adminFee)}\n${dolarFormat(
             budgetTotals.adminFee / budgetTotals.exchange,
           )}`}
-        ></Stat>
+        />
         <Stat
           title={appStrings.grandTotal}
           content={`${colonFormat(budgetTotals.grandTotal)}\n${dolarFormat(
             budgetTotals.grandTotal / budgetTotals.exchange,
           )}`}
-        ></Stat>
+        />
       </div>
     </>
   ) : null;

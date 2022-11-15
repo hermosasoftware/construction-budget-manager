@@ -1,6 +1,6 @@
+import React from 'react';
 import { ButtonProps, Flex } from '@chakra-ui/react';
 import { Coins, Check, Pencil } from 'phosphor-react';
-import React from 'react';
 import { IStyledComponent } from '../../../types/global';
 import Button from '../Button/Button';
 import Input from '../Form/Elements/Input';

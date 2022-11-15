@@ -97,7 +97,7 @@ export const createProjectSubcontractPlan = async ({
       const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
       const sumDoc = await transaction.get(sumRef);
 
-      if (!sumDoc.exists()) throw Error();
+      if (!sumDoc.exists()) throw Error(appStrings.noRecords);
 
       const total = sumDoc.data().sumSubcontracts + subtotal;
 
@@ -147,7 +147,8 @@ export const updateProjectSubcontractPlan = async ({
       const subCtDoc = await transaction.get(subcontRef);
       const sumDoc = await transaction.get(sumRef);
 
-      if (!subCtDoc.exists() || !sumDoc.exists()) throw Error();
+      if (!subCtDoc.exists() || !sumDoc.exists())
+        throw Error(appStrings.noRecords);
 
       const newSum = subtotal - subCtDoc.data().cost * subCtDoc.data().quantity;
       const total = sumDoc.data().sumSubcontracts + newSum;

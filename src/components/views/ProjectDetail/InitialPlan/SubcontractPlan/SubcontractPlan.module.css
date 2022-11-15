@@ -2,3 +2,12 @@
   margin: 20px;
   padding-top: 10px;
 }
+
+.form_container {
+  text-align: end;
+}
+
+input.search_button {
+  margin-left: 0px;
+  max-width: 500px;
+}

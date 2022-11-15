@@ -92,7 +92,7 @@ export const createProjectLaborPlan = async ({
       const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
       const sumDoc = await transaction.get(sumRef);
 
-      if (!sumDoc.exists()) throw Error();
+      if (!sumDoc.exists()) throw Error(appStrings.noRecords);
 
       const total = sumDoc.data().sumLabors + subtotal;
 
@@ -136,7 +136,8 @@ export const updateProjectLaborPlan = async ({
       const laborDoc = await transaction.get(laborRef);
       const sumDoc = await transaction.get(sumRef);
 
-      if (!laborDoc.exists() || !sumDoc.exists()) throw Error();
+      if (!laborDoc.exists() || !sumDoc.exists())
+        throw Error(appStrings.noRecords);
 
       const newSum = subtotal - laborDoc.data().cost * laborDoc.data().quantity;
       const total = sumDoc.data().sumLabors + newSum;
