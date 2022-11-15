@@ -8,11 +8,11 @@ import {
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
-import { IProjectMaterialDelivered } from '../types/projectMaterialDelivered';
+import { IProjectInvoiceDetail } from '../types/projectInvoiceDetail';
 import { IService } from '../types/service';
 import { toastSuccess, toastError } from '../utils/toast';
 
-export const getProjectMaterialsDelivered = async ({
+export const getProjectInvoicing = async ({
   projectId,
   appStrings,
   successCallback,
@@ -23,7 +23,8 @@ export const getProjectMaterialsDelivered = async ({
       db,
       'projects',
       projectId,
-      'projectMaterialsDelivered',
+      // 'projectMaterialsDelivered',
+      'projectInvoicing',
     );
     const result = await getDocs(userRef);
     const data = result.docs.map(doc => ({
@@ -31,7 +32,7 @@ export const getProjectMaterialsDelivered = async ({
       id: doc.id,
       subtotal: doc.data().cost * doc.data().quantity,
       difference: doc.data().quantity - doc.data().delivered,
-    })) as IProjectMaterialDelivered[];
+    })) as IProjectInvoiceDetail[];
 
     successCallback && successCallback(data);
   } catch (error) {
@@ -44,30 +45,30 @@ export const getProjectMaterialsDelivered = async ({
   }
 };
 
-export const getProjectMaterialDeliveredById = async ({
+export const getProjectInvoiceDetailById = async ({
   projectId,
-  projectMaterialDeliveredId,
+  projectInvoiceDetailId,
   appStrings,
   successCallback,
   errorCallback,
 }: {
   projectId: string;
-  projectMaterialDeliveredId: string;
+  projectInvoiceDetailId: string;
 } & IService) => {
   try {
     const userRef = doc(
       db,
       'projects',
       projectId,
-      'projectMaterialsDelivered',
-      projectMaterialDeliveredId,
+      'projectInvoicing',
+      projectInvoiceDetailId,
     );
     const result = await getDoc(userRef);
     const data = {
       ...result.data(),
       id: result.id,
       subtotal: result.data()?.cost * result.data()?.quantity,
-    } as IProjectMaterialDelivered;
+    } as IProjectInvoiceDetail;
 
     successCallback && successCallback(data);
   } catch (error) {
@@ -80,29 +81,24 @@ export const getProjectMaterialDeliveredById = async ({
   }
 };
 
-export const createProjectMaterialDelivered = async ({
+export const createProjectInvoiceDetail = async ({
   projectId,
-  projectMaterialDelivered,
+  projectInvoiceDetail,
   appStrings,
   successCallback,
   errorCallback,
 }: {
   projectId: string;
-  projectMaterialDelivered: IProjectMaterialDelivered;
+  projectInvoiceDetail: IProjectInvoiceDetail;
 } & IService) => {
   try {
-    const { id, subtotal, difference, ...rest } = projectMaterialDelivered;
-    const userRef = collection(
-      db,
-      'projects',
-      projectId,
-      'projectMaterialsDelivered',
-    );
+    const { id, subtotal, difference, ...rest } = projectInvoiceDetail;
+    const userRef = collection(db, 'projects', projectId, 'projectInvoicing');
     const result = await addDoc(userRef, rest);
     const data = {
-      ...projectMaterialDelivered,
+      ...projectInvoiceDetail,
       id: result.id,
-    } as IProjectMaterialDelivered;
+    } as IProjectInvoiceDetail;
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
@@ -117,25 +113,19 @@ export const createProjectMaterialDelivered = async ({
   }
 };
 
-export const updateProjectMaterialDelivered = async ({
+export const updateProjectInvoiceDetail = async ({
   projectId,
-  projectMaterialDelivered,
+  projectInvoiceDetail,
   appStrings,
   successCallback,
   errorCallback,
 }: {
   projectId: string;
-  projectMaterialDelivered: IProjectMaterialDelivered;
+  projectInvoiceDetail: IProjectInvoiceDetail;
 } & IService) => {
   try {
-    const { id, subtotal, difference, ...rest } = projectMaterialDelivered;
-    const userRef = doc(
-      db,
-      'projects',
-      projectId,
-      'projectMaterialsDelivered',
-      id,
-    );
+    const { id, subtotal, difference, ...rest } = projectInvoiceDetail;
+    const userRef = doc(db, 'projects', projectId, 'projectInvoicing', id);
     await setDoc(userRef, rest);
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
