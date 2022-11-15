@@ -2,7 +2,6 @@ import {
   query,
   where,
   collection,
-  addDoc,
   getDocs,
   startAt,
   endAt,
@@ -10,12 +9,14 @@ import {
   getDoc,
   doc,
   setDoc,
+  runTransaction,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
 import { IProject } from '../types/project';
 import { IService } from '../types/service';
 import { toastSuccess, toastError } from '../utils/toast';
+import { IProjectBudget } from '../types/projectBudget';
 
 export const getAllProjects = async ({
   appStrings,
@@ -128,10 +129,31 @@ export const createProject = async ({
   errorCallback,
 }: { project: IProject } & IService) => {
   try {
-    const { id, ...rest } = project;
-    const userRef = collection(db, 'projects');
-    const result = await addDoc(userRef, rest);
-    const data = { ...project, id: result.id } as IProject;
+    const data = await runTransaction(db, async transaction => {
+      const projectBudget: IProjectBudget = {
+        sumLabors: 0,
+        sumMaterials: 0,
+        sumSubcontracts: 0,
+        exchange: 1,
+        creationDate: new Date(),
+      };
+      const { id, ...rest } = project;
+      const projectRef = doc(collection(db, 'projects'));
+      transaction.set(projectRef, rest);
+      const budgetRef = doc(
+        db,
+        'projects',
+        projectRef.id,
+        'projectBudget',
+        'summary',
+      );
+      transaction.set(budgetRef, projectBudget);
+
+      return {
+        ...project,
+        id: projectRef.id,
+      } as IProject;
+    });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 

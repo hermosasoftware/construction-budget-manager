@@ -126,9 +126,7 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
             }}
           >
             <Heading as="h2" size="lg">
-              {selectedItem.id
-                ? appStrings.editExpense
-                : appStrings.createExpense}
+              {selectedItem.id ? appStrings.editExpense : appStrings.addExpense}
             </Heading>
             <Form
               id="project-form"

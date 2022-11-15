@@ -8,13 +8,14 @@ import { MagnifyingGlass } from 'phosphor-react';
 import styles from './SearchInput.module.css';
 
 const SearchInput: React.FC<InputProps> = props => {
+  const { className } = props;
   return (
     <InputGroup>
       <InputLeftElement
         className={styles.search_icon}
         children={<MagnifyingGlass />}
       />
-      <Input className={styles.search_button} {...props} />
+      <Input {...props} className={`${styles.search_button} ${className}`} />
     </InputGroup>
   );
 };

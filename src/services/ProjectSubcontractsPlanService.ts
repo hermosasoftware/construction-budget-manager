@@ -3,16 +3,15 @@ import {
   getDocs,
   getDoc,
   doc,
-  query,
   runTransaction,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
-import { IProjectMaterialPlan } from '../types/projectMaterialPlan';
+import { IProjectSubcontractPlan } from '../types/projectSubcontractPlan';
 import { IService } from '../types/service';
 import { toastSuccess, toastError } from '../utils/toast';
 
-export const getProjectMaterialsPlan = async ({
+export const getProjectSubcontractsPlan = async ({
   projectId,
   appStrings,
   successCallback,
@@ -23,73 +22,14 @@ export const getProjectMaterialsPlan = async ({
       db,
       'projects',
       projectId,
-      'projectMaterialsPlan',
+      'projectSubcontractsPlan',
     );
     const result = await getDocs(userRef);
     const data = result.docs.map(doc => ({
       ...doc.data(),
       id: doc.id,
       subtotal: doc.data().cost * doc.data().quantity,
-    })) as IProjectMaterialPlan[];
-
-    let allMaterials = null;
-    let submaterialsPromise = data.map(async elem => {
-      const materialQ = query(
-        collection(
-          db,
-          'projects',
-          projectId,
-          'projectMaterialsPlan',
-          elem.id,
-          'subMaterials',
-        ),
-      );
-      const subMaterials = await getDocs(materialQ);
-      const data = subMaterials.docs.map(doc => ({
-        ...doc.data(),
-        id: doc.id,
-      }));
-      return { id: elem.id, material: elem, subMaterials: data };
-    });
-    await Promise.all(submaterialsPromise).then(resul => {
-      allMaterials = resul;
-    });
-
-    successCallback && successCallback(allMaterials);
-  } catch (error) {
-    let errorMessage = appStrings.genericError;
-    if (error instanceof FirebaseError) errorMessage = error.message;
-
-    toastError(appStrings.getInformationError, errorMessage);
-
-    errorCallback && errorCallback();
-  }
-};
-
-export const getProjectMaterialPlanById = async ({
-  projectId,
-  projectMaterialPlanId,
-  appStrings,
-  successCallback,
-  errorCallback,
-}: {
-  projectId: string;
-  projectMaterialPlanId: string;
-} & IService) => {
-  try {
-    const userRef = doc(
-      db,
-      'projects',
-      projectId,
-      'projectMaterialsPlan',
-      projectMaterialPlanId,
-    );
-    const result = await getDoc(userRef);
-    const data = {
-      ...result.data(),
-      id: result.id,
-      subtotal: result.data()?.cost * result.data()?.quantity,
-    } as IProjectMaterialPlan;
+    })) as IProjectSubcontractPlan[];
 
     successCallback && successCallback(data);
   } catch (error) {
@@ -102,36 +42,72 @@ export const getProjectMaterialPlanById = async ({
   }
 };
 
-export const createProjectMaterialPlan = async ({
+export const getProjectSubcontractPlanById = async ({
   projectId,
-  projectMaterialPlan,
+  projectSubcontractPlanId,
   appStrings,
   successCallback,
   errorCallback,
 }: {
   projectId: string;
-  projectMaterialPlan: IProjectMaterialPlan;
+  projectSubcontractPlanId: string;
+} & IService) => {
+  try {
+    const userRef = doc(
+      db,
+      'projects',
+      projectId,
+      'projectSubcontractsPlan',
+      projectSubcontractPlanId,
+    );
+    const result = await getDoc(userRef);
+    const data = {
+      ...result.data(),
+      id: result.id,
+      subtotal: result.data()?.cost * result.data()?.quantity,
+    } as IProjectSubcontractPlan;
+
+    successCallback && successCallback(data);
+  } catch (error) {
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.getInformationError, errorMessage);
+
+    errorCallback && errorCallback();
+  }
+};
+
+export const createProjectSubcontractPlan = async ({
+  projectId,
+  projectSubcontractPlan,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: {
+  projectId: string;
+  projectSubcontractPlan: IProjectSubcontractPlan;
 } & IService) => {
   try {
     const data = await runTransaction(db, async transaction => {
-      const { id, subtotal, ...rest } = projectMaterialPlan;
-      const matRef = doc(
-        collection(db, 'projects', projectId, 'projectMaterialsPlan'),
+      const { id, subtotal, ...rest } = projectSubcontractPlan;
+      const subCtRef = doc(
+        collection(db, 'projects', projectId, 'projectSubcontractsPlan'),
       );
       const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
       const sumDoc = await transaction.get(sumRef);
 
       if (!sumDoc.exists()) throw Error(appStrings.noRecords);
 
-      const total = sumDoc.data().sumMaterials + subtotal;
+      const total = sumDoc.data().sumSubcontracts + subtotal;
 
-      transaction.update(sumRef, { sumMaterials: total });
-      transaction.set(matRef, rest);
+      transaction.update(sumRef, { sumSubcontracts: total });
+      transaction.set(subCtRef, rest);
 
       return {
-        ...projectMaterialPlan,
-        id: matRef.id,
-      } as IProjectMaterialPlan;
+        ...projectSubcontractPlan,
+        id: subCtRef.id,
+      } as IProjectSubcontractPlan;
     });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
@@ -147,32 +123,38 @@ export const createProjectMaterialPlan = async ({
   }
 };
 
-export const updateProjectMaterialPlan = async ({
+export const updateProjectSubcontractPlan = async ({
   projectId,
-  projectMaterialPlan,
+  projectSubcontractPlan,
   appStrings,
   successCallback,
   errorCallback,
 }: {
   projectId: string;
-  projectMaterialPlan: IProjectMaterialPlan;
+  projectSubcontractPlan: IProjectSubcontractPlan;
 } & IService) => {
   try {
     await runTransaction(db, async transaction => {
-      const { id, subtotal, ...rest } = projectMaterialPlan;
-      const matRef = doc(db, 'projects', projectId, 'projectMaterialsPlan', id);
+      const { id, subtotal, ...rest } = projectSubcontractPlan;
+      const subcontRef = doc(
+        db,
+        'projects',
+        projectId,
+        'projectSubcontractsPlan',
+        id,
+      );
       const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
-      const matDoc = await transaction.get(matRef);
+      const subCtDoc = await transaction.get(subcontRef);
       const sumDoc = await transaction.get(sumRef);
 
-      if (!matDoc.exists() || !sumDoc.exists())
+      if (!subCtDoc.exists() || !sumDoc.exists())
         throw Error(appStrings.noRecords);
 
-      const newSum = subtotal - matDoc.data().cost * matDoc.data().quantity;
-      const total = sumDoc.data().sumMaterials + newSum;
+      const newSum = subtotal - subCtDoc.data().cost * subCtDoc.data().quantity;
+      const total = sumDoc.data().sumSubcontracts + newSum;
 
-      transaction.update(sumRef, { sumMaterials: total });
-      transaction.set(matRef, rest);
+      transaction.update(sumRef, { sumSubcontracts: total });
+      transaction.set(subcontRef, rest);
     });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);

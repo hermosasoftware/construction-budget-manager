@@ -1,0 +1,37 @@
+.big_button {
+  padding: 22px;
+  border: 1px solid var(--chakra-colors-light_border);
+  border-radius: var(--border-radius-lg);
+  font-size: var(--font-size-sm);
+  justify-content: space-between;
+}
+
+.big_button.incomplete_steps {
+  background-color: var(--chakra-colors-success);
+}
+
+.left_container {
+  text-align: start;
+}
+
+p.left_container__title {
+  font-weight: bold;
+  align-self: flex-start;
+}
+
+.big_button.incomplete_steps .left_container__title {
+  color: var(--chakra-colors-plain_white);
+}
+
+.big_button.incomplete_steps .left_container__subtitle {
+  color: var(--chakra-colors-light_text);
+}
+
+.right_container__current_step {
+  color: var(--chakra-colors-fade_text);
+  font-size: var(--font-size-xsm);
+}
+
+.msg_wrapper {
+  white-space: pre-wrap;
+}

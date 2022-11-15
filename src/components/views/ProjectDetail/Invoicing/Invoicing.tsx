@@ -141,7 +141,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
             <Heading as="h2" size="lg">
               {selectedItem.id
                 ? appStrings.editMaterial
-                : appStrings.createMaterial}
+                : appStrings.addMaterial}
             </Heading>
             <Form
               id="project-form"
