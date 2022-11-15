@@ -67,7 +67,7 @@ const InitialPlan: React.FC<IInitialPlan> = props => {
             tabs={[
               { id: 'summary', name: 'Summary', selected: true },
               { id: 'materials', name: appStrings.materials },
-              { id: 'labor', name: 'Labor' },
+              { id: 'labors', name: 'Labors' },
               { id: 'subcontracts', name: 'Subcontracts' },
             ]}
             variant="rounded"
@@ -92,7 +92,7 @@ const InitialPlan: React.FC<IInitialPlan> = props => {
             <SummaryPlan budget={budget} projectId={projectId}></SummaryPlan>
           ) : selectedTab === 'materials' ? (
             <MaterialPlan projectId={projectId}></MaterialPlan>
-          ) : selectedTab === 'labor' ? (
+          ) : selectedTab === 'labors' ? (
             <LaborPlan projectId={projectId}></LaborPlan>
           ) : selectedTab === 'subcontracts' ? (
             <SubcontractPlan projectId={projectId}></SubcontractPlan>

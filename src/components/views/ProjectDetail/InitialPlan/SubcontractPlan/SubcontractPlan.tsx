@@ -59,7 +59,7 @@ const SubcontractPlan: React.FC<ISubcontractPlan> = props => {
 
   const editButton = async (projectSubcontractPlanId: string) => {
     const successCallback = (response: IProjectSubcontractPlan) => {
-      setSelectedItem({ ...response });
+      setSelectedItem(response);
       setIsModalOpen(true);
     };
     await getProjectSubcontractPlanById({

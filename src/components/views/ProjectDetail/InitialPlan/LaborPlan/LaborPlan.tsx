@@ -61,7 +61,7 @@ const LaborPlan: React.FC<ILaborPlan> = props => {
 
   const editButton = async (projectLaborPlanId: string) => {
     const successCallback = (response: IProjectLaborPlan) => {
-      setSelectedItem({ ...response });
+      setSelectedItem(response);
       setIsModalOpen(true);
     };
     await getProjectLaborPlanById({
