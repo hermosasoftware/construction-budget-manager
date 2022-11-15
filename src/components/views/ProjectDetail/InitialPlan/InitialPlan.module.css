@@ -11,8 +11,3 @@
   flex-wrap: wrap;
   min-width: 250px;
 }
-
-.form {
-  align-items: end;
-  flex: 1;
-}

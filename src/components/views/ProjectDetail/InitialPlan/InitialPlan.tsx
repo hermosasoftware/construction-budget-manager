@@ -89,7 +89,7 @@ const InitialPlan: React.FC<IInitialPlan> = props => {
             initialFormData={budget}
             validationSchema={validationSchema}
             validateOnBlur
-            className={styles.form}
+            style={{ alignItems: 'end', flex: 1 }}
             onSubmit={handleOnSubmit}
           >
             <ExchangeInput
