@@ -7,12 +7,12 @@ import { getProjectById } from '../../../services/ProjectService';
 import { IProject } from '../../../types/project';
 import ExpensesReport from './ExpensesReport/ExpensesReport';
 import Invoicing from './Invoicing';
-import InitialPlan from './InitialPlan/InitialPlan';
+import Budget from './Budget/Budget';
 import Sidebar from '../../layout/Sidebar';
 import { useAppSelector } from '../../../redux/hooks';
 
 export default function Projects() {
-  const [selectedTab, setSelectedTab] = useState('initial');
+  const [selectedTab, setSelectedTab] = useState('budget');
   const [project, setProject] = useState<IProject>();
   const projectId = useParams().id as string;
   const appStrings = useAppSelector(state => state.settings.appStrings);
@@ -55,14 +55,14 @@ export default function Projects() {
         <TabGroup
           className={`${styles.tabs}`}
           tabs={[
-            { id: 'initial', name: appStrings.initialPlanning, selected: true },
+            { id: 'budget', name: appStrings.budget, selected: true },
             { id: 'invoicing', name: appStrings.invoicing },
             { id: 'expenses', name: appStrings.expensesReport },
           ]}
           onSelectedTabChange={activeTabs => setSelectedTab(activeTabs[0])}
         />
-        {selectedTab === 'initial' ? (
-          <InitialPlan projectId={projectId} />
+        {selectedTab === 'budget' ? (
+          <Budget projectId={projectId} />
         ) : selectedTab === 'invoicing' ? (
           <Invoicing projectId={projectId} />
         ) : selectedTab === 'expenses' ? (

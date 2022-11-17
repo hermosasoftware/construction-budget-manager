@@ -17,9 +17,9 @@ import { IBudgetSubcontract } from '../../../../../types/budgetSubcontract';
 import Form, { Input } from '../../../../common/Form';
 import { useAppSelector } from '../../../../../redux/hooks';
 
-import styles from './SubcontractPlan.module.css';
+import styles from './BudgetSubcontract.module.css';
 
-interface ISubcontractPlan {
+interface IBudgetSubcontractView {
   projectId: string;
 }
 
@@ -31,7 +31,7 @@ const initialSelectedItemData = {
   subtotal: 0,
 };
 
-const SubcontractPlan: React.FC<ISubcontractPlan> = props => {
+const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
   const [tableData, setTableData] = useState<IBudgetSubcontract[]>([]);
   const [selectedItem, setSelectedItem] = useState<IBudgetSubcontract>(
     initialSelectedItemData,
@@ -48,7 +48,7 @@ const SubcontractPlan: React.FC<ISubcontractPlan> = props => {
     { name: 'subtotal', value: appStrings.subtotal, isGreen: true },
   ];
 
-  const getSubcontractsPlan = async () => {
+  const getSubcontracts = async () => {
     const successCallback = (response: IBudgetSubcontract[]) =>
       setTableData(response);
     await getBudgetSubcontracts({
@@ -81,7 +81,7 @@ const SubcontractPlan: React.FC<ISubcontractPlan> = props => {
     const successCallback = () => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
-      getSubcontractsPlan();
+      getSubcontracts();
     };
     const serviceCallParameters = {
       projectId,
@@ -105,7 +105,7 @@ const SubcontractPlan: React.FC<ISubcontractPlan> = props => {
 
   useEffect(() => {
     let abortController = new AbortController();
-    getSubcontractsPlan();
+    getSubcontracts();
     return () => {
       abortController.abort();
     };
@@ -174,4 +174,4 @@ const SubcontractPlan: React.FC<ISubcontractPlan> = props => {
   );
 };
 
-export default SubcontractPlan;
+export default BudgetSubcontract;

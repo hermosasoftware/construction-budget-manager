@@ -17,9 +17,9 @@ import { IBudgetLabor } from '../../../../../types/budgetLabor';
 import Form, { Input } from '../../../../common/Form';
 import { useAppSelector } from '../../../../../redux/hooks';
 
-import styles from './LaborPlan.module.css';
+import styles from './BudgetLabor.module.css';
 
-interface ILaborPlan {
+interface IBudgetLaborView {
   projectId: string;
 }
 
@@ -32,7 +32,7 @@ const initialSelectedItemData = {
   subtotal: 0,
 };
 
-const LaborPlan: React.FC<ILaborPlan> = props => {
+const BudgetLabor: React.FC<IBudgetLaborView> = props => {
   const [tableData, setTableData] = useState<IBudgetLabor[]>([]);
   const [selectedItem, setSelectedItem] = useState<IBudgetLabor>(
     initialSelectedItemData,
@@ -50,7 +50,7 @@ const LaborPlan: React.FC<ILaborPlan> = props => {
     { name: 'subtotal', value: appStrings.subtotal, isGreen: true },
   ];
 
-  const getLaborsPlan = async () => {
+  const getLabors = async () => {
     const successCallback = (response: IBudgetLabor[]) =>
       setTableData(response);
     await getBudgetLabors({
@@ -83,7 +83,7 @@ const LaborPlan: React.FC<ILaborPlan> = props => {
     const successCallback = () => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
-      getLaborsPlan();
+      getLabors();
     };
     const serviceCallParameters = {
       projectId,
@@ -108,7 +108,7 @@ const LaborPlan: React.FC<ILaborPlan> = props => {
 
   useEffect(() => {
     let abortController = new AbortController();
-    getLaborsPlan();
+    getLabors();
     return () => {
       abortController.abort();
     };
@@ -180,4 +180,4 @@ const LaborPlan: React.FC<ILaborPlan> = props => {
   );
 };
 
-export default LaborPlan;
+export default BudgetLabor;

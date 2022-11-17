@@ -19,9 +19,9 @@ import { useAppSelector } from '../../../../../redux/hooks';
 import SearchSelect from '../../../../common/Form/Elements/SearchSelect';
 import { IMaterialBreakdown } from '../../../../../types/collections';
 
-import styles from './MaterialPlan.module.css';
+import styles from './BudgetMaterial.module.css';
 
-interface IMaterialPlan {
+interface IBudgetMaterialView {
   projectId: string;
 }
 
@@ -38,7 +38,7 @@ const initialSelectedItemData = {
   subtotal: 0,
 };
 
-const MaterialPlan: React.FC<IMaterialPlan> = props => {
+const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
   const [tableData, setTableData] = useState<IMaterialBreakdown[]>([]);
   const [selectedItem, setSelectedItem] = useState<IItem>(
     initialSelectedItemData,
@@ -57,7 +57,7 @@ const MaterialPlan: React.FC<IMaterialPlan> = props => {
     { name: 'subtotal', value: appStrings.subtotal, isGreen: true },
   ];
 
-  const getMaterialsPlan = async () => {
+  const getMaterials = async () => {
     const successCallback = (response: IMaterialBreakdown[]) =>
       setTableData(response);
     await getBudgetMaterials({
@@ -111,7 +111,7 @@ const MaterialPlan: React.FC<IMaterialPlan> = props => {
     const successCallback = () => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
-      getMaterialsPlan();
+      getMaterials();
     };
     const serviceCallParameters = {
       projectId,
@@ -136,7 +136,7 @@ const MaterialPlan: React.FC<IMaterialPlan> = props => {
 
   useEffect(() => {
     let abortController = new AbortController();
-    getMaterialsPlan();
+    getMaterials();
     return () => {
       abortController.abort();
     };
@@ -221,4 +221,4 @@ const MaterialPlan: React.FC<IMaterialPlan> = props => {
   );
 };
 
-export default MaterialPlan;
+export default BudgetMaterial;
