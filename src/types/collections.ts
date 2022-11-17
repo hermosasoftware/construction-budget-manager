@@ -1,4 +1,4 @@
-import { IProjectMaterialPlan } from './projectMaterialPlan';
+import { IBudgetMaterial } from './budgetMaterial';
 
 export interface IMaterial {
   id: string;
@@ -17,6 +17,6 @@ interface ISubMaterial {
 
 export interface IMaterialBreakdown {
   id: string;
-  material: IMaterial | IProjectMaterialPlan;
+  material: IMaterial | IBudgetMaterial;
   subMaterials: ISubMaterial[];
 }

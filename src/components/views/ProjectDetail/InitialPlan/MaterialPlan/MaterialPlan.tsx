@@ -13,7 +13,7 @@ import {
   getProjectMaterialsPlan,
   updateProjectMaterialPlan,
 } from '../../../../../services/ProjectMaterialsPlanService';
-import { IProjectMaterialPlan } from '../../../../../types/projectMaterialPlan';
+import { IBudgetMaterial } from '../../../../../types/budgetMaterial';
 import Form, { Input } from '../../../../common/Form';
 import { useAppSelector } from '../../../../../redux/hooks';
 import SearchSelect from '../../../../common/Form/Elements/SearchSelect';
@@ -25,7 +25,7 @@ interface IMaterialPlan {
   projectId: string;
 }
 
-interface IItem extends Omit<IProjectMaterialPlan, 'name'> {
+interface IItem extends Omit<IBudgetMaterial, 'name'> {
   name: { value: string; label: string };
 }
 
@@ -68,7 +68,7 @@ const MaterialPlan: React.FC<IMaterialPlan> = props => {
   };
 
   const editButton = async (projectMaterialPlanId: string) => {
-    const successCallback = (response: IProjectMaterialPlan) => {
+    const successCallback = (response: IBudgetMaterial) => {
       setSelectedItem({
         ...response,
         name: { value: response.id, label: response.name },

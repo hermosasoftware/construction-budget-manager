@@ -7,7 +7,7 @@ import {
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
-import { IProjectLaborPlan } from '../types/projectLaborPlan';
+import { IBudgetLabor } from '../types/budgetLabor';
 import { IService } from '../types/service';
 import { toastSuccess, toastError } from '../utils/toast';
 
@@ -24,7 +24,7 @@ export const getProjectLaborsPlan = async ({
       ...doc.data(),
       id: doc.id,
       subtotal: doc.data().cost * doc.data().quantity,
-    })) as IProjectLaborPlan[];
+    })) as IBudgetLabor[];
 
     successCallback && successCallback(data);
   } catch (error) {
@@ -60,7 +60,7 @@ export const getProjectLaborPlanById = async ({
       ...result.data(),
       id: result.id,
       subtotal: result.data()?.cost * result.data()?.quantity,
-    } as IProjectLaborPlan;
+    } as IBudgetLabor;
 
     successCallback && successCallback(data);
   } catch (error) {
@@ -81,7 +81,7 @@ export const createProjectLaborPlan = async ({
   errorCallback,
 }: {
   projectId: string;
-  projectLaborPlan: IProjectLaborPlan;
+  projectLaborPlan: IBudgetLabor;
 } & IService) => {
   try {
     const data = await runTransaction(db, async transaction => {
@@ -102,7 +102,7 @@ export const createProjectLaborPlan = async ({
       return {
         ...projectLaborPlan,
         id: laborRef.id,
-      } as IProjectLaborPlan;
+      } as IBudgetLabor;
     });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
@@ -126,7 +126,7 @@ export const updateProjectLaborPlan = async ({
   errorCallback,
 }: {
   projectId: string;
-  projectLaborPlan: IProjectLaborPlan;
+  projectLaborPlan: IBudgetLabor;
 } & IService) => {
   try {
     await runTransaction(db, async transaction => {

@@ -1,4 +1,4 @@
-export interface IProjectSubcontractPlan {
+export interface IBudgetSubcontract {
   id: string;
   name: string;
   quantity: number;

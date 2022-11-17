@@ -13,7 +13,7 @@ import {
   getProjectLaborsPlan,
   updateProjectLaborPlan,
 } from '../../../../../services/ProjectLaborsPlanService';
-import { IProjectLaborPlan } from '../../../../../types/projectLaborPlan';
+import { IBudgetLabor } from '../../../../../types/budgetLabor';
 import Form, { Input } from '../../../../common/Form';
 import { useAppSelector } from '../../../../../redux/hooks';
 
@@ -33,8 +33,8 @@ const initialSelectedItemData = {
 };
 
 const LaborPlan: React.FC<ILaborPlan> = props => {
-  const [tableData, setTableData] = useState<IProjectLaborPlan[]>([]);
-  const [selectedItem, setSelectedItem] = useState<IProjectLaborPlan>(
+  const [tableData, setTableData] = useState<IBudgetLabor[]>([]);
+  const [selectedItem, setSelectedItem] = useState<IBudgetLabor>(
     initialSelectedItemData,
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -51,7 +51,7 @@ const LaborPlan: React.FC<ILaborPlan> = props => {
   ];
 
   const getLaborsPlan = async () => {
-    const successCallback = (response: IProjectLaborPlan[]) =>
+    const successCallback = (response: IBudgetLabor[]) =>
       setTableData(response);
     await getProjectLaborsPlan({
       projectId,
@@ -61,7 +61,7 @@ const LaborPlan: React.FC<ILaborPlan> = props => {
   };
 
   const editButton = async (projectLaborPlanId: string) => {
-    const successCallback = (response: IProjectLaborPlan) => {
+    const successCallback = (response: IBudgetLabor) => {
       setSelectedItem(response);
       setIsModalOpen(true);
     };
@@ -79,7 +79,7 @@ const LaborPlan: React.FC<ILaborPlan> = props => {
     setSearchTerm(event.target.value.toUpperCase());
   };
 
-  const handleOnSubmit = async (projectLaborPlan: IProjectLaborPlan) => {
+  const handleOnSubmit = async (projectLaborPlan: IBudgetLabor) => {
     const successCallback = () => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);

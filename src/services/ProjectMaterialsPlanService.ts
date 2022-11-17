@@ -8,7 +8,7 @@ import {
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
-import { IProjectMaterialPlan } from '../types/projectMaterialPlan';
+import { IBudgetMaterial } from '../types/budgetMaterial';
 import { IService } from '../types/service';
 import { toastSuccess, toastError } from '../utils/toast';
 
@@ -30,7 +30,7 @@ export const getProjectMaterialsPlan = async ({
       ...doc.data(),
       id: doc.id,
       subtotal: doc.data().cost * doc.data().quantity,
-    })) as IProjectMaterialPlan[];
+    })) as IBudgetMaterial[];
 
     let allMaterials = null;
     let submaterialsPromise = data.map(async elem => {
@@ -89,7 +89,7 @@ export const getProjectMaterialPlanById = async ({
       ...result.data(),
       id: result.id,
       subtotal: result.data()?.cost * result.data()?.quantity,
-    } as IProjectMaterialPlan;
+    } as IBudgetMaterial;
 
     successCallback && successCallback(data);
   } catch (error) {
@@ -110,7 +110,7 @@ export const createProjectMaterialPlan = async ({
   errorCallback,
 }: {
   projectId: string;
-  projectMaterialPlan: IProjectMaterialPlan;
+  projectMaterialPlan: IBudgetMaterial;
 } & IService) => {
   try {
     const data = await runTransaction(db, async transaction => {
@@ -131,7 +131,7 @@ export const createProjectMaterialPlan = async ({
       return {
         ...projectMaterialPlan,
         id: matRef.id,
-      } as IProjectMaterialPlan;
+      } as IBudgetMaterial;
     });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
@@ -155,7 +155,7 @@ export const updateProjectMaterialPlan = async ({
   errorCallback,
 }: {
   projectId: string;
-  projectMaterialPlan: IProjectMaterialPlan;
+  projectMaterialPlan: IBudgetMaterial;
 } & IService) => {
   try {
     await runTransaction(db, async transaction => {

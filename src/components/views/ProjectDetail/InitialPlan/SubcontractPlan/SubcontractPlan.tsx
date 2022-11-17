@@ -13,7 +13,7 @@ import {
   getProjectSubcontractsPlan,
   updateProjectSubcontractPlan,
 } from '../../../../../services/ProjectSubcontractsPlanService';
-import { IProjectSubcontractPlan } from '../../../../../types/projectSubcontractPlan';
+import { IBudgetSubcontract } from '../../../../../types/budgetSubcontract';
 import Form, { Input } from '../../../../common/Form';
 import { useAppSelector } from '../../../../../redux/hooks';
 
@@ -32,8 +32,8 @@ const initialSelectedItemData = {
 };
 
 const SubcontractPlan: React.FC<ISubcontractPlan> = props => {
-  const [tableData, setTableData] = useState<IProjectSubcontractPlan[]>([]);
-  const [selectedItem, setSelectedItem] = useState<IProjectSubcontractPlan>(
+  const [tableData, setTableData] = useState<IBudgetSubcontract[]>([]);
+  const [selectedItem, setSelectedItem] = useState<IBudgetSubcontract>(
     initialSelectedItemData,
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -49,7 +49,7 @@ const SubcontractPlan: React.FC<ISubcontractPlan> = props => {
   ];
 
   const getSubcontractsPlan = async () => {
-    const successCallback = (response: IProjectSubcontractPlan[]) =>
+    const successCallback = (response: IBudgetSubcontract[]) =>
       setTableData(response);
     await getProjectSubcontractsPlan({
       projectId,
@@ -59,7 +59,7 @@ const SubcontractPlan: React.FC<ISubcontractPlan> = props => {
   };
 
   const editButton = async (projectSubcontractPlanId: string) => {
-    const successCallback = (response: IProjectSubcontractPlan) => {
+    const successCallback = (response: IBudgetSubcontract) => {
       setSelectedItem(response);
       setIsModalOpen(true);
     };
@@ -77,9 +77,7 @@ const SubcontractPlan: React.FC<ISubcontractPlan> = props => {
     setSearchTerm(event.target.value.toUpperCase());
   };
 
-  const handleOnSubmit = async (
-    projectSubcontractPlan: IProjectSubcontractPlan,
-  ) => {
+  const handleOnSubmit = async (projectSubcontractPlan: IBudgetSubcontract) => {
     const successCallback = () => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
