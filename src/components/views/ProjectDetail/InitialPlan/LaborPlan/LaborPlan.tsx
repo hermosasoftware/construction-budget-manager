@@ -8,11 +8,11 @@ import TableView, {
   TTableHeader,
 } from '../../../../common/TableView/TableView';
 import {
-  createProjectLaborPlan,
-  getProjectLaborPlanById,
-  getProjectLaborsPlan,
-  updateProjectLaborPlan,
-} from '../../../../../services/ProjectLaborsPlanService';
+  createBudgetLabor,
+  getBudgetLaborById,
+  getBudgetLabors,
+  updateBudgetLabor,
+} from '../../../../../services/BudgetLaborsService';
 import { IBudgetLabor } from '../../../../../types/budgetLabor';
 import Form, { Input } from '../../../../common/Form';
 import { useAppSelector } from '../../../../../redux/hooks';
@@ -53,21 +53,21 @@ const LaborPlan: React.FC<ILaborPlan> = props => {
   const getLaborsPlan = async () => {
     const successCallback = (response: IBudgetLabor[]) =>
       setTableData(response);
-    await getProjectLaborsPlan({
+    await getBudgetLabors({
       projectId,
       appStrings,
       successCallback,
     });
   };
 
-  const editButton = async (projectLaborPlanId: string) => {
+  const editButton = async (budgetLaborId: string) => {
     const successCallback = (response: IBudgetLabor) => {
       setSelectedItem(response);
       setIsModalOpen(true);
     };
-    await getProjectLaborPlanById({
+    await getBudgetLaborById({
       projectId,
-      projectLaborPlanId,
+      budgetLaborId,
       appStrings,
       successCallback,
     });
@@ -79,7 +79,7 @@ const LaborPlan: React.FC<ILaborPlan> = props => {
     setSearchTerm(event.target.value.toUpperCase());
   };
 
-  const handleOnSubmit = async (projectLaborPlan: IBudgetLabor) => {
+  const handleOnSubmit = async (budgetLabor: IBudgetLabor) => {
     const successCallback = () => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
@@ -87,16 +87,16 @@ const LaborPlan: React.FC<ILaborPlan> = props => {
     };
     const serviceCallParameters = {
       projectId,
-      projectLaborPlan: {
-        ...projectLaborPlan,
-        subtotal: projectLaborPlan.cost * projectLaborPlan.quantity,
+      budgetLabor: {
+        ...budgetLabor,
+        subtotal: budgetLabor.cost * budgetLabor.quantity,
       },
       appStrings,
       successCallback,
     };
-    projectLaborPlan.id
-      ? await updateProjectLaborPlan(serviceCallParameters)
-      : await createProjectLaborPlan(serviceCallParameters);
+    budgetLabor.id
+      ? await updateBudgetLabor(serviceCallParameters)
+      : await createBudgetLabor(serviceCallParameters);
   };
 
   const validationSchema = yup.object().shape({

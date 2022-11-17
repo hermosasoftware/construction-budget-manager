@@ -12,7 +12,7 @@ import { IBudgetMaterial } from '../types/budgetMaterial';
 import { IService } from '../types/service';
 import { toastSuccess, toastError } from '../utils/toast';
 
-export const getProjectMaterialsPlan = async ({
+export const getBudgetMaterials = async ({
   projectId,
   appStrings,
   successCallback,
@@ -66,15 +66,15 @@ export const getProjectMaterialsPlan = async ({
   }
 };
 
-export const getProjectMaterialPlanById = async ({
+export const getBudgetMaterialById = async ({
   projectId,
-  projectMaterialPlanId,
+  budgetMaterialId,
   appStrings,
   successCallback,
   errorCallback,
 }: {
   projectId: string;
-  projectMaterialPlanId: string;
+  budgetMaterialId: string;
 } & IService) => {
   try {
     const userRef = doc(
@@ -82,7 +82,7 @@ export const getProjectMaterialPlanById = async ({
       'projects',
       projectId,
       'projectMaterialsPlan',
-      projectMaterialPlanId,
+      budgetMaterialId,
     );
     const result = await getDoc(userRef);
     const data = {
@@ -102,19 +102,19 @@ export const getProjectMaterialPlanById = async ({
   }
 };
 
-export const createProjectMaterialPlan = async ({
+export const createBudgetMaterial = async ({
   projectId,
-  projectMaterialPlan,
+  budgetMaterial,
   appStrings,
   successCallback,
   errorCallback,
 }: {
   projectId: string;
-  projectMaterialPlan: IBudgetMaterial;
+  budgetMaterial: IBudgetMaterial;
 } & IService) => {
   try {
     const data = await runTransaction(db, async transaction => {
-      const { id, subtotal, ...rest } = projectMaterialPlan;
+      const { id, subtotal, ...rest } = budgetMaterial;
       const matRef = doc(
         collection(db, 'projects', projectId, 'projectMaterialsPlan'),
       );
@@ -129,7 +129,7 @@ export const createProjectMaterialPlan = async ({
       transaction.set(matRef, rest);
 
       return {
-        ...projectMaterialPlan,
+        ...budgetMaterial,
         id: matRef.id,
       } as IBudgetMaterial;
     });
@@ -147,19 +147,19 @@ export const createProjectMaterialPlan = async ({
   }
 };
 
-export const updateProjectMaterialPlan = async ({
+export const updateBudgetMaterial = async ({
   projectId,
-  projectMaterialPlan,
+  budgetMaterial,
   appStrings,
   successCallback,
   errorCallback,
 }: {
   projectId: string;
-  projectMaterialPlan: IBudgetMaterial;
+  budgetMaterial: IBudgetMaterial;
 } & IService) => {
   try {
     await runTransaction(db, async transaction => {
-      const { id, subtotal, ...rest } = projectMaterialPlan;
+      const { id, subtotal, ...rest } = budgetMaterial;
       const matRef = doc(db, 'projects', projectId, 'projectMaterialsPlan', id);
       const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
       const matDoc = await transaction.get(matRef);

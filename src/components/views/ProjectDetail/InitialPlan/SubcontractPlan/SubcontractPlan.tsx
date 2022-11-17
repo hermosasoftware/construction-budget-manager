@@ -8,11 +8,11 @@ import TableView, {
   TTableHeader,
 } from '../../../../common/TableView/TableView';
 import {
-  createProjectSubcontractPlan,
-  getProjectSubcontractPlanById,
-  getProjectSubcontractsPlan,
-  updateProjectSubcontractPlan,
-} from '../../../../../services/ProjectSubcontractsPlanService';
+  createBudgetSubcontract,
+  getBudgetSubcontractById,
+  getBudgetSubcontracts,
+  updateBudgetSubcontract,
+} from '../../../../../services/BudgetSubcontractsService';
 import { IBudgetSubcontract } from '../../../../../types/budgetSubcontract';
 import Form, { Input } from '../../../../common/Form';
 import { useAppSelector } from '../../../../../redux/hooks';
@@ -51,21 +51,21 @@ const SubcontractPlan: React.FC<ISubcontractPlan> = props => {
   const getSubcontractsPlan = async () => {
     const successCallback = (response: IBudgetSubcontract[]) =>
       setTableData(response);
-    await getProjectSubcontractsPlan({
+    await getBudgetSubcontracts({
       projectId,
       appStrings,
       successCallback,
     });
   };
 
-  const editButton = async (projectSubcontractPlanId: string) => {
+  const editButton = async (budgetSubcontractId: string) => {
     const successCallback = (response: IBudgetSubcontract) => {
       setSelectedItem(response);
       setIsModalOpen(true);
     };
-    await getProjectSubcontractPlanById({
+    await getBudgetSubcontractById({
       projectId,
-      projectSubcontractPlanId,
+      budgetSubcontractId,
       appStrings,
       successCallback,
     });
@@ -77,7 +77,7 @@ const SubcontractPlan: React.FC<ISubcontractPlan> = props => {
     setSearchTerm(event.target.value.toUpperCase());
   };
 
-  const handleOnSubmit = async (projectSubcontractPlan: IBudgetSubcontract) => {
+  const handleOnSubmit = async (budgetSubcontract: IBudgetSubcontract) => {
     const successCallback = () => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
@@ -85,16 +85,16 @@ const SubcontractPlan: React.FC<ISubcontractPlan> = props => {
     };
     const serviceCallParameters = {
       projectId,
-      projectSubcontractPlan: {
-        ...projectSubcontractPlan,
-        subtotal: projectSubcontractPlan.cost * projectSubcontractPlan.quantity,
+      budgetSubcontract: {
+        ...budgetSubcontract,
+        subtotal: budgetSubcontract.cost * budgetSubcontract.quantity,
       },
       appStrings,
       successCallback,
     };
-    projectSubcontractPlan.id
-      ? await updateProjectSubcontractPlan(serviceCallParameters)
-      : await createProjectSubcontractPlan(serviceCallParameters);
+    budgetSubcontract.id
+      ? await updateBudgetSubcontract(serviceCallParameters)
+      : await createBudgetSubcontract(serviceCallParameters);
   };
 
   const validationSchema = yup.object().shape({
