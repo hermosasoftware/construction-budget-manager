@@ -18,7 +18,14 @@ export const getBudgetLabors = async ({
   errorCallback,
 }: { projectId: string } & IService) => {
   try {
-    const userRef = collection(db, 'projects', projectId, 'projectLaborsPlan');
+    const userRef = collection(
+      db,
+      'projects',
+      projectId,
+      'projectBudget',
+      'summary',
+      'budgetLabors',
+    );
     const result = await getDocs(userRef);
     const data = result.docs.map(doc => ({
       ...doc.data(),
@@ -52,7 +59,9 @@ export const getBudgetLaborById = async ({
       db,
       'projects',
       projectId,
-      'projectLaborsPlan',
+      'projectBudget',
+      'summary',
+      'budgetLabors',
       budgetLaborId,
     );
     const result = await getDoc(userRef);
@@ -87,7 +96,14 @@ export const createBudgetLabor = async ({
     const data = await runTransaction(db, async transaction => {
       const { id, subtotal, ...rest } = budgetLabor;
       const laborRef = doc(
-        collection(db, 'projects', projectId, 'projectLaborsPlan'),
+        collection(
+          db,
+          'projects',
+          projectId,
+          'projectBudget',
+          'summary',
+          'budgetLabors',
+        ),
       );
       const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
       const sumDoc = await transaction.get(sumRef);
@@ -131,7 +147,15 @@ export const updateBudgetLabor = async ({
   try {
     await runTransaction(db, async transaction => {
       const { id, subtotal, ...rest } = budgetLabor;
-      const laborRef = doc(db, 'projects', projectId, 'projectLaborsPlan', id);
+      const laborRef = doc(
+        db,
+        'projects',
+        projectId,
+        'projectBudget',
+        'summary',
+        'budgetLabors',
+        id,
+      );
       const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
       const laborDoc = await transaction.get(laborRef);
       const sumDoc = await transaction.get(sumRef);

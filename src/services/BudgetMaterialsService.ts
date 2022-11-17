@@ -23,7 +23,9 @@ export const getBudgetMaterials = async ({
       db,
       'projects',
       projectId,
-      'projectMaterialsPlan',
+      'projectBudget',
+      'summary',
+      'budgetMaterials',
     );
     const result = await getDocs(userRef);
     const data = result.docs.map(doc => ({
@@ -39,7 +41,9 @@ export const getBudgetMaterials = async ({
           db,
           'projects',
           projectId,
-          'projectMaterialsPlan',
+          'projectBudget',
+          'summary',
+          'budgetMaterials',
           elem.id,
           'subMaterials',
         ),
@@ -81,7 +85,9 @@ export const getBudgetMaterialById = async ({
       db,
       'projects',
       projectId,
-      'projectMaterialsPlan',
+      'projectBudget',
+      'summary',
+      'budgetMaterials',
       budgetMaterialId,
     );
     const result = await getDoc(userRef);
@@ -116,7 +122,14 @@ export const createBudgetMaterial = async ({
     const data = await runTransaction(db, async transaction => {
       const { id, subtotal, ...rest } = budgetMaterial;
       const matRef = doc(
-        collection(db, 'projects', projectId, 'projectMaterialsPlan'),
+        collection(
+          db,
+          'projects',
+          projectId,
+          'projectBudget',
+          'summary',
+          'budgetMaterials',
+        ),
       );
       const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
       const sumDoc = await transaction.get(sumRef);
@@ -160,7 +173,15 @@ export const updateBudgetMaterial = async ({
   try {
     await runTransaction(db, async transaction => {
       const { id, subtotal, ...rest } = budgetMaterial;
-      const matRef = doc(db, 'projects', projectId, 'projectMaterialsPlan', id);
+      const matRef = doc(
+        db,
+        'projects',
+        projectId,
+        'projectBudget',
+        'summary',
+        'budgetMaterials',
+        id,
+      );
       const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
       const matDoc = await transaction.get(matRef);
       const sumDoc = await transaction.get(sumRef);

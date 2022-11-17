@@ -22,7 +22,9 @@ export const getBudgetSubcontracts = async ({
       db,
       'projects',
       projectId,
-      'projectSubcontractsPlan',
+      'projectBudget',
+      'summary',
+      'budgetSubcontracts',
     );
     const result = await getDocs(userRef);
     const data = result.docs.map(doc => ({
@@ -57,7 +59,9 @@ export const getBudgetSubcontractById = async ({
       db,
       'projects',
       projectId,
-      'projectSubcontractsPlan',
+      'projectBudget',
+      'summary',
+      'budgetSubcontracts',
       budgetSubcontractId,
     );
     const result = await getDoc(userRef);
@@ -92,7 +96,14 @@ export const createBudgetSubcontract = async ({
     const data = await runTransaction(db, async transaction => {
       const { id, subtotal, ...rest } = budgetSubcontract;
       const subCtRef = doc(
-        collection(db, 'projects', projectId, 'projectSubcontractsPlan'),
+        collection(
+          db,
+          'projects',
+          projectId,
+          'projectBudget',
+          'summary',
+          'budgetSubcontracts',
+        ),
       );
       const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
       const sumDoc = await transaction.get(sumRef);
@@ -140,7 +151,9 @@ export const updateBudgetSubcontract = async ({
         db,
         'projects',
         projectId,
-        'projectSubcontractsPlan',
+        'projectBudget',
+        'summary',
+        'budgetSubcontracts',
         id,
       );
       const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
