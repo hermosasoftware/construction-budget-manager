@@ -7,9 +7,9 @@ import { IProjectBudget } from '../../../../../types/projectBudget';
 import Stat from '../../../../common/Stat/Stat';
 import { colonFormat, dolarFormat } from '../../../../../utils/numbers';
 
-import styles from './SummaryPlan.module.css';
+import styles from './BudgetSummary.module.css';
 
-interface ISummaryPlan {
+interface IBudgetSummaryView {
   projectId: string;
   budget: IProjectBudget;
 }
@@ -20,7 +20,7 @@ interface IBudgetTotals extends IProjectBudget {
   grandTotal: number;
 }
 
-const SummaryPlan: React.FC<ISummaryPlan> = props => {
+const BudgetSummary: React.FC<IBudgetSummaryView> = props => {
   const { budget } = props;
   const [budgetTotals, setBudgetTotals] = useState<IBudgetTotals>();
   const appStrings = useAppSelector(state => state.settings.appStrings);
@@ -120,4 +120,4 @@ const SummaryPlan: React.FC<ISummaryPlan> = props => {
   ) : null;
 };
 
-export default SummaryPlan;
+export default BudgetSummary;

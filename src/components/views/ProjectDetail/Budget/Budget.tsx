@@ -3,10 +3,10 @@ import { Box } from '@chakra-ui/react';
 import * as yup from 'yup';
 import { useAppSelector } from '../../../../redux/hooks';
 import TabGroup from '../../../common/TabGroup/TabGroup';
-import MaterialPlan from './MaterialPlan/MaterialPlan';
-import LaborPlan from './LaborPlan/LaborPlan';
-import SubcontractPlan from './SubcontractPlan/SubcontractPlan';
-import SummaryPlan from './SummaryPlan/SummaryPlan';
+import BudgetMaterial from './BudgetMaterial/BudgetMaterial';
+import BudgetLabor from './BudgetLabor/BudgetLabor';
+import BudgetSubcontract from './BudgetSubcontract/BudgetSubcontract';
+import BudgetSummary from './BudgetSummary/BudgetSummary';
 import Form from '../../../common/Form/Form';
 import ExchangeInput from '../../../common/ExchangeInput/ExchangeInput';
 import {
@@ -15,13 +15,13 @@ import {
 } from '../../../../services/ProjectBudgetService';
 import { IProjectBudget } from '../../../../types/projectBudget';
 
-import styles from './InitialPlan.module.css';
+import styles from './Budget.module.css';
 
-interface IInitialPlan {
+interface IBudgetView {
   projectId: string;
 }
 
-const InitialPlan: React.FC<IInitialPlan> = props => {
+const Budget: React.FC<IBudgetView> = props => {
   const [selectedTab, setSelectedTab] = useState('summary');
   const [editExchange, setEditExchange] = useState(false);
   const { projectId } = props;
@@ -61,10 +61,10 @@ const InitialPlan: React.FC<IInitialPlan> = props => {
 
   const contentToDisplay = (option: string) => {
     const contentOptions: any = {
-      summary: <SummaryPlan budget={budget!} projectId={projectId} />,
-      materials: <MaterialPlan projectId={projectId} />,
-      labors: <LaborPlan projectId={projectId} />,
-      subcontracts: <SubcontractPlan projectId={projectId} />,
+      summary: <BudgetSummary budget={budget!} projectId={projectId} />,
+      materials: <BudgetMaterial projectId={projectId} />,
+      labors: <BudgetLabor projectId={projectId} />,
+      subcontracts: <BudgetSubcontract projectId={projectId} />,
     };
     return contentOptions[option];
   };
@@ -104,4 +104,4 @@ const InitialPlan: React.FC<IInitialPlan> = props => {
   );
 };
 
-export default InitialPlan;
+export default Budget;

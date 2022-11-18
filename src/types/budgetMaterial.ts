@@ -1,4 +1,4 @@
-export interface IProjectLaborPlan {
+export interface IBudgetMaterial {
   id: string;
   name: string;
   unit: string;

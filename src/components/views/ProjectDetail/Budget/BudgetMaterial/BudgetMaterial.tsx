@@ -4,43 +4,50 @@ import * as yup from 'yup';
 import Button from '../../../../common/Button/Button';
 import Modal from '../../../../common/Modal/Modal';
 import SearchInput from '../../../../common/SearchInput/SearchInput';
-import TableView, {
+import MaterialsTableView, {
   TTableHeader,
-} from '../../../../common/TableView/TableView';
+} from '../../../../layout/MaterialsTableView/MaterialsTableView';
 import {
-  createProjectLaborPlan,
-  getProjectLaborPlanById,
-  getProjectLaborsPlan,
-  updateProjectLaborPlan,
-} from '../../../../../services/ProjectLaborsPlanService';
-import { IProjectLaborPlan } from '../../../../../types/projectLaborPlan';
+  createBudgetMaterial,
+  getBudgetMaterialById,
+  getBudgetMaterials,
+  updateBudgetMaterial,
+} from '../../../../../services/BudgetMaterialsService';
+import { IBudgetMaterial } from '../../../../../types/budgetMaterial';
 import Form, { Input } from '../../../../common/Form';
 import { useAppSelector } from '../../../../../redux/hooks';
+import SearchSelect from '../../../../common/Form/Elements/SearchSelect';
+import { IMaterialBreakdown } from '../../../../../types/collections';
 
-import styles from './LaborPlan.module.css';
+import styles from './BudgetMaterial.module.css';
 
-interface ILaborPlan {
+interface IBudgetMaterialView {
   projectId: string;
+}
+
+interface IItem extends Omit<IBudgetMaterial, 'name'> {
+  name: { value: string; label: string };
 }
 
 const initialSelectedItemData = {
   id: '',
-  name: '',
+  name: { value: '', label: '' },
   unit: '',
   quantity: 1,
   cost: 0,
   subtotal: 0,
 };
 
-const LaborPlan: React.FC<ILaborPlan> = props => {
-  const [tableData, setTableData] = useState<IProjectLaborPlan[]>([]);
-  const [selectedItem, setSelectedItem] = useState<IProjectLaborPlan>(
+const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
+  const [tableData, setTableData] = useState<IMaterialBreakdown[]>([]);
+  const [selectedItem, setSelectedItem] = useState<IItem>(
     initialSelectedItemData,
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const { projectId } = props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
+  const materials = useAppSelector(state => state.materials.materials);
 
   const tableHeader: TTableHeader[] = [
     { name: 'name', value: appStrings.name },
@@ -50,24 +57,27 @@ const LaborPlan: React.FC<ILaborPlan> = props => {
     { name: 'subtotal', value: appStrings.subtotal, isGreen: true },
   ];
 
-  const getLaborsPlan = async () => {
-    const successCallback = (response: IProjectLaborPlan[]) =>
+  const getMaterials = async () => {
+    const successCallback = (response: IMaterialBreakdown[]) =>
       setTableData(response);
-    await getProjectLaborsPlan({
+    await getBudgetMaterials({
       projectId,
       appStrings,
       successCallback,
     });
   };
 
-  const editButton = async (projectLaborPlanId: string) => {
-    const successCallback = (response: IProjectLaborPlan) => {
-      setSelectedItem(response);
+  const editButton = async (budgetMaterialId: string) => {
+    const successCallback = (response: IBudgetMaterial) => {
+      setSelectedItem({
+        ...response,
+        name: { value: response.id, label: response.name },
+      });
       setIsModalOpen(true);
     };
-    await getProjectLaborPlanById({
+    await getBudgetMaterialById({
       projectId,
-      projectLaborPlanId,
+      budgetMaterialId,
       appStrings,
       successCallback,
     });
@@ -79,28 +89,46 @@ const LaborPlan: React.FC<ILaborPlan> = props => {
     setSearchTerm(event.target.value.toUpperCase());
   };
 
-  const handleOnSubmit = async (projectLaborPlan: IProjectLaborPlan) => {
+  const handleSearchSelect = async (id: string) => {
+    const material = materials.find(material => id === material.id);
+    if (material) {
+      const { id, ...rest } = material;
+      setSelectedItem({
+        ...selectedItem,
+        ...rest,
+        name: { value: material.id, label: material.name },
+      });
+    }
+  };
+
+  const handleOnSubmit = async (data: IItem) => {
+    const { name, ...rest } = data;
+    const budgetMaterial = {
+      ...rest,
+      subtotal: rest.cost * rest.quantity,
+      name: name.label,
+    };
     const successCallback = () => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
-      getLaborsPlan();
+      getMaterials();
     };
     const serviceCallParameters = {
       projectId,
-      projectLaborPlan: {
-        ...projectLaborPlan,
-        subtotal: projectLaborPlan.cost * projectLaborPlan.quantity,
-      },
+      budgetMaterial,
       appStrings,
       successCallback,
     };
-    projectLaborPlan.id
-      ? await updateProjectLaborPlan(serviceCallParameters)
-      : await createProjectLaborPlan(serviceCallParameters);
+    budgetMaterial.id
+      ? await updateBudgetMaterial(serviceCallParameters)
+      : await createBudgetMaterial(serviceCallParameters);
   };
 
   const validationSchema = yup.object().shape({
-    name: yup.string().required(appStrings?.requiredField),
+    name: yup.object().shape({
+      value: yup.string().required(appStrings?.requiredField),
+      label: yup.string().required(appStrings?.requiredField),
+    }),
     unit: yup.string().required(appStrings?.requiredField),
     quantity: yup.number().positive().required(appStrings?.requiredField),
     cost: yup.number().positive().required(appStrings?.requiredField),
@@ -108,7 +136,7 @@ const LaborPlan: React.FC<ILaborPlan> = props => {
 
   useEffect(() => {
     let abortController = new AbortController();
-    getLaborsPlan();
+    getMaterials();
     return () => {
       abortController.abort();
     };
@@ -132,7 +160,9 @@ const LaborPlan: React.FC<ILaborPlan> = props => {
             }}
           >
             <Heading as="h2" size="lg">
-              {selectedItem.id ? appStrings.editLabor : appStrings.addLabor}
+              {selectedItem.id
+                ? appStrings.editMaterial
+                : appStrings.addMaterial}
             </Heading>
             <Form
               id="project-form"
@@ -142,10 +172,19 @@ const LaborPlan: React.FC<ILaborPlan> = props => {
               validateOnBlur
               onSubmit={handleOnSubmit}
             >
-              <Input
+              <SearchSelect
                 name="name"
-                label={appStrings.name}
+                label={appStrings.material}
                 placeholder={appStrings.projectName}
+                isDisabled={!!selectedItem.id}
+                options={materials.map(material => ({
+                  value: material.id,
+                  label: material.name,
+                }))}
+                value={selectedItem.name}
+                onChange={item => {
+                  handleSearchSelect(item?.value?.value);
+                }}
               />
               <Input
                 name="unit"
@@ -158,6 +197,7 @@ const LaborPlan: React.FC<ILaborPlan> = props => {
                 label={appStrings.quantity}
               />
               <Input name="cost" type="number" label={appStrings.cost} />
+
               <br />
               <Button width="full" type="submit">
                 {appStrings.submit}
@@ -166,11 +206,12 @@ const LaborPlan: React.FC<ILaborPlan> = props => {
           </Modal>
         </div>
       </Flex>
-      <TableView
+      <MaterialsTableView
         headers={tableHeader}
         items={tableData}
         filter={value =>
-          searchTerm === '' || value.name.toUpperCase().includes(searchTerm)
+          searchTerm === '' ||
+          value.material.name.toUpperCase().includes(searchTerm)
         }
         onClickEdit={id => editButton(id)}
         onClickDelete={id => deleteButton(id)}
@@ -180,4 +221,4 @@ const LaborPlan: React.FC<ILaborPlan> = props => {
   );
 };
 
-export default LaborPlan;
+export default BudgetMaterial;

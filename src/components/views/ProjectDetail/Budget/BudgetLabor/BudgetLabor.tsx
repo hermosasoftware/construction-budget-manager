@@ -8,32 +8,33 @@ import TableView, {
   TTableHeader,
 } from '../../../../common/TableView/TableView';
 import {
-  createProjectSubcontractPlan,
-  getProjectSubcontractPlanById,
-  getProjectSubcontractsPlan,
-  updateProjectSubcontractPlan,
-} from '../../../../../services/ProjectSubcontractsPlanService';
-import { IProjectSubcontractPlan } from '../../../../../types/projectSubcontractPlan';
+  createBudgetLabor,
+  getBudgetLaborById,
+  getBudgetLabors,
+  updateBudgetLabor,
+} from '../../../../../services/BudgetLaborsService';
+import { IBudgetLabor } from '../../../../../types/budgetLabor';
 import Form, { Input } from '../../../../common/Form';
 import { useAppSelector } from '../../../../../redux/hooks';
 
-import styles from './SubcontractPlan.module.css';
+import styles from './BudgetLabor.module.css';
 
-interface ISubcontractPlan {
+interface IBudgetLaborView {
   projectId: string;
 }
 
 const initialSelectedItemData = {
   id: '',
   name: '',
+  unit: '',
   quantity: 1,
   cost: 0,
   subtotal: 0,
 };
 
-const SubcontractPlan: React.FC<ISubcontractPlan> = props => {
-  const [tableData, setTableData] = useState<IProjectSubcontractPlan[]>([]);
-  const [selectedItem, setSelectedItem] = useState<IProjectSubcontractPlan>(
+const BudgetLabor: React.FC<IBudgetLaborView> = props => {
+  const [tableData, setTableData] = useState<IBudgetLabor[]>([]);
+  const [selectedItem, setSelectedItem] = useState<IBudgetLabor>(
     initialSelectedItemData,
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -43,29 +44,30 @@ const SubcontractPlan: React.FC<ISubcontractPlan> = props => {
 
   const tableHeader: TTableHeader[] = [
     { name: 'name', value: appStrings.name },
+    { name: 'unit', value: appStrings.unit },
     { name: 'quantity', value: appStrings.quantity },
     { name: 'cost', value: appStrings.cost, isGreen: true },
     { name: 'subtotal', value: appStrings.subtotal, isGreen: true },
   ];
 
-  const getSubcontractsPlan = async () => {
-    const successCallback = (response: IProjectSubcontractPlan[]) =>
+  const getLabors = async () => {
+    const successCallback = (response: IBudgetLabor[]) =>
       setTableData(response);
-    await getProjectSubcontractsPlan({
+    await getBudgetLabors({
       projectId,
       appStrings,
       successCallback,
     });
   };
 
-  const editButton = async (projectSubcontractPlanId: string) => {
-    const successCallback = (response: IProjectSubcontractPlan) => {
+  const editButton = async (budgetLaborId: string) => {
+    const successCallback = (response: IBudgetLabor) => {
       setSelectedItem(response);
       setIsModalOpen(true);
     };
-    await getProjectSubcontractPlanById({
+    await getBudgetLaborById({
       projectId,
-      projectSubcontractPlanId,
+      budgetLaborId,
       appStrings,
       successCallback,
     });
@@ -77,37 +79,36 @@ const SubcontractPlan: React.FC<ISubcontractPlan> = props => {
     setSearchTerm(event.target.value.toUpperCase());
   };
 
-  const handleOnSubmit = async (
-    projectSubcontractPlan: IProjectSubcontractPlan,
-  ) => {
+  const handleOnSubmit = async (budgetLabor: IBudgetLabor) => {
     const successCallback = () => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
-      getSubcontractsPlan();
+      getLabors();
     };
     const serviceCallParameters = {
       projectId,
-      projectSubcontractPlan: {
-        ...projectSubcontractPlan,
-        subtotal: projectSubcontractPlan.cost * projectSubcontractPlan.quantity,
+      budgetLabor: {
+        ...budgetLabor,
+        subtotal: budgetLabor.cost * budgetLabor.quantity,
       },
       appStrings,
       successCallback,
     };
-    projectSubcontractPlan.id
-      ? await updateProjectSubcontractPlan(serviceCallParameters)
-      : await createProjectSubcontractPlan(serviceCallParameters);
+    budgetLabor.id
+      ? await updateBudgetLabor(serviceCallParameters)
+      : await createBudgetLabor(serviceCallParameters);
   };
 
   const validationSchema = yup.object().shape({
     name: yup.string().required(appStrings?.requiredField),
+    unit: yup.string().required(appStrings?.requiredField),
     quantity: yup.number().positive().required(appStrings?.requiredField),
     cost: yup.number().positive().required(appStrings?.requiredField),
   });
 
   useEffect(() => {
     let abortController = new AbortController();
-    getSubcontractsPlan();
+    getLabors();
     return () => {
       abortController.abort();
     };
@@ -131,9 +132,7 @@ const SubcontractPlan: React.FC<ISubcontractPlan> = props => {
             }}
           >
             <Heading as="h2" size="lg">
-              {selectedItem.id
-                ? appStrings.editSubcontract
-                : appStrings.addSubcontract}
+              {selectedItem.id ? appStrings.editLabor : appStrings.addLabor}
             </Heading>
             <Form
               id="project-form"
@@ -147,6 +146,11 @@ const SubcontractPlan: React.FC<ISubcontractPlan> = props => {
                 name="name"
                 label={appStrings.name}
                 placeholder={appStrings.projectName}
+              />
+              <Input
+                name="unit"
+                label="Unit"
+                placeholder={appStrings.metricUnit}
               />
               <Input
                 name="quantity"
@@ -176,4 +180,4 @@ const SubcontractPlan: React.FC<ISubcontractPlan> = props => {
   );
 };
 
-export default SubcontractPlan;
+export default BudgetLabor;
