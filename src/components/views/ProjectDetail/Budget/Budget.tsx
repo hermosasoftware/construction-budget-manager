@@ -54,9 +54,7 @@ const Budget: React.FC<IBudgetView> = props => {
   useEffect(() => {
     let abortController = new AbortController();
     getBudget();
-    return () => {
-      abortController.abort();
-    };
+    return () => abortController.abort();
   }, []);
 
   const contentToDisplay = (option: string) => {

@@ -106,9 +106,7 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
   useEffect(() => {
     let abortController = new AbortController();
     getSubcontracts();
-    return () => {
-      abortController.abort();
-    };
+    return () => abortController.abort();
   }, []);
 
   return (

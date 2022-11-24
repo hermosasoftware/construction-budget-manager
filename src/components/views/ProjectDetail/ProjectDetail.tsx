@@ -1,4 +1,3 @@
-import styles from './ProjectDetail.module.css';
 import { useEffect, useState } from 'react';
 import { Box, Flex } from '@chakra-ui/react';
 import { useParams } from 'react-router-dom';
@@ -8,8 +7,11 @@ import { IProject } from '../../../types/project';
 import ExpensesReport from './ExpensesReport/ExpensesReport';
 import Invoicing from './Invoicing';
 import Budget from './Budget/Budget';
+import ExtraBudget from './ExtraBudget/ExtraBudget';
 import Sidebar from '../../layout/Sidebar';
 import { useAppSelector } from '../../../redux/hooks';
+
+import styles from './ProjectDetail.module.css';
 
 export default function Projects() {
   const [selectedTab, setSelectedTab] = useState('budget');
@@ -24,9 +26,7 @@ export default function Projects() {
       await getProjectById({ projectId, appStrings, successCallback });
     };
     getProjectbyId();
-    return () => {
-      abortController.abort();
-    };
+    return () => abortController.abort();
   }, [projectId]);
 
   return (
@@ -56,6 +56,7 @@ export default function Projects() {
           className={`${styles.tabs}`}
           tabs={[
             { id: 'budget', name: appStrings.budget, selected: true },
+            { id: 'extras', name: appStrings.extras },
             { id: 'invoicing', name: appStrings.invoicing },
             { id: 'expenses', name: appStrings.expensesReport },
           ]}
@@ -63,6 +64,8 @@ export default function Projects() {
         />
         {selectedTab === 'budget' ? (
           <Budget projectId={projectId} />
+        ) : selectedTab === 'extras' ? (
+          <ExtraBudget projectId={projectId} />
         ) : selectedTab === 'invoicing' ? (
           <Invoicing projectId={projectId} />
         ) : selectedTab === 'expenses' ? (

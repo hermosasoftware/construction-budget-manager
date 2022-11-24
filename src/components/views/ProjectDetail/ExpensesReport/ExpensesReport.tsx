@@ -103,9 +103,7 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
   useEffect(() => {
     let abortController = new AbortController();
     getExpenses();
-    return () => {
-      abortController.abort();
-    };
+    return () => abortController.abort();
   }, []);
 
   return (

@@ -4,80 +4,68 @@ import * as yup from 'yup';
 import Button from '../../../../common/Button/Button';
 import Modal from '../../../../common/Modal/Modal';
 import SearchInput from '../../../../common/SearchInput/SearchInput';
-import MaterialsTableView, {
+import TableView, {
   TTableHeader,
-} from '../../../../layout/MaterialsTableView/MaterialsTableView';
+} from '../../../../common/TableView/TableView';
 import {
-  createBudgetMaterial,
-  getBudgetMaterialById,
-  getBudgetMaterials,
-  updateBudgetMaterial,
-} from '../../../../../services/BudgetMaterialsService';
-import { IBudgetMaterial } from '../../../../../types/budgetMaterial';
+  createExtraBudgetSubcontract,
+  getExtraBudgetSubcontractById,
+  getExtraBudgetSubcontracts,
+  updateExtraBudgetSubcontract,
+} from '../../../../../services/ExtraBudgetSubcontractsService';
+import { IBudgetSubcontract } from '../../../../../types/budgetSubcontract';
 import Form, { Input } from '../../../../common/Form';
 import { useAppSelector } from '../../../../../redux/hooks';
-import SearchSelect from '../../../../common/Form/Elements/SearchSelect';
-import { IMaterialBreakdown } from '../../../../../types/collections';
 
-import styles from './BudgetMaterial.module.css';
+import styles from './BudgetSubcontract.module.css';
 
-interface IBudgetMaterialView {
+interface IBudgetSubcontractView {
   projectId: string;
-}
-
-interface IItem extends Omit<IBudgetMaterial, 'name'> {
-  name: { value: string; label: string };
 }
 
 const initialSelectedItemData = {
   id: '',
-  name: { value: '', label: '' },
-  unit: '',
+  name: '',
   quantity: 1,
   cost: 0,
   subtotal: 0,
 };
 
-const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
-  const [tableData, setTableData] = useState<IMaterialBreakdown[]>([]);
-  const [selectedItem, setSelectedItem] = useState<IItem>(
+const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
+  const [tableData, setTableData] = useState<IBudgetSubcontract[]>([]);
+  const [selectedItem, setSelectedItem] = useState<IBudgetSubcontract>(
     initialSelectedItemData,
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const { projectId } = props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
-  const materials = useAppSelector(state => state.materials.materials);
 
   const tableHeader: TTableHeader[] = [
     { name: 'name', value: appStrings.name },
-    { name: 'unit', value: appStrings.unit },
     { name: 'quantity', value: appStrings.quantity },
     { name: 'cost', value: appStrings.cost, isGreen: true },
     { name: 'subtotal', value: appStrings.subtotal, isGreen: true },
   ];
 
-  const getMaterials = async () => {
-    const successCallback = (response: IMaterialBreakdown[]) =>
+  const getSubcontracts = async () => {
+    const successCallback = (response: IBudgetSubcontract[]) =>
       setTableData(response);
-    await getBudgetMaterials({
+    await getExtraBudgetSubcontracts({
       projectId,
       appStrings,
       successCallback,
     });
   };
 
-  const editButton = async (budgetMaterialId: string) => {
-    const successCallback = (response: IBudgetMaterial) => {
-      setSelectedItem({
-        ...response,
-        name: { value: response.id, label: response.name },
-      });
+  const editButton = async (extraBudgetSubcontractId: string) => {
+    const successCallback = (response: IBudgetSubcontract) => {
+      setSelectedItem(response);
       setIsModalOpen(true);
     };
-    await getBudgetMaterialById({
+    await getExtraBudgetSubcontractById({
       projectId,
-      budgetMaterialId,
+      extraBudgetSubcontractId,
       appStrings,
       successCallback,
     });
@@ -89,54 +77,35 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
     setSearchTerm(event.target.value.toUpperCase());
   };
 
-  const handleSearchSelect = async (id: string) => {
-    const material = materials.find(material => id === material.id);
-    if (material) {
-      const { id, ...rest } = material;
-      setSelectedItem({
-        ...selectedItem,
-        ...rest,
-        name: { value: material.id, label: material.name },
-      });
-    }
-  };
-
-  const handleOnSubmit = async (data: IItem) => {
-    const { name, ...rest } = data;
-    const budgetMaterial = {
-      ...rest,
-      subtotal: rest.cost * rest.quantity,
-      name: name.label,
-    };
+  const handleOnSubmit = async (extraBudgetSubcontract: IBudgetSubcontract) => {
     const successCallback = () => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
-      getMaterials();
+      getSubcontracts();
     };
     const serviceCallParameters = {
       projectId,
-      budgetMaterial,
+      extraBudgetSubcontract: {
+        ...extraBudgetSubcontract,
+        subtotal: extraBudgetSubcontract.cost * extraBudgetSubcontract.quantity,
+      },
       appStrings,
       successCallback,
     };
-    budgetMaterial.id
-      ? await updateBudgetMaterial(serviceCallParameters)
-      : await createBudgetMaterial(serviceCallParameters);
+    extraBudgetSubcontract.id
+      ? await updateExtraBudgetSubcontract(serviceCallParameters)
+      : await createExtraBudgetSubcontract(serviceCallParameters);
   };
 
   const validationSchema = yup.object().shape({
-    name: yup.object().shape({
-      value: yup.string().required(appStrings?.requiredField),
-      label: yup.string().required(appStrings?.requiredField),
-    }),
-    unit: yup.string().required(appStrings?.requiredField),
+    name: yup.string().required(appStrings?.requiredField),
     quantity: yup.number().positive().required(appStrings?.requiredField),
     cost: yup.number().positive().required(appStrings?.requiredField),
   });
 
   useEffect(() => {
     let abortController = new AbortController();
-    getMaterials();
+    getSubcontracts();
     return () => abortController.abort();
   }, []);
 
@@ -159,8 +128,8 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
           >
             <Heading as="h2" size="lg">
               {selectedItem.id
-                ? appStrings.editMaterial
-                : appStrings.addMaterial}
+                ? appStrings.editSubcontract
+                : appStrings.addSubcontract}
             </Heading>
             <Form
               id="project-form"
@@ -170,24 +139,10 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
               validateOnBlur
               onSubmit={handleOnSubmit}
             >
-              <SearchSelect
-                name="name"
-                label={appStrings.material}
-                placeholder={appStrings.projectName}
-                isDisabled={!!selectedItem.id}
-                options={materials.map(material => ({
-                  value: material.id,
-                  label: material.name,
-                }))}
-                value={selectedItem.name}
-                onChange={item => {
-                  handleSearchSelect(item?.value?.value);
-                }}
-              />
               <Input
-                name="unit"
-                label="Unit"
-                placeholder={appStrings.metricUnit}
+                name="name"
+                label={appStrings.name}
+                placeholder={appStrings.projectName}
               />
               <Input
                 name="quantity"
@@ -195,7 +150,6 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
                 label={appStrings.quantity}
               />
               <Input name="cost" type="number" label={appStrings.cost} />
-
               <br />
               <Button width="full" type="submit">
                 {appStrings.submit}
@@ -204,12 +158,11 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
           </Modal>
         </div>
       </Flex>
-      <MaterialsTableView
+      <TableView
         headers={tableHeader}
         items={tableData}
         filter={value =>
-          searchTerm === '' ||
-          value.material.name.toUpperCase().includes(searchTerm)
+          searchTerm === '' || value.name.toUpperCase().includes(searchTerm)
         }
         onClickEdit={id => editButton(id)}
         onClickDelete={id => deleteButton(id)}
@@ -219,4 +172,4 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
   );
 };
 
-export default BudgetMaterial;
+export default BudgetSubcontract;
