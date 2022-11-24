@@ -109,9 +109,7 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
   useEffect(() => {
     let abortController = new AbortController();
     getLabors();
-    return () => {
-      abortController.abort();
-    };
+    return () => abortController.abort();
   }, []);
 
   return (

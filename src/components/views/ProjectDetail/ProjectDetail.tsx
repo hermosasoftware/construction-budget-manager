@@ -26,9 +26,7 @@ export default function Projects() {
       await getProjectById({ projectId, appStrings, successCallback });
     };
     getProjectbyId();
-    return () => {
-      abortController.abort();
-    };
+    return () => abortController.abort();
   }, [projectId]);
 
   return (

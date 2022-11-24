@@ -137,9 +137,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
   useEffect(() => {
     let abortController = new AbortController();
     getMaterials();
-    return () => {
-      abortController.abort();
-    };
+    return () => abortController.abort();
   }, []);
 
   return (

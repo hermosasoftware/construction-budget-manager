@@ -77,9 +77,7 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
   useEffect(() => {
     let abortController = new AbortController();
     getExtraBudget();
-    return () => {
-      abortController.abort();
-    };
+    return () => abortController.abort();
   }, []);
 
   const contentToDisplay = (option: string) => {

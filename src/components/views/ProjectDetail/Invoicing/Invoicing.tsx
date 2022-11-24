@@ -116,9 +116,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
   useEffect(() => {
     let abortController = new AbortController();
     getInvoicing();
-    return () => {
-      abortController.abort();
-    };
+    return () => abortController.abort();
   }, []);
 
   return (
