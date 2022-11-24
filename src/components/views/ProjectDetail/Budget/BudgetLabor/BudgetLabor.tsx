@@ -21,6 +21,7 @@ import styles from './BudgetLabor.module.css';
 
 interface IBudgetLaborView {
   projectId: string;
+  isBudgetOpen: boolean;
 }
 
 const initialSelectedItemData = {
@@ -39,7 +40,7 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const { projectId } = props;
+  const { projectId, isBudgetOpen } = props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
   const tableHeader: TTableHeader[] = [
@@ -172,6 +173,7 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
         }
         onClickEdit={id => editButton(id)}
         onClickDelete={id => deleteButton(id)}
+        hideOptions={!isBudgetOpen}
       />
       {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
     </div>

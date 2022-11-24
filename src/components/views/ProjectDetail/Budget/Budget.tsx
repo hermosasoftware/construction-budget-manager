@@ -14,12 +14,11 @@ import {
   updateProjectBudgetExchange,
 } from '../../../../services/ProjectBudgetService';
 import { IProjectBudget } from '../../../../types/projectBudget';
-
-import styles from './Budget.module.css';
 import Button from '../../../common/Button/Button';
 import Modal from '../../../common/Modal/Modal';
 import { IProject } from '../../../../types/project';
 import { updateProject } from '../../../../services/ProjectService';
+import styles from './Budget.module.css';
 
 interface IBudgetView {
   projectId: string;
@@ -91,9 +90,13 @@ const Budget: React.FC<IBudgetView> = props => {
   const contentToDisplay = (option: string) => {
     const contentOptions: any = {
       summary: <BudgetSummary budget={budget!} projectId={projectId} />,
-      materials: <BudgetMaterial projectId={projectId} />,
-      labors: <BudgetLabor projectId={projectId} />,
-      subcontracts: <BudgetSubcontract projectId={projectId} />,
+      materials: (
+        <BudgetMaterial projectId={projectId} isBudgetOpen={isBudgetOpen} />
+      ),
+      labors: <BudgetLabor projectId={projectId} isBudgetOpen={isBudgetOpen} />,
+      subcontracts: (
+        <BudgetSubcontract projectId={projectId} isBudgetOpen={isBudgetOpen} />
+      ),
     };
     return contentOptions[option];
   };
@@ -125,6 +128,7 @@ const Budget: React.FC<IBudgetView> = props => {
             <ExchangeInput
               editExchange={editExchange}
               onClick={() => setEditExchange(true)}
+              isDisabled={!isBudgetOpen}
             />
           </Form>
           <Button
@@ -146,17 +150,13 @@ const Budget: React.FC<IBudgetView> = props => {
               {appStrings.closingBudgetWarning}
               <div className={styles.buttons_container}>
                 <Button
-                  onClick={() => {
-                    setIsModalOpen(false);
-                  }}
+                  onClick={() => setIsModalOpen(false)}
                   className={styles.close_budget}
                 >
                   {appStrings.cancel}
                 </Button>
                 <Button
-                  onClick={() => {
-                    handleCloseBudget();
-                  }}
+                  onClick={() => handleCloseBudget()}
                   className={`${styles.close_budget} ${styles.button_danger}`}
                 >
                   {appStrings.closeBudget}

@@ -41,6 +41,7 @@ interface ITableProps<T> {
   onClickEdit?: (id: string) => void;
   onClickDelete?: (id: string) => void;
   rowChild?: React.ReactElement;
+  hideOptions?: boolean;
 }
 
 const TableView = <T extends TObject>(props: ITableProps<T>) => {
@@ -52,6 +53,7 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
     onClickDelete,
     handleRowClick,
     rowChild,
+    hideOptions,
   } = props;
   const [rowChildVisible, seTrowChildVisible] = useState<boolean>(false);
   const [selectedRow, setSelectedRow] = useState<string | number>('');
@@ -103,7 +105,7 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
                     {row[header.name]}
                   </Td>
                 ))}
-                {onClickEdit && onClickDelete ? (
+                {onClickEdit && onClickDelete && !hideOptions ? (
                   <Td
                     id={row.id?.toString()}
                     className={`${styles.td}`}
