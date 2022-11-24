@@ -64,9 +64,21 @@ export default function Projects() {
           className={`${styles.tabs}`}
           tabs={[
             { id: 'budget', name: appStrings.budget, selected: true },
-            { id: 'extras', name: appStrings.extras },
-            { id: 'invoicing', name: appStrings.invoicing },
-            { id: 'expenses', name: appStrings.expensesReport },
+            {
+              id: 'extras',
+              name: appStrings.extras,
+              isDisable: project?.budgetOpen,
+            },
+            {
+              id: 'invoicing',
+              name: appStrings.invoicing,
+              isDisable: project?.budgetOpen,
+            },
+            {
+              id: 'expenses',
+              name: appStrings.expensesReport,
+              isDisable: project?.budgetOpen,
+            },
           ]}
           onSelectedTabChange={activeTabs => setSelectedTab(activeTabs[0])}
         />
