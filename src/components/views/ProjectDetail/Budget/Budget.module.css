@@ -11,3 +11,22 @@
   flex-wrap: wrap;
   min-width: 250px;
 }
+.close_budget {
+  height: 40px !important;
+  margin-left: 10px;
+}
+
+.buttons_container {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+  color: #fff !important;
+}
+
+.button_danger {
+  background-color: var(--chakra-colors-red-500) !important;
+}
+
+.button_danger:hover {
+  background-color: var(--chakra-colors-red-600) !important;
+}

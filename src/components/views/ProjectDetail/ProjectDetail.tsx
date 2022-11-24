@@ -11,9 +11,17 @@ import Budget from './Budget/Budget';
 import Sidebar from '../../layout/Sidebar';
 import { useAppSelector } from '../../../redux/hooks';
 
+const defaultProjectData = {
+  id: '',
+  name: '',
+  client: '',
+  location: '',
+  status: 'active',
+  budgetOpen: true,
+};
 export default function Projects() {
   const [selectedTab, setSelectedTab] = useState('budget');
-  const [project, setProject] = useState<IProject>();
+  const [project, setProject] = useState<IProject>(defaultProjectData);
   const projectId = useParams().id as string;
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
@@ -62,7 +70,7 @@ export default function Projects() {
           onSelectedTabChange={activeTabs => setSelectedTab(activeTabs[0])}
         />
         {selectedTab === 'budget' ? (
-          <Budget projectId={projectId} />
+          <Budget projectId={projectId} project={project} />
         ) : selectedTab === 'invoicing' ? (
           <Invoicing projectId={projectId} />
         ) : selectedTab === 'expenses' ? (

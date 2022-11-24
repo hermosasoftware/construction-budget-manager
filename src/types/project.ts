@@ -4,4 +4,5 @@ export interface IProject {
   client: string;
   location: string;
   status: string;
+  budgetOpen: boolean;
 }
