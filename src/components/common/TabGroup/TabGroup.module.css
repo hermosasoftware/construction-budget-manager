@@ -31,3 +31,8 @@
 .rounded > p {
   color: var(--chakra-colors-dark_success);
 }
+
+.disabled {
+  pointer-events: none !important;
+  opacity: 0.7;
+}

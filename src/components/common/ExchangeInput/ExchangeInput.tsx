@@ -12,7 +12,7 @@ interface IStat extends IStyledComponent {
 }
 
 const Stat: React.FC<IStat & ButtonProps> = props => {
-  const { className, style, editExchange, ...rest } = props;
+  const { className, style, editExchange, isDisabled, ...rest } = props;
 
   return (
     <div className={`${styles.stat__container} ${className}`} style={style}>
@@ -31,7 +31,7 @@ const Stat: React.FC<IStat & ButtonProps> = props => {
           </Button>
         )}
         {!editExchange && (
-          <Button {...rest} style={{ height: 40 }}>
+          <Button {...rest} style={{ height: 40 }} isDisabled={isDisabled}>
             <Pencil size={20} />
           </Button>
         )}

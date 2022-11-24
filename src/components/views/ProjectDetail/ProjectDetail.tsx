@@ -10,12 +10,20 @@ import Budget from './Budget/Budget';
 import ExtraBudget from './ExtraBudget/ExtraBudget';
 import Sidebar from '../../layout/Sidebar';
 import { useAppSelector } from '../../../redux/hooks';
-
 import styles from './ProjectDetail.module.css';
+
+const defaultProjectData = {
+  id: '',
+  name: '',
+  client: '',
+  location: '',
+  status: 'active',
+  budgetOpen: true,
+};
 
 export default function Projects() {
   const [selectedTab, setSelectedTab] = useState('budget');
-  const [project, setProject] = useState<IProject>();
+  const [project, setProject] = useState<IProject>(defaultProjectData);
   const projectId = useParams().id as string;
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
@@ -56,14 +64,30 @@ export default function Projects() {
           className={`${styles.tabs}`}
           tabs={[
             { id: 'budget', name: appStrings.budget, selected: true },
-            { id: 'extras', name: appStrings.extras },
-            { id: 'invoicing', name: appStrings.invoicing },
-            { id: 'expenses', name: appStrings.expensesReport },
+            {
+              id: 'extras',
+              name: appStrings.extras,
+              isDisable: project?.budgetOpen,
+            },
+            {
+              id: 'invoicing',
+              name: appStrings.invoicing,
+              isDisable: project?.budgetOpen,
+            },
+            {
+              id: 'expenses',
+              name: appStrings.expensesReport,
+              isDisable: project?.budgetOpen,
+            },
           ]}
           onSelectedTabChange={activeTabs => setSelectedTab(activeTabs[0])}
         />
         {selectedTab === 'budget' ? (
-          <Budget projectId={projectId} />
+          <Budget
+            projectId={projectId}
+            project={project}
+            setProject={setProject}
+          />
         ) : selectedTab === 'extras' ? (
           <ExtraBudget projectId={projectId} />
         ) : selectedTab === 'invoicing' ? (

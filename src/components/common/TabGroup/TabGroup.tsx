@@ -8,6 +8,7 @@ export type TTab = {
   id: string;
   name: string;
   selected?: boolean;
+  isDisable?: boolean;
 };
 
 interface ITabGroup extends IStyledComponent {
@@ -71,7 +72,7 @@ const TabGroup: React.FC<ITabGroup> = props => {
           role="tab"
           className={`${styles.tab_group__option} ${
             toggles[tab.id] ? styles?.[variant] : ''
-          }`}
+          } ${tab.isDisable ? styles?.disabled : ''}`}
           onClick={() => handleTabClick(tab.id)}
         >
           <p>{tab.name}</p>

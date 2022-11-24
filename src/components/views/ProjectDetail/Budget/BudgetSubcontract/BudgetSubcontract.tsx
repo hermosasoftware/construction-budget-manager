@@ -21,6 +21,7 @@ import styles from './BudgetSubcontract.module.css';
 
 interface IBudgetSubcontractView {
   projectId: string;
+  isBudgetOpen: boolean;
 }
 
 const initialSelectedItemData = {
@@ -38,7 +39,7 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const { projectId } = props;
+  const { projectId, isBudgetOpen } = props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
   const tableHeader: TTableHeader[] = [
@@ -118,7 +119,9 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
           onChange={handleSearch}
         />
         <div className={styles.form_container}>
-          <Button onClick={() => setIsModalOpen(true)}>+</Button>
+          {isBudgetOpen && (
+            <Button onClick={() => setIsModalOpen(true)}>+</Button>
+          )}
           <Modal
             isOpen={isModalOpen}
             onClose={() => {
@@ -166,6 +169,7 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
         }
         onClickEdit={id => editButton(id)}
         onClickDelete={id => deleteButton(id)}
+        hideOptions={!isBudgetOpen}
       />
       {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
     </div>

@@ -23,6 +23,7 @@ import styles from './BudgetMaterial.module.css';
 
 interface IBudgetMaterialView {
   projectId: string;
+  isBudgetOpen: boolean;
 }
 
 interface IItem extends Omit<IBudgetMaterial, 'name'> {
@@ -45,7 +46,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const { projectId } = props;
+  const { projectId, isBudgetOpen } = props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
   const materials = useAppSelector(state => state.materials.materials);
 
@@ -124,6 +125,10 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
       : await createBudgetMaterial(serviceCallParameters);
   };
 
+  const onClickEdit = (id: string) => editButton(id);
+
+  const onClickDelete = (id: string) => deleteButton(id);
+
   const validationSchema = yup.object().shape({
     name: yup.object().shape({
       value: yup.string().required(appStrings?.requiredField),
@@ -149,7 +154,9 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
           onChange={handleSearch}
         />
         <div className={styles.form_container}>
-          <Button onClick={() => setIsModalOpen(true)}>+</Button>
+          {isBudgetOpen && (
+            <Button onClick={() => setIsModalOpen(true)}>+</Button>
+          )}
           <Modal
             isOpen={isModalOpen}
             onClose={() => {
@@ -209,10 +216,11 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
         items={tableData}
         filter={value =>
           searchTerm === '' ||
-          value.material.name.toUpperCase().includes(searchTerm)
+          value?.material?.name?.toUpperCase().includes(searchTerm)
         }
-        onClickEdit={id => editButton(id)}
-        onClickDelete={id => deleteButton(id)}
+        onClickEdit={onClickEdit}
+        onClickDelete={onClickEdit}
+        hideOptions={!isBudgetOpen}
       />
       {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
     </div>

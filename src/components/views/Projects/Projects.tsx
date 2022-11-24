@@ -25,6 +25,7 @@ const initialSelectedItemData = {
   client: '',
   location: '',
   status: 'active',
+  budgetOpen: true,
 };
 
 export default function Projects() {
