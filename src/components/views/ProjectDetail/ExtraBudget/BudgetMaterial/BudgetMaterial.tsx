@@ -8,11 +8,11 @@ import MaterialsTableView, {
   TTableHeader,
 } from '../../../../layout/MaterialsTableView/MaterialsTableView';
 import {
-  createBudgetMaterial,
-  getBudgetMaterialById,
-  getBudgetMaterials,
-  updateBudgetMaterial,
-} from '../../../../../services/BudgetMaterialsService';
+  createExtraBudgetMaterial,
+  getExtraBudgetMaterialById,
+  getExtraBudgetMaterials,
+  updateExtraBudgetMaterial,
+} from '../../../../../services/ExtraBudgetMaterialsService';
 import { IBudgetMaterial } from '../../../../../types/budgetMaterial';
 import Form, { Input } from '../../../../common/Form';
 import { useAppSelector } from '../../../../../redux/hooks';
@@ -60,14 +60,14 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
   const getMaterials = async () => {
     const successCallback = (response: IMaterialBreakdown[]) =>
       setTableData(response);
-    await getBudgetMaterials({
+    await getExtraBudgetMaterials({
       projectId,
       appStrings,
       successCallback,
     });
   };
 
-  const editButton = async (budgetMaterialId: string) => {
+  const editButton = async (extraBudgetMaterialId: string) => {
     const successCallback = (response: IBudgetMaterial) => {
       setSelectedItem({
         ...response,
@@ -75,9 +75,9 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
       });
       setIsModalOpen(true);
     };
-    await getBudgetMaterialById({
+    await getExtraBudgetMaterialById({
       projectId,
-      budgetMaterialId,
+      extraBudgetMaterialId,
       appStrings,
       successCallback,
     });
@@ -103,7 +103,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
 
   const handleOnSubmit = async (data: IItem) => {
     const { name, ...rest } = data;
-    const budgetMaterial = {
+    const extraBudgetMaterial = {
       ...rest,
       subtotal: rest.cost * rest.quantity,
       name: name.label,
@@ -115,13 +115,13 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
     };
     const serviceCallParameters = {
       projectId,
-      budgetMaterial,
+      extraBudgetMaterial,
       appStrings,
       successCallback,
     };
-    budgetMaterial.id
-      ? await updateBudgetMaterial(serviceCallParameters)
-      : await createBudgetMaterial(serviceCallParameters);
+    extraBudgetMaterial.id
+      ? await updateExtraBudgetMaterial(serviceCallParameters)
+      : await createExtraBudgetMaterial(serviceCallParameters);
   };
 
   const validationSchema = yup.object().shape({

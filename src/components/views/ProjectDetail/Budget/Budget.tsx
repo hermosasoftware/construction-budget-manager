@@ -24,13 +24,14 @@ import { updateProject } from '../../../../services/ProjectService';
 interface IBudgetView {
   projectId: string;
   project: IProject;
+  setProject: Function;
 }
 
 const Budget: React.FC<IBudgetView> = props => {
-  const { project } = props;
+  const { project, setProject } = props;
   const [selectedTab, setSelectedTab] = useState('summary');
   const [editExchange, setEditExchange] = useState(false);
-  const [isBudgetOpen, setIsBudgetOpen] = useState(true);
+  const [isBudgetOpen, setIsBudgetOpen] = useState(project?.budgetOpen);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { projectId } = props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
@@ -57,6 +58,7 @@ const Budget: React.FC<IBudgetView> = props => {
 
   const handleCloseBudget = () => {
     const successCallback = () => {
+      setProject({ ...project, budgetOpen: false });
       setIsBudgetOpen(false);
       setIsModalOpen(false);
     };
@@ -77,9 +79,7 @@ const Budget: React.FC<IBudgetView> = props => {
   useEffect(() => {
     let abortController = new AbortController();
     getBudget();
-    return () => {
-      abortController.abort();
-    };
+    return () => abortController.abort();
   }, []);
 
   useEffect(() => {
@@ -97,7 +97,7 @@ const Budget: React.FC<IBudgetView> = props => {
     };
     return contentOptions[option];
   };
-  debugger;
+
   return (
     <div className={styles.operations_container}>
       <Box p={5} borderWidth="1px" borderRadius={12}>
@@ -156,8 +156,6 @@ const Budget: React.FC<IBudgetView> = props => {
                 <Button
                   onClick={() => {
                     handleCloseBudget();
-                    // setIsBudgetOpen(false);
-                    // setIsModalOpen(false);
                   }}
                   className={`${styles.close_budget} ${styles.button_danger}`}
                 >

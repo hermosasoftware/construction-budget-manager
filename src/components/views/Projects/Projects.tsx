@@ -95,9 +95,7 @@ export default function Projects() {
   useEffect(() => {
     let abortController = new AbortController();
     getProjects(selectedTab);
-    return () => {
-      abortController.abort();
-    };
+    return () => abortController.abort();
   }, [selectedTab]);
 
   return (
