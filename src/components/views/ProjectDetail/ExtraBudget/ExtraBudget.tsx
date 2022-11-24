@@ -12,6 +12,7 @@ import Form from '../../../common/Form/Form';
 import ExchangeInput from '../../../common/ExchangeInput/ExchangeInput';
 import BigButton from '../../../common/BigButton/BigButton';
 import {
+  copyBudgetToExtraBudget,
   getProjectExtraBudget,
   updateProjectExtraBudgetExchange,
 } from '../../../../services/ProjectExtraBudgetService';
@@ -29,9 +30,13 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
   const [selectedTab, setSelectedTab] = useState('summary');
   const [editExchange, setEditExchange] = useState(false);
   const [budget, setBudget] = useState<IProjectBudget>();
+  const [budgetFlag, setbudgetFlag] = useState(false);
 
   const getExtraBudget = async () => {
-    const successCallback = (response: IProjectBudget) => setBudget(response);
+    const successCallback = (response: IProjectBudget) => {
+      setBudget(response);
+      setbudgetFlag(true);
+    };
     await getProjectExtraBudget({
       projectId,
       appStrings,
@@ -48,6 +53,18 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
     await updateProjectExtraBudgetExchange({
       projectId,
       exchange: projectBudget.exchange,
+      appStrings,
+      successCallback,
+    });
+  };
+
+  const handleCopyBudget = async () => {
+    const successCallback = () => {
+      setEditExchange(false);
+      getExtraBudget();
+    };
+    await copyBudgetToExtraBudget({
+      projectId,
       appStrings,
       successCallback,
     });
@@ -110,14 +127,15 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
             </div>
             {contentToDisplay(selectedTab)}
           </>
-        ) : (
+        ) : budgetFlag ? (
           <BigButton
-            title={'Press to start the magic'}
+            title={appStrings.copyBudget}
+            onClick={handleCopyBudget}
             illustration={
               <MagicWand color="var(--chakra-colors-purple-500)" size={50} />
             }
           />
-        )}
+        ) : null}
       </Box>
     </div>
   );
