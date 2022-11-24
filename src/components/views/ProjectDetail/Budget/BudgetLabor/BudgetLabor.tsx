@@ -122,7 +122,9 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
           onChange={handleSearch}
         />
         <div className={styles.form_container}>
-          <Button onClick={() => setIsModalOpen(true)}>+</Button>
+          {isBudgetOpen && (
+            <Button onClick={() => setIsModalOpen(true)}>+</Button>
+          )}
           <Modal
             isOpen={isModalOpen}
             onClose={() => {
