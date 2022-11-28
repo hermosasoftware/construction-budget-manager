@@ -11,6 +11,7 @@ import {
   setDoc,
   runTransaction,
   writeBatch,
+  deleteDoc,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
@@ -202,18 +203,19 @@ export const deleteProject = async ({
   try {
     const projectRef = `projects/${projectId}`;
     const budgetRef = `${projectRef}/projectBudget/summary`;
-    const extraBudgetRef = `${projectRef}'/projectExtraBudget/summary`;
+    const extraBudgetRef = `${projectRef}/projectExtraBudget/summary`;
 
-    await deleteCollect(`${projectRef}/projectInvoicing`);
-    await deleteCollect(`${projectRef}/projectExpenses`);
     await deleteCollect(`${budgetRef}/budgetLabors`);
     await deleteCollect(`${budgetRef}/budgetSubcontracts`);
     await deleteCollect(`${budgetRef}/budgetMaterials`, ['subMaterials']);
     await deleteCollect(`${extraBudgetRef}/budgetLabors`);
     await deleteCollect(`${extraBudgetRef}/budgetSubcontracts`);
     await deleteCollect(`${extraBudgetRef}/budgetMaterials`, ['subMaterials']);
-    await deleteCollect(`${projectRef}'/projectBudget`);
-    await deleteCollect(`${projectRef} '/projectExtraBudget`);
+    await deleteCollect(`${projectRef}/projectBudget`);
+    await deleteCollect(`${projectRef}/projectExtraBudget`);
+    await deleteCollect(`${projectRef}/projectInvoicing`);
+    await deleteCollect(`${projectRef}/projectExpenses`);
+    await deleteDoc(doc(db, projectRef));
 
     toastSuccess(appStrings.success, appStrings.deleteSuccess);
 
@@ -229,35 +231,37 @@ export const deleteProject = async ({
 };
 
 const deleteCollect = async (collect: string, subCollects?: string[]) => {
-  let batch = writeBatch(db);
   const collectRef = collection(db, collect);
   const collectDocs = await getDocs(collectRef);
-  let i = 0;
-  for (const data of collectDocs.docs) {
-    if (subCollects)
-      for (const subCollect of subCollects) {
-        const subCollectDocs = await getDocs(
-          collection(doc(collectRef, data.id), subCollect),
-        );
-        for (const subData of subCollectDocs.docs) {
-          batch.delete(
-            doc(collection(doc(collectRef, data.id), subCollect), subData.id),
+  if (!collectDocs.empty) {
+    let batch = writeBatch(db);
+    let i = 0;
+    for (const data of collectDocs.docs) {
+      if (subCollects)
+        for (const subCollect of subCollects) {
+          const subCollectDocs = await getDocs(
+            collection(doc(collectRef, data.id), subCollect),
           );
-          i++;
-          if (i > 400) {
-            i = 0;
-            await batch.commit();
-            batch = writeBatch(db);
+          for (const subData of subCollectDocs.docs) {
+            batch.delete(
+              doc(collection(doc(collectRef, data.id), subCollect), subData.id),
+            );
+            i++;
+            if (i > 400) {
+              i = 0;
+              await batch.commit();
+              batch = writeBatch(db);
+            }
           }
         }
+      batch.delete(doc(collectRef, data.id));
+      i++;
+      if (i > 400) {
+        i = 0;
+        await batch.commit();
+        batch = writeBatch(db);
       }
-    batch.delete(doc(collectRef, data.id));
-    i++;
-    if (i > 400) {
-      i = 0;
-      await batch.commit();
-      batch = writeBatch(db);
     }
+    if (i > 0) await batch.commit();
   }
-  if (i > 0) await batch.commit();
 };

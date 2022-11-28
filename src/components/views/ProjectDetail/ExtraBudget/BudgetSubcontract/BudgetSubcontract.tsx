@@ -9,6 +9,7 @@ import TableView, {
 } from '../../../../common/TableView/TableView';
 import {
   createExtraBudgetSubcontract,
+  deleteExtraBudgetSubcontract,
   getExtraBudgetSubcontractById,
   getExtraBudgetSubcontracts,
   updateExtraBudgetSubcontract,
@@ -71,7 +72,15 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
     });
   };
 
-  const deleteButton = (id: string) => {};
+  const deleteButton = async (extraBudgetSubcontractId: string) => {
+    const successCallback = () => getSubcontracts();
+    await deleteExtraBudgetSubcontract({
+      projectId,
+      extraBudgetSubcontractId,
+      appStrings,
+      successCallback,
+    });
+  };
 
   const handleSearch = async (event: { target: { value: string } }) => {
     setSearchTerm(event.target.value.toUpperCase());

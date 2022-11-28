@@ -9,6 +9,7 @@ import TableView, {
 } from '../../../../common/TableView/TableView';
 import {
   createBudgetLabor,
+  deleteBudgetLabor,
   getBudgetLaborById,
   getBudgetLabors,
   updateBudgetLabor,
@@ -74,7 +75,15 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
     });
   };
 
-  const deleteButton = (id: string) => {};
+  const deleteButton = async (budgetLaborId: string) => {
+    const successCallback = () => getLabors();
+    await deleteBudgetLabor({
+      projectId,
+      budgetLaborId,
+      appStrings,
+      successCallback,
+    });
+  };
 
   const handleSearch = async (event: { target: { value: string } }) => {
     setSearchTerm(event.target.value.toUpperCase());

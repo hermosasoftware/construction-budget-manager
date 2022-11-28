@@ -9,6 +9,7 @@ import TableView, { TTableHeader } from '../../../common/TableView/TableView';
 import Form, { Input } from '../../../common/Form';
 import {
   createProjectInvoiceDetail,
+  deleteProjectInvoiceDetail,
   getProjectInvoiceDetailById,
   getProjectInvoicing,
   updateProjectInvoiceDetail,
@@ -82,7 +83,15 @@ const Invoicing: React.FC<IInvoicing> = props => {
     });
   };
 
-  const deleteButton = (id: string) => {};
+  const deleteButton = async (projectInvoiceDetailId: string) => {
+    const successCallback = () => getInvoicing();
+    await deleteProjectInvoiceDetail({
+      projectId,
+      projectInvoiceDetailId,
+      appStrings,
+      successCallback,
+    });
+  };
 
   const handleOnSubmit = async (
     projectInvoiceDetail: IProjectInvoiceDetail,

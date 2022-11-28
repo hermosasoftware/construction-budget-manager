@@ -9,6 +9,7 @@ import MaterialsTableView, {
 } from '../../../../layout/MaterialsTableView/MaterialsTableView';
 import {
   createExtraBudgetMaterial,
+  deleteExtraBudgetMaterial,
   getExtraBudgetMaterialById,
   getExtraBudgetMaterials,
   updateExtraBudgetMaterial,
@@ -83,7 +84,15 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
     });
   };
 
-  const deleteButton = (id: string) => {};
+  const deleteButton = async (extraBudgetMaterialId: string) => {
+    const successCallback = () => getMaterials();
+    await deleteExtraBudgetMaterial({
+      projectId,
+      extraBudgetMaterialId,
+      appStrings,
+      successCallback,
+    });
+  };
 
   const handleSearch = async (event: { target: { value: string } }) => {
     setSearchTerm(event.target.value.toUpperCase());
