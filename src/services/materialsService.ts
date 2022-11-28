@@ -1,17 +1,18 @@
+import { FirebaseError } from 'firebase/app';
 import {
   addDoc,
   collection,
   doc,
-  endAt,
   getDoc,
   getDocs,
-  orderBy,
   query,
   setDoc,
-  startAt,
+  writeBatch,
 } from 'firebase/firestore';
 import { db } from '../config/firebaseConfig';
 import { IMaterial, IMaterialBreakdown } from '../types/collections';
+import { IService } from '../types/service';
+import { toastError, toastSuccess } from '../utils/toast';
 
 const materialDocRef = collection(db, 'materials');
 
@@ -59,5 +60,83 @@ export const updateMaterial = async (material: IMaterial) => {
     return true;
   } catch (e) {
     return false;
+  }
+};
+
+export const deleteMaterial = async ({
+  materialId,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: {
+  materialId: string;
+} & IService) => {
+  try {
+    const matRef = doc(db, 'materials', materialId);
+    const subMatRef = collection(matRef, 'subMaterials');
+    const matDoc = await getDoc(matRef);
+    const subMatDocs = await getDocs(subMatRef);
+
+    if (!matDoc.exists()) throw Error(appStrings.noRecords);
+
+    const batch = writeBatch(db);
+    for (const subMaterial of subMatDocs.docs)
+      batch.delete(doc(subMatRef, subMaterial.id));
+
+    batch.delete(matRef);
+
+    await batch.commit();
+
+    toastSuccess(appStrings.success, appStrings.saveSuccess);
+
+    successCallback && successCallback();
+  } catch (error) {
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.saveError, errorMessage);
+
+    errorCallback && errorCallback();
+  }
+};
+
+export const deleteSubMaterial = async ({
+  materialId,
+  subMaterialId,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: {
+  materialId: string;
+  subMaterialId: string;
+} & IService) => {
+  try {
+    const matRef = doc(db, 'materials', materialId);
+    const subMatRef = doc(collection(matRef, 'subMaterials'), subMaterialId);
+    const matDoc = await getDoc(matRef);
+    const subMatDoc = await getDoc(subMatRef);
+
+    if (!matDoc.exists() || !subMatDoc.exists())
+      throw Error(appStrings.noRecords);
+
+    const batch = writeBatch(db);
+    const totalSubMat = subMatDoc.data().cost * subMatDoc.data().quantity;
+    const totalMatCost = matDoc.data().cost - totalSubMat;
+
+    batch.update(matRef, { cost: totalMatCost });
+    batch.delete(subMatRef);
+
+    await batch.commit();
+
+    toastSuccess(appStrings.success, appStrings.deleteSuccess);
+
+    successCallback && successCallback();
+  } catch (error) {
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.saveError, errorMessage);
+
+    errorCallback && errorCallback();
   }
 };

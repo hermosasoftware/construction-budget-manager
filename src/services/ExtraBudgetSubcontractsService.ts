@@ -4,6 +4,7 @@ import {
   getDoc,
   doc,
   runTransaction,
+  writeBatch,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
@@ -18,7 +19,7 @@ export const getExtraBudgetSubcontracts = async ({
   errorCallback,
 }: { projectId: string } & IService) => {
   try {
-    const userRef = collection(
+    const subCtRef = collection(
       db,
       'projects',
       projectId,
@@ -26,7 +27,7 @@ export const getExtraBudgetSubcontracts = async ({
       'summary',
       'budgetSubcontracts',
     );
-    const result = await getDocs(userRef);
+    const result = await getDocs(subCtRef);
     const data = result.docs.map(doc => ({
       ...doc.data(),
       id: doc.id,
@@ -55,7 +56,7 @@ export const getExtraBudgetSubcontractById = async ({
   extraBudgetSubcontractId: string;
 } & IService) => {
   try {
-    const userRef = doc(
+    const subCtRef = doc(
       db,
       'projects',
       projectId,
@@ -64,7 +65,7 @@ export const getExtraBudgetSubcontractById = async ({
       'budgetSubcontracts',
       extraBudgetSubcontractId,
     );
-    const result = await getDoc(userRef);
+    const result = await getDoc(subCtRef);
     const data = {
       ...result.data(),
       id: result.id,
@@ -190,6 +191,61 @@ export const updateExtraBudgetSubcontract = async ({
     if (error instanceof FirebaseError) errorMessage = error.message;
 
     toastError(appStrings.saveError, errorMessage);
+
+    errorCallback && errorCallback();
+  }
+};
+
+export const deleteExtraBudgetSubcontract = async ({
+  projectId,
+  extraBudgetSubcontractId,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: {
+  projectId: string;
+  extraBudgetSubcontractId: string;
+} & IService) => {
+  try {
+    const subCtRef = doc(
+      db,
+      'projects',
+      projectId,
+      'projectExtraBudget',
+      'summary',
+      'budgetSubcontracts',
+      extraBudgetSubcontractId,
+    );
+    const sumRef = doc(
+      db,
+      'projects',
+      projectId,
+      'projectExtraBudget',
+      'summary',
+    );
+    const subCtDoc = await getDoc(subCtRef);
+    const sumDoc = await getDoc(sumRef);
+
+    if (!subCtDoc.exists() || !sumDoc.exists())
+      throw Error(appStrings.noRecords);
+
+    const batch = writeBatch(db);
+    const newSum = subCtDoc.data().cost * subCtDoc.data().quantity;
+    const total = sumDoc.data().sumSubcontracts - newSum;
+
+    batch.update(sumRef, { sumSubcontracts: total });
+    batch.delete(subCtRef);
+
+    await batch.commit();
+
+    toastSuccess(appStrings.success, appStrings.deleteSuccess);
+
+    successCallback && successCallback();
+  } catch (error) {
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.deleteError, errorMessage);
 
     errorCallback && errorCallback();
   }

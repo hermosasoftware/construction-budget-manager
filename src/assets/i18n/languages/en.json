@@ -42,6 +42,8 @@
   "creation": "Creation",
   "currency": "Currency",
   "date": "Date",
+  "deleteError": "Error trying to delete the information.",
+  "deleteSuccess": "The information was deleted successfully.",
   "delivered": "Delivered",
   "description": "Description",
   "difference": "Difference",

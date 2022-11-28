@@ -5,6 +5,7 @@ import {
   doc,
   query,
   runTransaction,
+  writeBatch,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
@@ -19,7 +20,7 @@ export const getBudgetMaterials = async ({
   errorCallback,
 }: { projectId: string } & IService) => {
   try {
-    const userRef = collection(
+    const matRef = collection(
       db,
       'projects',
       projectId,
@@ -27,7 +28,7 @@ export const getBudgetMaterials = async ({
       'summary',
       'budgetMaterials',
     );
-    const result = await getDocs(userRef);
+    const result = await getDocs(matRef);
     const data = result.docs.map(doc => ({
       ...doc.data(),
       id: doc.id,
@@ -81,7 +82,7 @@ export const getBudgetMaterialById = async ({
   budgetMaterialId: string;
 } & IService) => {
   try {
-    const userRef = doc(
+    const matRef = doc(
       db,
       'projects',
       projectId,
@@ -90,7 +91,7 @@ export const getBudgetMaterialById = async ({
       'budgetMaterials',
       budgetMaterialId,
     );
-    const result = await getDoc(userRef);
+    const result = await getDoc(matRef);
     const data = {
       ...result.data(),
       id: result.id,
@@ -204,6 +205,118 @@ export const updateBudgetMaterial = async ({
     if (error instanceof FirebaseError) errorMessage = error.message;
 
     toastError(appStrings.saveError, errorMessage);
+
+    errorCallback && errorCallback();
+  }
+};
+
+export const deleteBudgetMaterial = async ({
+  projectId,
+  budgetMaterialId,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: {
+  projectId: string;
+  budgetMaterialId: string;
+} & IService) => {
+  try {
+    const matRef = doc(
+      db,
+      'projects',
+      projectId,
+      'projectBudget',
+      'summary',
+      'budgetMaterials',
+      budgetMaterialId,
+    );
+    const subMatRef = collection(matRef, 'subMaterials');
+    const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
+    const sumDoc = await getDoc(sumRef);
+    const matDoc = await getDoc(matRef);
+    const subMatDocs = await getDocs(subMatRef);
+
+    if (!matDoc.exists() || !sumDoc.exists()) throw Error(appStrings.noRecords);
+
+    const batch = writeBatch(db);
+    for (const subMaterial of subMatDocs.docs)
+      batch.delete(doc(subMatRef, subMaterial.id));
+
+    const newSum = matDoc.data().cost * matDoc.data().quantity;
+    const total = sumDoc.data().sumMaterials - newSum;
+    batch.update(sumRef, { sumMaterials: total });
+    batch.delete(matRef);
+
+    await batch.commit();
+
+    toastSuccess(appStrings.success, appStrings.deleteSuccess);
+
+    successCallback && successCallback();
+  } catch (error) {
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.deleteError, errorMessage);
+
+    errorCallback && errorCallback();
+  }
+};
+
+export const deleteBudgetSubMaterial = async ({
+  projectId,
+  budgetMaterialId,
+  budgetSubMaterialId,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: {
+  projectId: string;
+  budgetMaterialId: string;
+  budgetSubMaterialId: string;
+} & IService) => {
+  try {
+    const matRef = doc(
+      db,
+      'projects',
+      projectId,
+      'projectBudget',
+      'summary',
+      'budgetMaterials',
+      budgetMaterialId,
+    );
+    const subMatRef = doc(
+      collection(matRef, 'subMaterials'),
+      budgetSubMaterialId,
+    );
+    const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
+    const sumDoc = await getDoc(sumRef);
+    const matDoc = await getDoc(matRef);
+    const subMatDoc = await getDoc(subMatRef);
+
+    if (!matDoc.exists() || !sumDoc.exists() || !subMatDoc.exists())
+      throw Error(appStrings.noRecords);
+
+    const batch = writeBatch(db);
+
+    const totalSubMat = subMatDoc.data().cost * subMatDoc.data().quantity;
+    const totalMatCost = matDoc.data().cost - totalSubMat;
+    const totalMatSum = totalMatCost * matDoc.data().quantity;
+    const totalSum = sumDoc.data().sumMaterials - totalMatSum;
+
+    batch.update(matRef, { cost: totalMatCost });
+    batch.update(sumRef, { sumMaterials: totalSum });
+    batch.delete(subMatRef);
+
+    await batch.commit();
+
+    toastSuccess(appStrings.success, appStrings.deleteSuccess);
+
+    successCallback && successCallback();
+  } catch (error) {
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.deleteError, errorMessage);
 
     errorCallback && errorCallback();
   }

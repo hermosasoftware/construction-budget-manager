@@ -10,6 +10,7 @@ import {
   doc,
   setDoc,
   runTransaction,
+  writeBatch,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
@@ -24,8 +25,8 @@ export const getAllProjects = async ({
   errorCallback,
 }: IService) => {
   try {
-    const userRef = collection(db, 'projects');
-    const result = await getDocs(userRef);
+    const projectRef = collection(db, 'projects');
+    const result = await getDocs(projectRef);
     const data = result.docs.map(doc => ({
       ...doc.data(),
       id: doc.id,
@@ -49,8 +50,8 @@ export const getProjectById = async ({
   errorCallback,
 }: { projectId: string } & IService) => {
   try {
-    const userRef = doc(db, 'projects', projectId);
-    const result = await getDoc(userRef);
+    const projectRef = doc(db, 'projects', projectId);
+    const result = await getDoc(projectRef);
     const data = { ...result.data(), id: result.id } as IProject;
 
     successCallback && successCallback(data);
@@ -71,11 +72,11 @@ export const getProjectsByStatus = async ({
   errorCallback,
 }: { status: string } & IService) => {
   try {
-    const userRef = query(
+    const projectRef = query(
       collection(db, 'projects'),
       where('status', '==', status),
     );
-    const result = await getDocs(userRef);
+    const result = await getDocs(projectRef);
     const data = result.docs.map(doc => ({
       ...doc.data(),
       id: doc.id,
@@ -99,13 +100,13 @@ export const getProjectsByName = async ({
   errorCallback,
 }: { name: String } & IService) => {
   try {
-    const userRef = query(
+    const projectRef = query(
       collection(db, 'projects'),
       orderBy('name'),
       startAt(name),
       endAt(name + '~'),
     );
-    const result = await getDocs(userRef);
+    const result = await getDocs(projectRef);
     const data = result.docs.map(doc => ({
       ...doc.data(),
       id: doc.id,
@@ -176,8 +177,8 @@ export const updateProject = async ({
 }: { project: IProject } & IService) => {
   try {
     const { id, ...rest } = project;
-    const userRef = doc(db, 'projects', id);
-    await setDoc(userRef, rest);
+    const projectRef = doc(db, 'projects', id);
+    await setDoc(projectRef, rest);
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
@@ -190,4 +191,73 @@ export const updateProject = async ({
 
     errorCallback && errorCallback();
   }
+};
+
+export const deleteProject = async ({
+  projectId,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: { projectId: string } & IService) => {
+  try {
+    const projectRef = `projects/${projectId}`;
+    const budgetRef = `${projectRef}/projectBudget/summary`;
+    const extraBudgetRef = `${projectRef}'/projectExtraBudget/summary`;
+
+    await deleteCollect(`${projectRef}/projectInvoicing`);
+    await deleteCollect(`${projectRef}/projectExpenses`);
+    await deleteCollect(`${budgetRef}/budgetLabors`);
+    await deleteCollect(`${budgetRef}/budgetSubcontracts`);
+    await deleteCollect(`${budgetRef}/budgetMaterials`, ['subMaterials']);
+    await deleteCollect(`${extraBudgetRef}/budgetLabors`);
+    await deleteCollect(`${extraBudgetRef}/budgetSubcontracts`);
+    await deleteCollect(`${extraBudgetRef}/budgetMaterials`, ['subMaterials']);
+    await deleteCollect(`${projectRef}'/projectBudget`);
+    await deleteCollect(`${projectRef} '/projectExtraBudget`);
+
+    toastSuccess(appStrings.success, appStrings.deleteSuccess);
+
+    successCallback && successCallback();
+  } catch (error) {
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.saveError, errorMessage);
+
+    errorCallback && errorCallback();
+  }
+};
+
+const deleteCollect = async (collect: string, subCollects?: string[]) => {
+  let batch = writeBatch(db);
+  const collectRef = collection(db, collect);
+  const collectDocs = await getDocs(collectRef);
+  let i = 0;
+  for (const data of collectDocs.docs) {
+    if (subCollects)
+      for (const subCollect of subCollects) {
+        const subCollectDocs = await getDocs(
+          collection(doc(collectRef, data.id), subCollect),
+        );
+        for (const subData of subCollectDocs.docs) {
+          batch.delete(
+            doc(collection(doc(collectRef, data.id), subCollect), subData.id),
+          );
+          i++;
+          if (i > 400) {
+            i = 0;
+            await batch.commit();
+            batch = writeBatch(db);
+          }
+        }
+      }
+    batch.delete(doc(collectRef, data.id));
+    i++;
+    if (i > 400) {
+      i = 0;
+      await batch.commit();
+      batch = writeBatch(db);
+    }
+  }
+  if (i > 0) await batch.commit();
 };

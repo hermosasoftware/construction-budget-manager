@@ -5,6 +5,7 @@ import {
   doc,
   setDoc,
   getDoc,
+  deleteDoc,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
@@ -19,14 +20,14 @@ export const getProjectInvoicing = async ({
   errorCallback,
 }: { projectId: string } & IService) => {
   try {
-    const userRef = collection(
+    const invRef = collection(
       db,
       'projects',
       projectId,
       // 'projectMaterialsDelivered',
       'projectInvoicing',
     );
-    const result = await getDocs(userRef);
+    const result = await getDocs(invRef);
     const data = result.docs.map(doc => ({
       ...doc.data(),
       id: doc.id,
@@ -56,14 +57,14 @@ export const getProjectInvoiceDetailById = async ({
   projectInvoiceDetailId: string;
 } & IService) => {
   try {
-    const userRef = doc(
+    const invRef = doc(
       db,
       'projects',
       projectId,
       'projectInvoicing',
       projectInvoiceDetailId,
     );
-    const result = await getDoc(userRef);
+    const result = await getDoc(invRef);
     const data = {
       ...result.data(),
       id: result.id,
@@ -93,8 +94,8 @@ export const createProjectInvoiceDetail = async ({
 } & IService) => {
   try {
     const { id, subtotal, difference, ...rest } = projectInvoiceDetail;
-    const userRef = collection(db, 'projects', projectId, 'projectInvoicing');
-    const result = await addDoc(userRef, rest);
+    const invRef = collection(db, 'projects', projectId, 'projectInvoicing');
+    const result = await addDoc(invRef, rest);
     const data = {
       ...projectInvoiceDetail,
       id: result.id,
@@ -125,8 +126,8 @@ export const updateProjectInvoiceDetail = async ({
 } & IService) => {
   try {
     const { id, subtotal, difference, ...rest } = projectInvoiceDetail;
-    const userRef = doc(db, 'projects', projectId, 'projectInvoicing', id);
-    await setDoc(userRef, rest);
+    const invRef = doc(db, 'projects', projectId, 'projectInvoicing', id);
+    await setDoc(invRef, rest);
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
@@ -136,6 +137,39 @@ export const updateProjectInvoiceDetail = async ({
     if (error instanceof FirebaseError) errorMessage = error.message;
 
     toastError(appStrings.saveError, errorMessage);
+
+    errorCallback && errorCallback();
+  }
+};
+
+export const deleteProjectInvoiceDetail = async ({
+  projectId,
+  projectInvoiceDetailId,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: {
+  projectId: string;
+  projectInvoiceDetailId: string;
+} & IService) => {
+  try {
+    const invRef = doc(
+      db,
+      'projects',
+      projectId,
+      'projectInvoicing',
+      projectInvoiceDetailId,
+    );
+    await deleteDoc(invRef);
+
+    toastSuccess(appStrings.success, appStrings.deleteSuccess);
+
+    successCallback && successCallback();
+  } catch (error) {
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.deleteError, errorMessage);
 
     errorCallback && errorCallback();
   }
