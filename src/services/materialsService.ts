@@ -80,8 +80,9 @@ export const deleteMaterial = async ({
     if (!matDoc.exists()) throw Error(appStrings.noRecords);
 
     const batch = writeBatch(db);
-    for (const subMaterial of subMatDocs.docs)
+    for (const subMaterial of subMatDocs.docs) {
       batch.delete(doc(subMatRef, subMaterial.id));
+    }
 
     batch.delete(matRef);
 
@@ -116,8 +117,9 @@ export const deleteSubMaterial = async ({
     const matDoc = await getDoc(matRef);
     const subMatDoc = await getDoc(subMatRef);
 
-    if (!matDoc.exists() || !subMatDoc.exists())
+    if (!matDoc.exists() || !subMatDoc.exists()) {
       throw Error(appStrings.noRecords);
+    }
 
     const batch = writeBatch(db);
     const totalSubMat = subMatDoc.data().cost * subMatDoc.data().quantity;

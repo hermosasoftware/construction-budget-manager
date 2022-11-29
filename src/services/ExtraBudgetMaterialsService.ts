@@ -199,8 +199,9 @@ export const updateExtraBudgetMaterial = async ({
       const matDoc = await transaction.get(matRef);
       const sumDoc = await transaction.get(sumRef);
 
-      if (!matDoc.exists() || !sumDoc.exists())
+      if (!matDoc.exists() || !sumDoc.exists()) {
         throw Error(appStrings.noRecords);
+      }
 
       const newSum = subtotal - matDoc.data().cost * matDoc.data().quantity;
       const total = sumDoc.data().sumMaterials + newSum;
@@ -257,8 +258,9 @@ export const deleteExtraBudgetMaterial = async ({
     if (!matDoc.exists() || !sumDoc.exists()) throw Error(appStrings.noRecords);
 
     const batch = writeBatch(db);
-    for (const subMaterial of subMatDocs.docs)
+    for (const subMaterial of subMatDocs.docs) {
       batch.delete(doc(subMatRef, subMaterial.id));
+    }
 
     const newSum = matDoc.data().cost * matDoc.data().quantity;
     const total = sumDoc.data().sumMaterials - newSum;
@@ -317,8 +319,9 @@ export const deleteExtraBudgetSubMaterial = async ({
     const matDoc = await getDoc(matRef);
     const subMatDoc = await getDoc(subMatRef);
 
-    if (!matDoc.exists() || !sumDoc.exists() || !subMatDoc.exists())
+    if (!matDoc.exists() || !sumDoc.exists() || !subMatDoc.exists()) {
       throw Error(appStrings.noRecords);
+    }
 
     const batch = writeBatch(db);
 

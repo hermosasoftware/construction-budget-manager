@@ -237,7 +237,7 @@ const deleteCollect = async (collect: string, subCollects?: string[]) => {
     let batch = writeBatch(db);
     let i = 0;
     for (const data of collectDocs.docs) {
-      if (subCollects)
+      if (subCollects) {
         for (const subCollect of subCollects) {
           const subCollectDocs = await getDocs(
             collection(doc(collectRef, data.id), subCollect),
@@ -254,6 +254,7 @@ const deleteCollect = async (collect: string, subCollects?: string[]) => {
             }
           }
         }
+      }
       batch.delete(doc(collectRef, data.id));
       i++;
       if (i > 400) {

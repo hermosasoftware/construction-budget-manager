@@ -173,8 +173,9 @@ export const updateExtraBudgetLabor = async ({
       const laborDoc = await transaction.get(laborRef);
       const sumDoc = await transaction.get(sumRef);
 
-      if (!laborDoc.exists() || !sumDoc.exists())
+      if (!laborDoc.exists() || !sumDoc.exists()) {
         throw Error(appStrings.noRecords);
+      }
 
       const newSum = subtotal - laborDoc.data().cost * laborDoc.data().quantity;
       const total = sumDoc.data().sumLabors + newSum;
@@ -226,8 +227,9 @@ export const deleteExtraBudgetLabor = async ({
     const laborDoc = await getDoc(laborRef);
     const sumDoc = await getDoc(sumRef);
 
-    if (!laborDoc.exists() || !sumDoc.exists())
+    if (!laborDoc.exists() || !sumDoc.exists()) {
       throw Error(appStrings.noRecords);
+    }
 
     const batch = writeBatch(db);
     const newSum = laborDoc.data().cost * laborDoc.data().quantity;

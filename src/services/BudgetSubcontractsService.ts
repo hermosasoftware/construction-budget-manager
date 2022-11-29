@@ -161,8 +161,9 @@ export const updateBudgetSubcontract = async ({
       const subCtDoc = await transaction.get(subCtRef);
       const sumDoc = await transaction.get(sumRef);
 
-      if (!subCtDoc.exists() || !sumDoc.exists())
+      if (!subCtDoc.exists() || !sumDoc.exists()) {
         throw Error(appStrings.noRecords);
+      }
 
       const newSum = subtotal - subCtDoc.data().cost * subCtDoc.data().quantity;
       const total = sumDoc.data().sumSubcontracts + newSum;
@@ -208,8 +209,9 @@ export const deleteBudgetSubcontract = async ({
     const subCtDoc = await getDoc(subCtRef);
     const sumDoc = await getDoc(sumRef);
 
-    if (!subCtDoc.exists() || !sumDoc.exists())
+    if (!subCtDoc.exists() || !sumDoc.exists()) {
       throw Error(appStrings.noRecords);
+    }
 
     const batch = writeBatch(db);
     const newSum = subCtDoc.data().cost * subCtDoc.data().quantity;
