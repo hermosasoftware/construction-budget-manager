@@ -12,6 +12,7 @@ import TableView, { TTableHeader } from '../../common/TableView/TableView';
 import Form, { Input, Select } from '../../common/Form';
 import {
   createProject,
+  deleteProject,
   getProjectById,
   getProjectsByStatus,
   updateProject,
@@ -67,7 +68,10 @@ export default function Projects() {
     await getProjectById({ projectId, appStrings, successCallback });
   };
 
-  const deleteButton = (id: string) => {};
+  const deleteButton = async (projectId: string) => {
+    const successCallback = () => getProjects(selectedTab);
+    await deleteProject({ projectId, appStrings, successCallback });
+  };
 
   const handleOnSubmit = async (project: IProject) => {
     const successCallback = () => {

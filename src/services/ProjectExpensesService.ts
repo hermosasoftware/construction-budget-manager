@@ -5,6 +5,7 @@ import {
   doc,
   setDoc,
   getDoc,
+  deleteDoc,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
@@ -19,8 +20,8 @@ export const getProjectExpenses = async ({
   errorCallback,
 }: { projectId: string } & IService) => {
   try {
-    const userRef = collection(db, 'projects', projectId, 'projectExpenses');
-    const result = await getDocs(userRef);
+    const expRef = collection(db, 'projects', projectId, 'projectExpenses');
+    const result = await getDocs(expRef);
     const data = result.docs.map(doc => ({
       ...doc.data(),
       id: doc.id,
@@ -49,14 +50,14 @@ export const getProjectExpenseById = async ({
   projectExpenseId: string;
 } & IService) => {
   try {
-    const userRef = doc(
+    const expRef = doc(
       db,
       'projects',
       projectId,
       'projectExpenses',
       projectExpenseId,
     );
-    const result = await getDoc(userRef);
+    const result = await getDoc(expRef);
     const data = {
       ...result.data(),
       id: result.id,
@@ -86,8 +87,8 @@ export const createProjectExpense = async ({
 } & IService) => {
   try {
     const { id, ...rest } = projectExpense;
-    const userRef = collection(db, 'projects', projectId, 'projectExpenses');
-    const result = await addDoc(userRef, rest);
+    const expRef = collection(db, 'projects', projectId, 'projectExpenses');
+    const result = await addDoc(expRef, rest);
     const data = { ...projectExpense, id: result.id } as IProjectExpense;
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
@@ -112,8 +113,8 @@ export const updateProjectExpense = async ({
 }: { projectId: string; projectExpense: IProjectExpense } & IService) => {
   try {
     const { id, ...rest } = projectExpense;
-    const userRef = doc(db, 'projects', projectId, 'projectExpenses', id);
-    await setDoc(userRef, rest);
+    const expRef = doc(db, 'projects', projectId, 'projectExpenses', id);
+    await setDoc(expRef, rest);
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
@@ -123,6 +124,36 @@ export const updateProjectExpense = async ({
     if (error instanceof FirebaseError) errorMessage = error.message;
 
     toastError(appStrings.saveError, errorMessage);
+
+    errorCallback && errorCallback();
+  }
+};
+
+export const deleteProjectExpense = async ({
+  projectId,
+  projectExpenseId,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: { projectId: string; projectExpenseId: string } & IService) => {
+  try {
+    const expRef = doc(
+      db,
+      'projects',
+      projectId,
+      'projectExpenses',
+      projectExpenseId,
+    );
+    await deleteDoc(expRef);
+
+    toastSuccess(appStrings.success, appStrings.deleteSuccess);
+
+    successCallback && successCallback();
+  } catch (error) {
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.deleteError, errorMessage);
 
     errorCallback && errorCallback();
   }

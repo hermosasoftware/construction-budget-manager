@@ -9,6 +9,7 @@ import TableView, { TTableHeader } from '../../../common/TableView/TableView';
 import Form, { DatePicker, Input } from '../../../common/Form';
 import {
   createProjectExpense,
+  deleteProjectExpense,
   getProjectExpenseById,
   getProjectExpenses,
   updateProjectExpense,
@@ -72,7 +73,15 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
     });
   };
 
-  const deleteButton = (id: string) => {};
+  const deleteButton = async (projectExpenseId: string) => {
+    const successCallback = () => getExpenses();
+    await deleteProjectExpense({
+      projectId,
+      projectExpenseId,
+      appStrings,
+      successCallback,
+    });
+  };
 
   const handleOnSubmit = async (projectExpense: IProjectExpense) => {
     const successCallback = () => {

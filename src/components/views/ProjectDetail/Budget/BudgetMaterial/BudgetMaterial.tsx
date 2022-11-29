@@ -9,6 +9,7 @@ import MaterialsTableView, {
 } from '../../../../layout/MaterialsTableView/MaterialsTableView';
 import {
   createBudgetMaterial,
+  deleteBudgetMaterial,
   getBudgetMaterialById,
   getBudgetMaterials,
   updateBudgetMaterial,
@@ -84,7 +85,15 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
     });
   };
 
-  const deleteButton = (id: string) => {};
+  const deleteButton = async (budgetMaterialId: string) => {
+    const successCallback = () => getMaterials();
+    await deleteBudgetMaterial({
+      projectId,
+      budgetMaterialId,
+      appStrings,
+      successCallback,
+    });
+  };
 
   const handleSearch = async (event: { target: { value: string } }) => {
     setSearchTerm(event.target.value.toUpperCase());
@@ -219,7 +228,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
           value?.material?.name?.toUpperCase().includes(searchTerm)
         }
         onClickEdit={onClickEdit}
-        onClickDelete={onClickEdit}
+        onClickDelete={onClickDelete}
         hideOptions={!isBudgetOpen}
       />
       {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
