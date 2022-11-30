@@ -44,22 +44,40 @@ export const getMaterials = async (): Promise<IMaterialBreakdown[] | null> => {
   }
 };
 
-export const addMaterial = async (material: IMaterial) => {
+export const addMaterial = async ({
+  material,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: {
+  material: IMaterial;
+} & IService) => {
   try {
     const { cost, name, unit } = material;
     const docRef = await addDoc(materialDocRef, { name, unit, cost });
-    return docRef.id;
-  } catch (e) {}
+    toastSuccess(appStrings.success, appStrings.saveSuccess);
+    successCallback && successCallback(docRef.id);
+  } catch (e) {
+    errorCallback && errorCallback();
+  }
 };
 
-export const updateMaterial = async (material: IMaterial) => {
+export const updateMaterial = async ({
+  material,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: {
+  material: IMaterial;
+} & IService) => {
   try {
     const { cost, name, unit, id } = material;
     const materialDocRef = doc(db, 'materials', id);
     await setDoc(materialDocRef, { name, unit, cost });
-    return true;
+    toastSuccess(appStrings.success, appStrings.saveSuccess);
+    successCallback && successCallback();
   } catch (e) {
-    return false;
+    errorCallback && errorCallback();
   }
 };
 
