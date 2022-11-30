@@ -200,7 +200,7 @@ export const updateBudgetMaterial = async ({
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
-    successCallback && successCallback();
+    successCallback && successCallback(budgetMaterial);
   } catch (error) {
     let errorMessage = appStrings.genericError;
     if (error instanceof FirebaseError) errorMessage = error.message;

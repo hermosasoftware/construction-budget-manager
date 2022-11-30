@@ -18,6 +18,7 @@ import { IBudgetMaterial } from '../../../../../types/budgetMaterial';
 import Form, { Input } from '../../../../common/Form';
 import { useAppSelector } from '../../../../../redux/hooks';
 import SearchSelect from '../../../../common/Form/Elements/SearchSelect';
+import AlertDialog from '../../../../common/AlertDialog/AlertDialog';
 import { IMaterialBreakdown } from '../../../../../types/collections';
 
 import styles from './BudgetMaterial.module.css';
@@ -46,6 +47,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
   const [selectedItem, setSelectedItem] = useState<IItem>(
     initialSelectedItemData,
   );
+  const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const { projectId, isBudgetOpen, getBudget } = props;
@@ -70,6 +72,23 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
     });
   };
 
+  const addItem = (item: IMaterialBreakdown) =>
+    setTableData([item, ...tableData]);
+
+  const updateItem = (item: IMaterialBreakdown) => {
+    const index = tableData.findIndex(e => e.id === item.id);
+    const data = [...tableData];
+    data.splice(index, 1, item);
+    setTableData(data);
+  };
+
+  const removeItem = (id: string) => {
+    const index = tableData.findIndex(e => e.id === id);
+    const data = [...tableData];
+    data.splice(index, 1);
+    setTableData(data);
+  };
+
   const editButton = async (budgetMaterialId: string) => {
     const successCallback = (response: IBudgetMaterial) => {
       setSelectedItem({
@@ -86,11 +105,16 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
     });
   };
 
-  const deleteButton = async (budgetMaterialId: string) => {
-    const successCallback = () => getMaterials();
+  const deleteButton = async () => {
+    const successCallback = () => {
+      removeItem(selectedItem.id);
+      setSelectedItem(initialSelectedItemData);
+      setIsAlertDialogOpen(false);
+      getBudget();
+    };
     await deleteBudgetMaterial({
       projectId,
-      budgetMaterialId,
+      budgetMaterialId: selectedItem.id,
       appStrings,
       successCallback,
     });
@@ -119,10 +143,11 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
       subtotal: rest.cost * rest.quantity,
       name: name.label,
     };
-    const successCallback = () => {
+    const successCallback = (item: IBudgetMaterial) => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
-      getMaterials();
+      const MatBreakdown = { id: item.id, material: item, subMaterials: [] };
+      budgetMaterial.id ? updateItem(MatBreakdown) : addItem(MatBreakdown);
       getBudget();
     };
     const serviceCallParameters = {
@@ -135,10 +160,6 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
       ? await updateBudgetMaterial(serviceCallParameters)
       : await createBudgetMaterial(serviceCallParameters);
   };
-
-  const onClickEdit = (id: string) => editButton(id);
-
-  const onClickDelete = (id: string) => deleteButton(id);
 
   const validationSchema = yup.object().shape({
     name: yup.object().shape({
@@ -222,6 +243,16 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
           </Modal>
         </div>
       </Flex>
+      <AlertDialog
+        tittle={appStrings.deleteMaterial}
+        content={appStrings.deleteWarning}
+        isOpen={isAlertDialogOpen}
+        onClose={() => {
+          setSelectedItem(initialSelectedItemData);
+          setIsAlertDialogOpen(false);
+        }}
+        onSubmit={() => deleteButton()}
+      />
       <MaterialsTableView
         headers={tableHeader}
         items={tableData}
@@ -229,8 +260,11 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
           searchTerm === '' ||
           value?.material?.name?.toUpperCase().includes(searchTerm)
         }
-        onClickEdit={onClickEdit}
-        onClickDelete={onClickDelete}
+        onClickEdit={id => editButton(id)}
+        onClickDelete={id => {
+          setSelectedItem({ ...selectedItem, id: id });
+          setIsAlertDialogOpen(true);
+        }}
         hideOptions={!isBudgetOpen}
       />
       {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}

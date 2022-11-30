@@ -1,4 +1,3 @@
-import styles from './Projects.module.css';
 import { useEffect, useState } from 'react';
 import { Box, Flex, Heading } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
@@ -10,6 +9,7 @@ import TabGroup from '../../common/TabGroup/TabGroup';
 import Sidebar from '../../layout/Sidebar';
 import TableView, { TTableHeader } from '../../common/TableView/TableView';
 import Form, { Input, Select } from '../../common/Form';
+import AlertDialog from '../../common/AlertDialog/AlertDialog';
 import {
   createProject,
   deleteProject,
@@ -19,6 +19,8 @@ import {
 } from '../../../services/ProjectService';
 import { IProject } from '../../../types/project';
 import { useAppSelector } from '../../../redux/hooks';
+
+import styles from './Projects.module.css';
 
 const initialSelectedItemData = {
   id: '',
@@ -35,6 +37,7 @@ export default function Projects() {
   const [selectedItem, setSelectedItem] = useState<IProject>(
     initialSelectedItemData,
   );
+  const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const appStrings = useAppSelector(state => state.settings.appStrings);
@@ -48,6 +51,22 @@ export default function Projects() {
   const getProjects = async (status: string) => {
     const successCallback = (response: IProject[]) => setTableData(response);
     await getProjectsByStatus({ status, appStrings, successCallback });
+  };
+
+  const addItem = (item: IProject) => setTableData([item, ...tableData]);
+
+  const updateItem = (item: IProject) => {
+    const index = tableData.findIndex(e => e.id === item.id);
+    const data = [...tableData];
+    data.splice(index, 1, item);
+    setTableData(data);
+  };
+
+  const removeItem = (id: string) => {
+    const index = tableData.findIndex(e => e.id === id);
+    const data = [...tableData];
+    data.splice(index, 1);
+    setTableData(data);
   };
 
   const handleSearch = async (event: { target: { value: string } }) => {
@@ -68,16 +87,28 @@ export default function Projects() {
     await getProjectById({ projectId, appStrings, successCallback });
   };
 
-  const deleteButton = async (projectId: string) => {
-    const successCallback = () => getProjects(selectedTab);
-    await deleteProject({ projectId, appStrings, successCallback });
+  const deleteButton = async () => {
+    const successCallback = () => {
+      removeItem(selectedItem.id);
+      setSelectedItem(initialSelectedItemData);
+      setIsAlertDialogOpen(false);
+    };
+    await deleteProject({
+      projectId: selectedItem.id,
+      appStrings,
+      successCallback,
+    });
   };
 
   const handleOnSubmit = async (project: IProject) => {
-    const successCallback = () => {
+    const successCallback = (item: IProject) => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
-      getProjects(selectedTab);
+      project.id
+        ? selectedTab === item.status
+          ? updateItem(item)
+          : removeItem(item.id)
+        : selectedTab === item.status && addItem(item);
     };
     const serviceCallParameters = { project, appStrings, successCallback };
     project.id
@@ -172,6 +203,16 @@ export default function Projects() {
               </Modal>
             </div>
           </Flex>
+          <AlertDialog
+            tittle={appStrings.deleteProject}
+            content={appStrings.deleteWarning}
+            isOpen={isAlertDialogOpen}
+            onClose={() => {
+              setSelectedItem(initialSelectedItemData);
+              setIsAlertDialogOpen(false);
+            }}
+            onSubmit={() => deleteButton()}
+          />
           <TableView
             headers={tableHeader}
             items={tableData}
@@ -180,7 +221,10 @@ export default function Projects() {
             }
             handleRowClick={handleRowClick}
             onClickEdit={id => editButton(id)}
-            onClickDelete={id => deleteButton(id)}
+            onClickDelete={id => {
+              setSelectedItem({ ...selectedItem, id: id });
+              setIsAlertDialogOpen(true);
+            }}
           />
           {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
         </div>
