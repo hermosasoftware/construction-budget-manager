@@ -23,6 +23,7 @@ import styles from './BudgetSubcontract.module.css';
 
 interface IBudgetSubcontractView {
   projectId: string;
+  getExtraBudget: Function;
 }
 
 const initialSelectedItemData = {
@@ -41,7 +42,7 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const { projectId } = props;
+  const { projectId, getExtraBudget } = props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
   const tableHeader: TTableHeader[] = [
@@ -96,6 +97,7 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
       removeItem(selectedItem.id);
       setSelectedItem(initialSelectedItemData);
       setIsAlertDialogOpen(false);
+      getExtraBudget();
     };
     await deleteExtraBudgetSubcontract({
       projectId,
@@ -114,6 +116,7 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
       extraBudgetSubcontract.id ? updateItem(item) : addItem(item);
+      getExtraBudget();
     };
     const serviceCallParameters = {
       projectId,

@@ -91,11 +91,25 @@ const Budget: React.FC<IBudgetView> = props => {
     const contentOptions: any = {
       summary: <BudgetSummary budget={budget!} projectId={projectId} />,
       materials: (
-        <BudgetMaterial projectId={projectId} isBudgetOpen={isBudgetOpen} />
+        <BudgetMaterial
+          projectId={projectId}
+          isBudgetOpen={isBudgetOpen}
+          getBudget={getBudget}
+        />
       ),
-      labors: <BudgetLabor projectId={projectId} isBudgetOpen={isBudgetOpen} />,
+      labors: (
+        <BudgetLabor
+          projectId={projectId}
+          isBudgetOpen={isBudgetOpen}
+          getBudget={getBudget}
+        />
+      ),
       subcontracts: (
-        <BudgetSubcontract projectId={projectId} isBudgetOpen={isBudgetOpen} />
+        <BudgetSubcontract
+          projectId={projectId}
+          isBudgetOpen={isBudgetOpen}
+          getBudget={getBudget}
+        />
       ),
     };
     return contentOptions[option];

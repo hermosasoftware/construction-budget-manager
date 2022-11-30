@@ -25,6 +25,7 @@ import styles from './BudgetMaterial.module.css';
 interface IBudgetMaterialView {
   projectId: string;
   isBudgetOpen: boolean;
+  getBudget: Function;
 }
 
 interface IItem extends Omit<IBudgetMaterial, 'name'> {
@@ -47,7 +48,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const { projectId, isBudgetOpen } = props;
+  const { projectId, isBudgetOpen, getBudget } = props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
   const materials = useAppSelector(state => state.materials.materials);
 
@@ -122,6 +123,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
       getMaterials();
+      getBudget();
     };
     const serviceCallParameters = {
       projectId,

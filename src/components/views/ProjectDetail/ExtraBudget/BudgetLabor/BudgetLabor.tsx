@@ -23,6 +23,7 @@ import styles from './BudgetLabor.module.css';
 
 interface IBudgetLaborView {
   projectId: string;
+  getExtraBudget: Function;
 }
 
 const initialSelectedItemData = {
@@ -42,7 +43,7 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const { projectId } = props;
+  const { projectId, getExtraBudget } = props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
   const tableHeader: TTableHeader[] = [
@@ -97,6 +98,7 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
       removeItem(selectedItem.id);
       setSelectedItem(initialSelectedItemData);
       setIsAlertDialogOpen(false);
+      getExtraBudget();
     };
     await deleteExtraBudgetLabor({
       projectId,
@@ -115,6 +117,7 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
       extraBudgetLabor.id ? updateItem(item) : addItem(item);
+      getExtraBudget();
     };
     const serviceCallParameters = {
       projectId,
