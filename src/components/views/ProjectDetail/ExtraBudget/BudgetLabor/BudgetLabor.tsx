@@ -16,6 +16,7 @@ import {
 } from '../../../../../services/ExtraBudgetLaborsService';
 import { IBudgetLabor } from '../../../../../types/budgetLabor';
 import Form, { Input } from '../../../../common/Form';
+import AlertDialog from '../../../../common/AlertDialog/AlertDialog';
 import { useAppSelector } from '../../../../../redux/hooks';
 
 import styles from './BudgetLabor.module.css';
@@ -38,6 +39,7 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
   const [selectedItem, setSelectedItem] = useState<IBudgetLabor>(
     initialSelectedItemData,
   );
+  const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const { projectId } = props;
@@ -61,6 +63,22 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
     });
   };
 
+  const addItem = (item: IBudgetLabor) => setTableData([item, ...tableData]);
+
+  const updateItem = (item: IBudgetLabor) => {
+    const index = tableData.findIndex(e => e.id === item.id);
+    const data = [...tableData];
+    data.splice(index, 1, item);
+    setTableData(data);
+  };
+
+  const removeItem = (id: string) => {
+    const index = tableData.findIndex(e => e.id === id);
+    const data = [...tableData];
+    data.splice(index, 1);
+    setTableData(data);
+  };
+
   const editButton = async (extraBudgetLaborId: string) => {
     const successCallback = (response: IBudgetLabor) => {
       setSelectedItem(response);
@@ -74,11 +92,15 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
     });
   };
 
-  const deleteButton = async (extraBudgetLaborId: string) => {
-    const successCallback = () => getLabors();
+  const deleteButton = async () => {
+    const successCallback = () => {
+      removeItem(selectedItem.id);
+      setSelectedItem(initialSelectedItemData);
+      setIsAlertDialogOpen(false);
+    };
     await deleteExtraBudgetLabor({
       projectId,
-      extraBudgetLaborId,
+      extraBudgetLaborId: selectedItem.id,
       appStrings,
       successCallback,
     });
@@ -89,10 +111,10 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
   };
 
   const handleOnSubmit = async (extraBudgetLabor: IBudgetLabor) => {
-    const successCallback = () => {
+    const successCallback = (item: IBudgetLabor) => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
-      getLabors();
+      extraBudgetLabor.id ? updateItem(item) : addItem(item);
     };
     const serviceCallParameters = {
       projectId,
@@ -173,6 +195,16 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
           </Modal>
         </div>
       </Flex>
+      <AlertDialog
+        tittle={appStrings.deleteLabor}
+        content={appStrings.deleteWarning}
+        isOpen={isAlertDialogOpen}
+        onClose={() => {
+          setSelectedItem(initialSelectedItemData);
+          setIsAlertDialogOpen(false);
+        }}
+        onSubmit={() => deleteButton()}
+      />
       <TableView
         headers={tableHeader}
         items={tableData}
@@ -180,7 +212,10 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
           searchTerm === '' || value.name.toUpperCase().includes(searchTerm)
         }
         onClickEdit={id => editButton(id)}
-        onClickDelete={id => deleteButton(id)}
+        onClickDelete={id => {
+          setSelectedItem({ ...selectedItem, id: id });
+          setIsAlertDialogOpen(true);
+        }}
       />
       {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
     </div>
