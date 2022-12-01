@@ -16,6 +16,7 @@ import {
 } from '../../../../../services/BudgetSubcontractsService';
 import { IBudgetSubcontract } from '../../../../../types/budgetSubcontract';
 import Form, { Input } from '../../../../common/Form';
+import AlertDialog from '../../../../common/AlertDialog/AlertDialog';
 import { useAppSelector } from '../../../../../redux/hooks';
 
 import styles from './BudgetSubcontract.module.css';
@@ -23,6 +24,7 @@ import styles from './BudgetSubcontract.module.css';
 interface IBudgetSubcontractView {
   projectId: string;
   isBudgetOpen: boolean;
+  getBudget: Function;
 }
 
 const initialSelectedItemData = {
@@ -38,9 +40,10 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
   const [selectedItem, setSelectedItem] = useState<IBudgetSubcontract>(
     initialSelectedItemData,
   );
+  const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const { projectId, isBudgetOpen } = props;
+  const { projectId, isBudgetOpen, getBudget } = props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
   const tableHeader: TTableHeader[] = [
@@ -60,6 +63,23 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
     });
   };
 
+  const addItem = (item: IBudgetSubcontract) =>
+    setTableData([item, ...tableData]);
+
+  const updateItem = (item: IBudgetSubcontract) => {
+    const index = tableData.findIndex(e => e.id === item.id);
+    const data = [...tableData];
+    data.splice(index, 1, item);
+    setTableData(data);
+  };
+
+  const removeItem = (id: string) => {
+    const index = tableData.findIndex(e => e.id === id);
+    const data = [...tableData];
+    data.splice(index, 1);
+    setTableData(data);
+  };
+
   const editButton = async (budgetSubcontractId: string) => {
     const successCallback = (response: IBudgetSubcontract) => {
       setSelectedItem(response);
@@ -73,11 +93,16 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
     });
   };
 
-  const deleteButton = async (budgetSubcontractId: string) => {
-    const successCallback = () => getSubcontracts();
+  const deleteButton = async () => {
+    const successCallback = () => {
+      removeItem(selectedItem.id);
+      setSelectedItem(initialSelectedItemData);
+      setIsAlertDialogOpen(false);
+      getBudget();
+    };
     await deleteBudgetSubcontract({
       projectId,
-      budgetSubcontractId,
+      budgetSubcontractId: selectedItem.id,
       appStrings,
       successCallback,
     });
@@ -88,10 +113,11 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
   };
 
   const handleOnSubmit = async (budgetSubcontract: IBudgetSubcontract) => {
-    const successCallback = () => {
+    const successCallback = (item: IBudgetSubcontract) => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
-      getSubcontracts();
+      budgetSubcontract.id ? updateItem(item) : addItem(item);
+      getBudget();
     };
     const serviceCallParameters = {
       projectId,
@@ -170,6 +196,16 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
           </Modal>
         </div>
       </Flex>
+      <AlertDialog
+        tittle={appStrings.deleteSubcontract}
+        content={appStrings.deleteWarning}
+        isOpen={isAlertDialogOpen}
+        onClose={() => {
+          setSelectedItem(initialSelectedItemData);
+          setIsAlertDialogOpen(false);
+        }}
+        onSubmit={() => deleteButton()}
+      />
       <TableView
         headers={tableHeader}
         items={tableData}
@@ -177,7 +213,10 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
           searchTerm === '' || value.name.toUpperCase().includes(searchTerm)
         }
         onClickEdit={id => editButton(id)}
-        onClickDelete={id => deleteButton(id)}
+        onClickDelete={id => {
+          setSelectedItem({ ...selectedItem, id: id });
+          setIsAlertDialogOpen(true);
+        }}
         hideOptions={!isBudgetOpen}
       />
       {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}

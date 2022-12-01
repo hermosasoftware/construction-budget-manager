@@ -83,9 +83,18 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
   const contentToDisplay = (option: string) => {
     const contentOptions: any = {
       summary: <BudgetSummary budget={budget!} projectId={projectId} />,
-      materials: <BudgetMaterial projectId={projectId} />,
-      labors: <BudgetLabor projectId={projectId} />,
-      subcontracts: <BudgetSubcontract projectId={projectId} />,
+      materials: (
+        <BudgetMaterial projectId={projectId} getExtraBudget={getExtraBudget} />
+      ),
+      labors: (
+        <BudgetLabor projectId={projectId} getExtraBudget={getExtraBudget} />
+      ),
+      subcontracts: (
+        <BudgetSubcontract
+          projectId={projectId}
+          getExtraBudget={getExtraBudget}
+        />
+      ),
     };
     return contentOptions[option];
   };

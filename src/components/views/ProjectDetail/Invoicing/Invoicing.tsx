@@ -1,4 +1,3 @@
-import styles from './Invoicing.module.css';
 import { Flex, Heading } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import * as yup from 'yup';
@@ -7,6 +6,7 @@ import Modal from '../../../common/Modal/Modal';
 import SearchInput from '../../../common/SearchInput/SearchInput';
 import TableView, { TTableHeader } from '../../../common/TableView/TableView';
 import Form, { Input } from '../../../common/Form';
+import AlertDialog from '../../../common/AlertDialog/AlertDialog';
 import {
   createProjectInvoiceDetail,
   deleteProjectInvoiceDetail,
@@ -17,6 +17,7 @@ import {
 import { IProjectInvoiceDetail } from '../../../../types/projectInvoiceDetail';
 import { useAppSelector } from '../../../../redux/hooks';
 
+import styles from './Invoicing.module.css';
 interface IInvoicing {
   projectId: string;
 }
@@ -39,6 +40,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
   const [selectedItem, setSelectedItem] = useState<IProjectInvoiceDetail>(
     initialSelectedItemData,
   );
+  const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const { projectId } = props;
@@ -66,6 +68,23 @@ const Invoicing: React.FC<IInvoicing> = props => {
     });
   };
 
+  const addItem = (item: IProjectInvoiceDetail) =>
+    setTableData([item, ...tableData]);
+
+  const updateItem = (item: IProjectInvoiceDetail) => {
+    const index = tableData.findIndex(e => e.id === item.id);
+    const data = [...tableData];
+    data.splice(index, 1, item);
+    setTableData(data);
+  };
+
+  const removeItem = (id: string) => {
+    const index = tableData.findIndex(e => e.id === id);
+    const data = [...tableData];
+    data.splice(index, 1);
+    setTableData(data);
+  };
+
   const handleSearch = async (event: { target: { value: string } }) => {
     setSearchTerm(event.target.value.toUpperCase());
   };
@@ -83,11 +102,15 @@ const Invoicing: React.FC<IInvoicing> = props => {
     });
   };
 
-  const deleteButton = async (projectInvoiceDetailId: string) => {
-    const successCallback = () => getInvoicing();
+  const deleteButton = async () => {
+    const successCallback = () => {
+      removeItem(selectedItem.id);
+      setSelectedItem(initialSelectedItemData);
+      setIsAlertDialogOpen(false);
+    };
     await deleteProjectInvoiceDetail({
       projectId,
-      projectInvoiceDetailId,
+      projectInvoiceDetailId: selectedItem.id,
       appStrings,
       successCallback,
     });
@@ -96,10 +119,10 @@ const Invoicing: React.FC<IInvoicing> = props => {
   const handleOnSubmit = async (
     projectInvoiceDetail: IProjectInvoiceDetail,
   ) => {
-    const successCallback = () => {
+    const successCallback = (item: IProjectInvoiceDetail) => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
-      getInvoicing();
+      projectInvoiceDetail.id ? updateItem(item) : addItem(item);
     };
     const serviceCallParameters = {
       projectId,
@@ -146,9 +169,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
             }}
           >
             <Heading as="h2" size="lg">
-              {selectedItem.id
-                ? appStrings.editMaterial
-                : appStrings.addMaterial}
+              {selectedItem.id ? appStrings.editInvoice : appStrings.addInvoice}
             </Heading>
             <Form
               id="project-form"
@@ -181,6 +202,16 @@ const Invoicing: React.FC<IInvoicing> = props => {
           </Modal>
         </div>
       </Flex>
+      <AlertDialog
+        tittle={appStrings.deleteInvoice}
+        content={appStrings.deleteWarning}
+        isOpen={isAlertDialogOpen}
+        onClose={() => {
+          setSelectedItem(initialSelectedItemData);
+          setIsAlertDialogOpen(false);
+        }}
+        onSubmit={() => deleteButton()}
+      />
       <TableView
         headers={tableHeader}
         items={tableData}
@@ -188,7 +219,10 @@ const Invoicing: React.FC<IInvoicing> = props => {
           searchTerm === '' || value.name.toUpperCase().includes(searchTerm)
         }
         onClickEdit={id => editButton(id)}
-        onClickDelete={id => deleteButton(id)}
+        onClickDelete={id => {
+          setSelectedItem({ ...selectedItem, id: id });
+          setIsAlertDialogOpen(true);
+        }}
       />
       {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
     </div>

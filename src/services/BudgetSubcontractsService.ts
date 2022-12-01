@@ -174,7 +174,7 @@ export const updateBudgetSubcontract = async ({
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
-    successCallback && successCallback();
+    successCallback && successCallback(budgetSubcontract);
   } catch (error) {
     let errorMessage = appStrings.genericError;
     if (error instanceof FirebaseError) errorMessage = error.message;
