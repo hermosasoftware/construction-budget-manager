@@ -18,6 +18,7 @@ import { DotsThreeOutlineVertical, Pencil, Trash } from 'phosphor-react';
 import { TObject } from '../../../types/global';
 
 import styles from './MaterialsTableView.module.css';
+import { dolarFormat } from '../../../utils/numbers';
 
 export type TTableHeader<T = TObject> = {
   name: keyof TTableItem<T>;
@@ -70,6 +71,17 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
     handleRowClick && handleRowClick(e);
   };
 
+  const calculateDollars = (row: any) => {
+    let total = 0;
+    const subMaterials = row.subMaterials;
+    subMaterials.forEach((s: any) => {
+      const cost = +s.cost;
+      const quantity = +s.quantity;
+      total += quantity * cost;
+    });
+    return dolarFormat(total);
+  };
+
   return (
     <Box className={styles.table_container} style={{ ...(boxStyle ?? '') }}>
       <Table>
@@ -99,6 +111,7 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
                 >
                   {headers?.map(header => {
                     const isNameColumn = header.name === 'name';
+                    const isDollarColumn = header.name === 'dollarCost';
                     return (
                       <Td
                         key={`table-row-header-${header.name as string}`}
@@ -121,7 +134,11 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
                             }`}
                           ></i>
                         )}
-                        {row.material[header.name] || '-'}
+                        {!isDollarColumn
+                          ? row.material[header.name] || '-'
+                          : hasSubMaterials
+                          ? calculateDollars(row)
+                          : '-'}
                       </Td>
                     );
                   })}

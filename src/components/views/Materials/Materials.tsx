@@ -45,7 +45,7 @@ export default function Materials() {
     { name: 'unit', value: appStrings.unit },
     { name: 'quantity', value: appStrings.quantity },
     { name: 'cost', value: appStrings.cost },
-    { name: 'cost($)', value: 'dollarCost' },
+    { name: 'dollarCost', value: 'cost($)' },
   ];
 
   const handleSearch = async (event: { target: { value: string } }) => {
@@ -134,8 +134,8 @@ export default function Materials() {
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
               <Heading as="h2" size="lg">
                 {selectedMaterial.id
-                  ? appStrings.editProject
-                  : appStrings.createProject}
+                  ? appStrings.editMaterial
+                  : appStrings.createMaterial}
               </Heading>
               <Form
                 id="project-form"

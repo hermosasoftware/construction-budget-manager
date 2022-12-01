@@ -53,8 +53,8 @@ export const addMaterial = async ({
   material: IMaterial;
 } & IService) => {
   try {
-    const { cost, name, unit } = material;
-    const docRef = await addDoc(materialDocRef, { name, unit, cost });
+    const { id, ...rest } = material;
+    const docRef = await addDoc(materialDocRef, rest);
     toastSuccess(appStrings.success, appStrings.saveSuccess);
     successCallback && successCallback(docRef.id);
   } catch (e) {
@@ -71,9 +71,9 @@ export const updateMaterial = async ({
   material: IMaterial;
 } & IService) => {
   try {
-    const { cost, name, unit, id } = material;
+    const { id, ...rest } = material;
     const materialDocRef = doc(db, 'materials', id);
-    await setDoc(materialDocRef, { name, unit, cost });
+    await setDoc(materialDocRef, rest);
     toastSuccess(appStrings.success, appStrings.saveSuccess);
     successCallback && successCallback();
   } catch (e) {
