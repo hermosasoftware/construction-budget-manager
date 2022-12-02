@@ -5,7 +5,7 @@ import Button from '../../../common/Button/Button';
 import Modal from '../../../common/Modal/Modal';
 import SearchInput from '../../../common/SearchInput/SearchInput';
 import TableView, { TTableHeader } from '../../../common/TableView/TableView';
-import Form, { Input } from '../../../common/Form';
+import Form, { DatePicker, Input } from '../../../common/Form';
 import AlertDialog from '../../../common/AlertDialog/AlertDialog';
 import {
   createProjectInvoiceDetail,
@@ -16,6 +16,7 @@ import {
 } from '../../../../services/ProjectInvoiceService';
 import { IProjectInvoiceDetail } from '../../../../types/projectInvoiceDetail';
 import { useAppSelector } from '../../../../redux/hooks';
+import { colonFormat } from '../../../../utils/numbers';
 
 import styles from './Invoicing.module.css';
 interface IInvoicing {
@@ -33,6 +34,7 @@ const initialSelectedItemData = {
   invoice: '',
   delivered: 0,
   difference: 0,
+  date: new Date(),
 };
 
 const Invoicing: React.FC<IInvoicing> = props => {
@@ -50,6 +52,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
     { name: 'order', value: appStrings.order },
     { name: 'quantity', value: appStrings.quantity, isGreen: true },
     { name: 'name', value: appStrings.name },
+    { name: 'date', value: appStrings.date },
     { name: 'cost', value: appStrings.cost },
     { name: 'subtotal', value: appStrings.subtotal },
     { name: 'activity', value: appStrings.activity },
@@ -57,6 +60,14 @@ const Invoicing: React.FC<IInvoicing> = props => {
     { name: 'delivered', value: appStrings.delivered },
     { name: 'difference', value: appStrings.difference },
   ];
+
+  const formatTableData = () =>
+    tableData.map(data => ({
+      ...data,
+      date: data.date.toDateString(),
+      cost: colonFormat(data.cost),
+      subtotal: colonFormat(data.subtotal),
+    }));
 
   const getInvoicing = async () => {
     const successCallback = (response: IProjectInvoiceDetail[]) =>
@@ -126,7 +137,16 @@ const Invoicing: React.FC<IInvoicing> = props => {
     };
     const serviceCallParameters = {
       projectId,
-      projectInvoiceDetail,
+      projectInvoiceDetail: {
+        ...projectInvoiceDetail,
+        order: +projectInvoiceDetail.order,
+        delivered: +projectInvoiceDetail.delivered,
+        quantity: +projectInvoiceDetail.quantity,
+        cost: +projectInvoiceDetail.cost,
+        subtotal: projectInvoiceDetail.cost * projectInvoiceDetail.quantity,
+        difference:
+          projectInvoiceDetail.quantity - projectInvoiceDetail.delivered,
+      },
       appStrings,
       successCallback,
     };
@@ -139,6 +159,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
     order: yup.number().positive().required(appStrings?.requiredField),
     quantity: yup.number().positive().required(appStrings?.requiredField),
     name: yup.string().required(appStrings?.requiredField),
+    date: yup.date().required(appStrings?.requiredField),
     cost: yup.number().positive().required(appStrings?.requiredField),
     activity: yup.string().required(appStrings?.requiredField),
     invoice: yup.string().required(appStrings?.requiredField),
@@ -179,7 +200,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
               validateOnBlur
               onSubmit={handleOnSubmit}
             >
-              <Input name="order" label={appStrings.order} />
+              <Input name="order" type="number" label={appStrings.order} />
               <Input
                 name="quantity"
                 type="number"
@@ -194,6 +215,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
                 type="number"
                 label={appStrings.delivered}
               />
+              <DatePicker name="date" label={appStrings.date}></DatePicker>
               <br />
               <Button width="full" type="submit">
                 {appStrings.submit}
@@ -214,7 +236,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
       />
       <TableView
         headers={tableHeader}
-        items={tableData}
+        items={formatTableData()}
         filter={value =>
           searchTerm === '' || value.name.toUpperCase().includes(searchTerm)
         }
