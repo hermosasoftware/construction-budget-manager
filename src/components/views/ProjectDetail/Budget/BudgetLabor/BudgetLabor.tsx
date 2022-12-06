@@ -15,9 +15,11 @@ import {
   updateBudgetLabor,
 } from '../../../../../services/BudgetLaborsService';
 import { IBudgetLabor } from '../../../../../types/budgetLabor';
+import { IProjectBudget } from '../../../../../types/projectBudget';
 import Form, { Input } from '../../../../common/Form';
 import AlertDialog from '../../../../common/AlertDialog/AlertDialog';
 import { useAppSelector } from '../../../../../redux/hooks';
+import { colonFormat, dolarFormat } from '../../../../../utils/numbers';
 
 import styles from './BudgetLabor.module.css';
 
@@ -25,6 +27,7 @@ interface IBudgetLaborView {
   projectId: string;
   isBudgetOpen: boolean;
   getBudget: Function;
+  budget: IProjectBudget;
 }
 
 const initialSelectedItemData = {
@@ -44,7 +47,7 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const { projectId, isBudgetOpen, getBudget } = props;
+  const { projectId, isBudgetOpen, getBudget, budget } = props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
   const tableHeader: TTableHeader[] = [
@@ -53,7 +56,16 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
     { name: 'quantity', value: appStrings.quantity },
     { name: 'cost', value: appStrings.cost, isGreen: true },
     { name: 'subtotal', value: appStrings.subtotal, isGreen: true },
+    { name: 'dollars', value: appStrings.dollars, isGreen: true },
   ];
+
+  const formatTableData = () =>
+    tableData.map(data => ({
+      ...data,
+      cost: colonFormat(data.cost),
+      subtotal: colonFormat(data.subtotal),
+      dollars: dolarFormat(data.subtotal / budget.exchange),
+    }));
 
   const getLabors = async () => {
     const successCallback = (response: IBudgetLabor[]) =>
@@ -124,6 +136,8 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
       projectId,
       budgetLabor: {
         ...budgetLabor,
+        quantity: +budgetLabor.quantity,
+        cost: +budgetLabor.cost,
         subtotal: budgetLabor.cost * budgetLabor.quantity,
       },
       appStrings,
@@ -213,7 +227,7 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
       />
       <TableView
         headers={tableHeader}
-        items={tableData}
+        items={formatTableData()}
         filter={value =>
           searchTerm === '' || value.name.toUpperCase().includes(searchTerm)
         }

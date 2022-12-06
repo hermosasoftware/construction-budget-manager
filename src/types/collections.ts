@@ -5,6 +5,7 @@ export interface IMaterial {
   name: string;
   unit: string;
   cost: number;
+  subtotal?: number;
 }
 
 interface ISubMaterial {

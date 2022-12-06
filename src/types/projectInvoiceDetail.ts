@@ -3,6 +3,7 @@ export interface IProjectInvoiceDetail {
   order: number;
   quantity: number;
   name: string;
+  date: Date;
   cost: number;
   subtotal: number;
   activity: string;

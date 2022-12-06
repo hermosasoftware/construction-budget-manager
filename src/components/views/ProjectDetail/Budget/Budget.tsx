@@ -48,7 +48,7 @@ const Budget: React.FC<IBudgetView> = props => {
     };
     const serviceCallParameters = {
       projectId,
-      exchange: projectBudget.exchange,
+      exchange: +projectBudget.exchange,
       appStrings,
       successCallback,
     };
@@ -95,6 +95,7 @@ const Budget: React.FC<IBudgetView> = props => {
           projectId={projectId}
           isBudgetOpen={isBudgetOpen}
           getBudget={getBudget}
+          budget={budget!}
         />
       ),
       labors: (
@@ -102,6 +103,7 @@ const Budget: React.FC<IBudgetView> = props => {
           projectId={projectId}
           isBudgetOpen={isBudgetOpen}
           getBudget={getBudget}
+          budget={budget!}
         />
       ),
       subcontracts: (
@@ -109,6 +111,7 @@ const Budget: React.FC<IBudgetView> = props => {
           projectId={projectId}
           isBudgetOpen={isBudgetOpen}
           getBudget={getBudget}
+          budget={budget!}
         />
       ),
     };

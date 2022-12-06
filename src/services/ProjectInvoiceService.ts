@@ -31,6 +31,7 @@ export const getProjectInvoicing = async ({
     const data = result.docs.map(doc => ({
       ...doc.data(),
       id: doc.id,
+      date: doc.data()?.date.toDate(),
       subtotal: doc.data().cost * doc.data().quantity,
       difference: doc.data().quantity - doc.data().delivered,
     })) as IProjectInvoiceDetail[];
@@ -68,6 +69,7 @@ export const getProjectInvoiceDetailById = async ({
     const data = {
       ...result.data(),
       id: result.id,
+      date: result.data()?.date.toDate(),
       subtotal: result.data()?.cost * result.data()?.quantity,
     } as IProjectInvoiceDetail;
 
