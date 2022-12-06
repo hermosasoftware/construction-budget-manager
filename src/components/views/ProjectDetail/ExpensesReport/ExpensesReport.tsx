@@ -16,6 +16,7 @@ import {
 } from '../../../../services/ProjectExpensesService';
 import { IProjectExpense } from '../../../../types/projectExpense';
 import { useAppSelector } from '../../../../redux/hooks';
+import { colonFormat } from '../../../../utils/numbers';
 
 import styles from './ExpensesReport.module.css';
 interface IExpensesReport {
@@ -51,6 +52,13 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
     { name: 'work', value: appStrings.work },
     { name: 'amount', value: appStrings.amount, isGreen: true },
   ];
+
+  const formatTableData = () =>
+    tableData.map(data => ({
+      ...data,
+      date: data.date.toDateString(),
+      amount: colonFormat(data.amount),
+    }));
 
   const getExpenses = async () => {
     const successCallback = (response: IProjectExpense[]) =>
@@ -113,7 +121,11 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
     };
     const serviceCallParameters = {
       projectId,
-      projectExpense,
+      projectExpense: {
+        ...projectExpense,
+        docNumber: +projectExpense.docNumber,
+        amount: +projectExpense.amount,
+      },
       appStrings,
       successCallback,
     };
@@ -195,10 +207,7 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
       />
       <TableView
         headers={tableHeader}
-        items={tableData.map(item => ({
-          ...item,
-          date: item.date.toDateString(),
-        }))}
+        items={formatTableData()}
         filter={value =>
           searchTerm === '' || value.name.toUpperCase().includes(searchTerm)
         }

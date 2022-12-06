@@ -15,15 +15,18 @@ import {
   updateExtraBudgetSubcontract,
 } from '../../../../../services/ExtraBudgetSubcontractsService';
 import { IBudgetSubcontract } from '../../../../../types/budgetSubcontract';
+import { IProjectBudget } from '../../../../../types/projectBudget';
 import Form, { Input } from '../../../../common/Form';
 import AlertDialog from '../../../../common/AlertDialog/AlertDialog';
 import { useAppSelector } from '../../../../../redux/hooks';
+import { colonFormat, dolarFormat } from '../../../../../utils/numbers';
 
 import styles from './BudgetSubcontract.module.css';
 
 interface IBudgetSubcontractView {
   projectId: string;
   getExtraBudget: Function;
+  budget: IProjectBudget;
 }
 
 const initialSelectedItemData = {
@@ -42,7 +45,7 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const { projectId, getExtraBudget } = props;
+  const { projectId, getExtraBudget, budget } = props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
   const tableHeader: TTableHeader[] = [
@@ -50,7 +53,16 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
     { name: 'quantity', value: appStrings.quantity },
     { name: 'cost', value: appStrings.cost, isGreen: true },
     { name: 'subtotal', value: appStrings.subtotal, isGreen: true },
+    { name: 'dollars', value: appStrings.dollars, isGreen: true },
   ];
+
+  const formatTableData = () =>
+    tableData.map(data => ({
+      ...data,
+      cost: colonFormat(data.cost),
+      subtotal: colonFormat(data.subtotal),
+      dollars: dolarFormat(data.subtotal / budget.exchange),
+    }));
 
   const getSubcontracts = async () => {
     const successCallback = (response: IBudgetSubcontract[]) =>
@@ -122,6 +134,8 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
       projectId,
       extraBudgetSubcontract: {
         ...extraBudgetSubcontract,
+        quantity: +extraBudgetSubcontract.quantity,
+        cost: +extraBudgetSubcontract.cost,
         subtotal: extraBudgetSubcontract.cost * extraBudgetSubcontract.quantity,
       },
       appStrings,
@@ -205,7 +219,7 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
       />
       <TableView
         headers={tableHeader}
-        items={tableData}
+        items={formatTableData()}
         filter={value =>
           searchTerm === '' || value.name.toUpperCase().includes(searchTerm)
         }

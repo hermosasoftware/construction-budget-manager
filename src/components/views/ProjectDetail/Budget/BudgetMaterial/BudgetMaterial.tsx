@@ -15,11 +15,13 @@ import {
   updateBudgetMaterial,
 } from '../../../../../services/BudgetMaterialsService';
 import { IBudgetMaterial } from '../../../../../types/budgetMaterial';
+import { IProjectBudget } from '../../../../../types/projectBudget';
 import Form, { Input } from '../../../../common/Form';
 import { useAppSelector } from '../../../../../redux/hooks';
 import SearchSelect from '../../../../common/Form/Elements/SearchSelect';
 import AlertDialog from '../../../../common/AlertDialog/AlertDialog';
 import { IMaterialBreakdown } from '../../../../../types/collections';
+import { colonFormat, dolarFormat } from '../../../../../utils/numbers';
 
 import styles from './BudgetMaterial.module.css';
 
@@ -27,6 +29,7 @@ interface IBudgetMaterialView {
   projectId: string;
   isBudgetOpen: boolean;
   getBudget: Function;
+  budget: IProjectBudget;
 }
 
 interface IItem extends Omit<IBudgetMaterial, 'name'> {
@@ -50,7 +53,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const { projectId, isBudgetOpen, getBudget } = props;
+  const { projectId, isBudgetOpen, getBudget, budget } = props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
   const materials = useAppSelector(state => state.materials.materials);
 
@@ -60,7 +63,19 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
     { name: 'quantity', value: appStrings.quantity },
     { name: 'cost', value: appStrings.cost, isGreen: true },
     { name: 'subtotal', value: appStrings.subtotal, isGreen: true },
+    { name: 'dollars', value: appStrings.dollars, isGreen: true },
   ];
+
+  const formatTableData = () =>
+    tableData.map(data => ({
+      ...data,
+      material: {
+        ...data.material,
+        cost: colonFormat(data.material.cost),
+        subtotal: colonFormat(data.material.subtotal!),
+        dollars: dolarFormat(data.material.subtotal! / budget.exchange),
+      },
+    }));
 
   const getMaterials = async () => {
     const successCallback = (response: IMaterialBreakdown[]) =>
@@ -140,6 +155,8 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
     const { name, ...rest } = data;
     const budgetMaterial = {
       ...rest,
+      quantity: +rest.quantity,
+      cost: +rest.cost,
       subtotal: rest.cost * rest.quantity,
       name: name.label,
     };
@@ -254,7 +271,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
       />
       <MaterialsTableView
         headers={tableHeader}
-        items={tableData}
+        items={formatTableData()}
         filter={value =>
           searchTerm === '' ||
           value?.material?.name?.toUpperCase().includes(searchTerm)

@@ -52,7 +52,7 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
 
     await updateProjectExtraBudgetExchange({
       projectId,
-      exchange: projectBudget.exchange,
+      exchange: +projectBudget.exchange,
       appStrings,
       successCallback,
     });
@@ -84,15 +84,24 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
     const contentOptions: any = {
       summary: <BudgetSummary budget={budget!} projectId={projectId} />,
       materials: (
-        <BudgetMaterial projectId={projectId} getExtraBudget={getExtraBudget} />
+        <BudgetMaterial
+          projectId={projectId}
+          getExtraBudget={getExtraBudget}
+          budget={budget!}
+        />
       ),
       labors: (
-        <BudgetLabor projectId={projectId} getExtraBudget={getExtraBudget} />
+        <BudgetLabor
+          projectId={projectId}
+          getExtraBudget={getExtraBudget}
+          budget={budget!}
+        />
       ),
       subcontracts: (
         <BudgetSubcontract
           projectId={projectId}
           getExtraBudget={getExtraBudget}
+          budget={budget!}
         />
       ),
     };
