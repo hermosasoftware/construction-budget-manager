@@ -234,7 +234,6 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
                 label={appStrings.quantity}
               />
               <Input name="cost" type="number" label={appStrings.cost} />
-
               <br />
               <Button width="full" type="submit">
                 {appStrings.submit}

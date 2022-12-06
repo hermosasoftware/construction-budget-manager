@@ -13,6 +13,7 @@ import { auth, db } from '../config/firebaseConfig';
 import { login, logout } from '../redux/reducers/sessionSlice';
 import { changeMaterials } from '../redux/reducers/materialsSlice';
 import { getMaterials } from '../services/materialsService';
+import { IMaterialBreakdown } from '../types/collections';
 
 export const verifyEmail = async (email: string): Promise<String | null> => {
   try {
@@ -86,7 +87,7 @@ export const logOut = async () => {
   return await signOut(auth);
 };
 
-export const handleAuthChange = (dispatch: Function) => {
+export const handleAuthChange = (dispatch: Function, appStrings: any) => {
   onAuthStateChanged(auth, async userAuth => {
     if (userAuth) {
       // user is logged in, send the user's details to redux, store the current user in the state
@@ -98,8 +99,9 @@ export const handleAuthChange = (dispatch: Function) => {
           // photoUrl: userAuth.photoURL,
         }),
       );
-      const materials = await getMaterials();
-      if (materials) dispatch(changeMaterials(materials.map(m => m.material)));
+      const successCallback = (response: IMaterialBreakdown[]) =>
+        changeMaterials(response.map(m => m.material));
+      await getMaterials({ appStrings, successCallback });
     } else {
       dispatch(logout());
     }
