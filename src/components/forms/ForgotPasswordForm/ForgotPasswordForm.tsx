@@ -1,10 +1,13 @@
 import React from 'react';
+import * as yup from 'yup';
 import { useAppSelector } from '../../../redux/hooks';
 import Button from '../../common/Button/Button';
 import Form, { Input } from '../../common/Form';
 import { IFormProps } from '../../common/Form/Form';
 import { IUser } from '../../../types/user';
-import * as yup from 'yup';
+import { Link } from 'react-router-dom';
+
+import styles from './ForgotPasswordForm.module.css';
 
 interface IForgotPasswordFormData {
   id?: IUser['id'];
@@ -43,16 +46,13 @@ const ForgotPasswordForm: React.FC<IForgotPasswordForm> = props => {
       id="forgot-password-form"
     >
       <Input
-        name="id"
-        label={appStrings?.idNumber}
-        placeholder={appStrings?.id}
-        helperText={appStrings?.orCanAlsoUse}
-      />
-      <Input
         name="email"
         label={appStrings?.email}
         placeholder={appStrings?.mail}
       />
+      <Link to="/login" className={styles.restore_link}>
+        {appStrings?.goToLogin}
+      </Link>
       <Button type="submit" className="submit-button">
         {appStrings?.sendRecovery}
       </Button>
