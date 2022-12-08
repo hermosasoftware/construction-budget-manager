@@ -3,6 +3,7 @@ import {
   addMaterial,
   addSubmaterial,
   deleteMaterial,
+  deleteSubMaterial,
   getMaterials,
   updateMaterial,
   updateSubMaterial,
@@ -25,6 +26,7 @@ import SearchInput from '../../common/SearchInput';
 import Modal from '../../common/Modal';
 import styles from './Materials.module.css';
 import ExchangeInput from '../../common/ExchangeInput';
+import AlertDialog from '../../common/AlertDialog/AlertDialog';
 const initialSelectedMaterialData = {
   id: '',
   material: {
@@ -61,6 +63,7 @@ export default function Materials() {
   const [exchange, setExchange] = useState<string>('500');
   const [editExchange, setEditExchange] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubMaterialModalOpen, setIsSubMaterialModalOpen] = useState(false);
   const appStrings = useAppSelector(state => state.settings.appStrings);
@@ -194,12 +197,6 @@ export default function Materials() {
     setIsModalOpen(true);
   };
 
-  const deleteButton = async (materialId: string) => {
-    const successCallback = () =>
-      setMaterialsDataTable(materialsData.filter(m => m.id !== materialId));
-    await deleteMaterial({ materialId, appStrings, successCallback });
-  };
-
   const addSubMaterial = async (materialId: string) => {
     const materialBreakDown = materialsData.find(m => m.id === materialId);
     setSelectedMaterial(materialBreakDown as IMaterialBreakdown);
@@ -218,11 +215,54 @@ export default function Materials() {
     }
   };
 
-  const deleteSubMaterial = async (
-    materialId: string,
-    submaterialId: string,
-  ) => {
-    alert(`delete ${submaterialId}`);
+  const delSubMaterial = async (materialId: string, submaterialId: string) => {
+    setSelectedMaterial({ ...selectedMaterial, id: materialId });
+    setSelectedSubMaterial({
+      ...selectedSubMaterial,
+      id: submaterialId,
+    });
+    setIsAlertDialogOpen(true);
+  };
+
+  const deleteButton = async () => {
+    if (selectedMaterial.id && !selectedSubMaterial.id) {
+      const successCallback = () => {
+        setMaterialsDataTable(
+          materialsData.filter(e => e.id !== selectedMaterial.id),
+        );
+        setSelectedMaterial(initialSelectedMaterialData);
+        setIsAlertDialogOpen(false);
+      };
+      await deleteMaterial({
+        materialId: selectedMaterial.id,
+        appStrings,
+        successCallback,
+      });
+    } else if (selectedSubMaterial.id) {
+      const successCallback = () => {
+        setMaterialsDataTable(
+          materialsData.map(e =>
+            e.id === selectedMaterial.id
+              ? {
+                  ...e,
+                  subMaterials: e.subMaterials?.filter(
+                    s => s.id !== selectedSubMaterial.id,
+                  ),
+                }
+              : e,
+          ),
+        );
+        setSelectedMaterial(initialSelectedMaterialData);
+        setSelectedSubMaterial(initialSelectedSubMaterialData);
+        setIsAlertDialogOpen(false);
+      };
+      await deleteSubMaterial({
+        materialId: selectedMaterial.id,
+        subMaterialId: selectedSubMaterial.id,
+        appStrings,
+        successCallback,
+      });
+    }
   };
 
   useEffect(() => {
@@ -368,6 +408,17 @@ export default function Materials() {
               </Modal>
             </div>
           </Flex>
+          <AlertDialog
+            tittle={appStrings.deleteMaterial}
+            content={appStrings.deleteWarning}
+            isOpen={isAlertDialogOpen}
+            onClose={() => {
+              setSelectedMaterial(initialSelectedMaterialData);
+              setSelectedSubMaterial(initialSelectedSubMaterialData);
+              setIsAlertDialogOpen(false);
+            }}
+            onSubmit={() => deleteButton()}
+          />
           <MaterialsTableView
             headers={tableHeader}
             items={materialsData}
@@ -377,15 +428,19 @@ export default function Materials() {
             }
             handleRowClick={handleRowClick}
             onClickEdit={id => editButton(id)}
-            onClickDelete={id => deleteButton(id)}
+            onClickDelete={id => {
+              setSelectedMaterial({ ...selectedMaterial, id });
+              setIsAlertDialogOpen(true);
+            }}
             onClickAddSubMaterial={id => addSubMaterial(id)}
             onClickEditSubMaterial={(materialId, submaterialId) =>
               editSubMaterial(materialId, submaterialId)
             }
-            onClickDeleteSubMaterial={(materialId, submaterialId) =>
-              deleteSubMaterial(materialId, submaterialId)
-            }
+            onClickDeleteSubMaterial={(materialId, submaterialId) => {
+              delSubMaterial(materialId, submaterialId);
+            }}
             exchangeRate={Number(exchange)}
+            formatCurrency
           />
         </div>
       </div>

@@ -49,6 +49,7 @@ interface ITableProps<T> {
   hideOptions?: boolean;
   rowChild?: React.ReactElement;
   exchangeRate?: Number;
+  formatCurrency?: boolean;
 }
 
 const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
@@ -65,6 +66,7 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
     rowChild,
     hideOptions,
     exchangeRate,
+    formatCurrency,
   } = props;
   const [rowChildVisible, setRowChildVisible] = useState<boolean>(false);
   const [selectedRow, setSelectedRow] = useState<string | number>('');
@@ -127,14 +129,17 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
         <Tbody>
           {items?.map(row => {
             const isSelected = selectedRow === row.id && rowChildVisible;
-            const hasSubMaterials =
-              row.subMaterials?.length > 0 && row?.material?.hasSubMaterials;
+            const hasSubMaterials = row.subMaterials?.length > 0;
             return (
               <React.Fragment key={`table-row-${row.id}`}>
                 <Tr
                   key={`table-row-${row.id}`}
                   className={`${
-                    isSelected && hasSubMaterials ? styles.rowSelected : ''
+                    isSelected &&
+                    hasSubMaterials &&
+                    row?.material?.hasSubMaterials
+                      ? styles.rowSelected
+                      : ''
                   }`}
                 >
                   {headers?.map(header => {
@@ -151,22 +156,26 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
                             ? styles.column_color__green
                             : styles.column_color__black
                         } ${isNameColumn ? styles.column_bold_text : ''} ${
-                          handleRowClick && hasSubMaterials
+                          handleRowClick &&
+                          hasSubMaterials &&
+                          row?.material?.hasSubMaterials
                             ? styles.cursor_pointer
                             : ''
                         }`}
                       >
-                        {hasSubMaterials && isNameColumn && (
-                          <i
-                            className={`${
-                              styles.materialArrow
-                            } icon ion-md-arrow-drop${
-                              rowChildVisible && isSelected ? 'down' : 'right'
-                            }`}
-                          ></i>
-                        )}
+                        {hasSubMaterials &&
+                          row?.material?.hasSubMaterials &&
+                          isNameColumn && (
+                            <i
+                              className={`${
+                                styles.materialArrow
+                              } icon ion-md-arrow-drop${
+                                rowChildVisible && isSelected ? 'down' : 'right'
+                              }`}
+                            ></i>
+                          )}
                         {!isDollarColumn
-                          ? isCostColumn
+                          ? isCostColumn && formatCurrency
                             ? calculateColons(row)
                             : row.material[header.name] || '-'
                           : calculateDollars(row)}
@@ -218,6 +227,7 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
                 {rowChildVisible &&
                   isSelected &&
                   hasSubMaterials &&
+                  row?.material?.hasSubMaterials &&
                   row.subMaterials?.map((sub: any) => (
                     <Tr key={`table-row-${sub.id}`}>
                       {headers?.map(header => {
