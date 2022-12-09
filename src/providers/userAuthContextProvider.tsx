@@ -16,6 +16,7 @@ import { changeMaterials } from '../redux/reducers/materialsSlice';
 import { getMaterials } from '../services/materialsService';
 import { IService } from '../types/service';
 import { toastError, toastSuccess } from '../utils/toast';
+import { IMaterialBreakdown } from '../types/collections';
 
 export const verifyEmail = async ({
   email,
@@ -157,7 +158,7 @@ export const logOut = async () => {
   return await signOut(auth);
 };
 
-export const handleAuthChange = (dispatch: Function) => {
+export const handleAuthChange = (dispatch: Function, appStrings: any) => {
   onAuthStateChanged(auth, async userAuth => {
     if (userAuth) {
       // user is logged in, send the user's details to redux, store the current user in the state
@@ -169,8 +170,9 @@ export const handleAuthChange = (dispatch: Function) => {
           // photoUrl: userAuth.photoURL,
         }),
       );
-      const materials = await getMaterials();
-      if (materials) dispatch(changeMaterials(materials.map(m => m.material)));
+      const successCallback = (response: IMaterialBreakdown[]) =>
+        changeMaterials(response.map(m => m.material));
+      await getMaterials({ appStrings, successCallback });
     } else {
       dispatch(logout());
     }

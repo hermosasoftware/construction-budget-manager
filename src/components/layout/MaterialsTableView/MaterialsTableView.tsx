@@ -14,11 +14,10 @@ import {
   Thead,
   Tr,
 } from '@chakra-ui/react';
-import { DotsThreeOutlineVertical, Pencil, Trash } from 'phosphor-react';
+import { DotsThreeOutlineVertical, Pencil, Plus, Trash } from 'phosphor-react';
 import { TObject } from '../../../types/global';
-
+import { colonFormat, dolarFormat } from '../../../utils/numbers';
 import styles from './MaterialsTableView.module.css';
-import { dolarFormat } from '../../../utils/numbers';
 
 export type TTableHeader<T = TObject> = {
   name: keyof TTableItem<T>;
@@ -41,8 +40,16 @@ interface ITableProps<T> {
   handleRowClick?: (event: any) => void;
   onClickEdit?: (id: string) => void;
   onClickDelete?: (id: string) => void;
+  onClickAddSubMaterial?: (id: string) => void;
+  onClickEditSubMaterial?: (materialId: string, submaterialId: string) => void;
+  onClickDeleteSubMaterial?: (
+    materialId: string,
+    submaterialId: string,
+  ) => void;
   hideOptions?: boolean;
   rowChild?: React.ReactElement;
+  exchangeRate?: Number;
+  formatCurrency?: boolean;
 }
 
 const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
@@ -53,8 +60,13 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
     onClickEdit,
     onClickDelete,
     handleRowClick,
+    onClickAddSubMaterial,
+    onClickEditSubMaterial,
+    onClickDeleteSubMaterial,
     rowChild,
     hideOptions,
+    exchangeRate,
+    formatCurrency,
   } = props;
   const [rowChildVisible, setRowChildVisible] = useState<boolean>(false);
   const [selectedRow, setSelectedRow] = useState<string | number>('');
@@ -74,12 +86,29 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
   const calculateDollars = (row: any) => {
     let total = 0;
     const subMaterials = row.subMaterials;
-    subMaterials.forEach((s: any) => {
-      const cost = +s.cost;
-      const quantity = +s.quantity;
-      total += quantity * cost;
-    });
-    return dolarFormat(total);
+    if (row?.material.hasSubMaterials) {
+      subMaterials.forEach((s: any) => {
+        total += Number(s.quantity) * Number.parseFloat(s.cost);
+      });
+    } else {
+      total = Number(row?.material?.cost);
+    }
+
+    const exchange = Number(exchangeRate);
+    return dolarFormat(total / exchange);
+  };
+
+  const calculateColons = (row: any) => {
+    let total = 0;
+    const subMaterials = row.subMaterials;
+    if (row?.material.hasSubMaterials) {
+      subMaterials.forEach((s: any) => {
+        total += Number(s.quantity) * Number.parseFloat(s.cost);
+      });
+    } else {
+      total = Number(row?.material?.cost);
+    }
+    return colonFormat(total);
   };
 
   return (
@@ -106,12 +135,17 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
                 <Tr
                   key={`table-row-${row.id}`}
                   className={`${
-                    isSelected && hasSubMaterials ? styles.rowSelected : ''
+                    isSelected &&
+                    hasSubMaterials &&
+                    row?.material?.hasSubMaterials
+                      ? styles.rowSelected
+                      : ''
                   }`}
                 >
                   {headers?.map(header => {
                     const isNameColumn = header.name === 'name';
                     const isDollarColumn = header.name === 'dollarCost';
+                    const isCostColumn = header.name === 'cost';
                     return (
                       <Td
                         key={`table-row-header-${header.name as string}`}
@@ -122,23 +156,29 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
                             ? styles.column_color__green
                             : styles.column_color__black
                         } ${isNameColumn ? styles.column_bold_text : ''} ${
-                          handleRowClick ? styles.cursor_pointer : ''
+                          handleRowClick &&
+                          hasSubMaterials &&
+                          row?.material?.hasSubMaterials
+                            ? styles.cursor_pointer
+                            : ''
                         }`}
                       >
-                        {hasSubMaterials && isNameColumn && (
-                          <i
-                            className={`${
-                              styles.materialArrow
-                            } icon ion-md-arrow-drop${
-                              rowChildVisible && isSelected ? 'down' : 'right'
-                            }`}
-                          ></i>
-                        )}
+                        {hasSubMaterials &&
+                          row?.material?.hasSubMaterials &&
+                          isNameColumn && (
+                            <i
+                              className={`${
+                                styles.materialArrow
+                              } icon ion-md-arrow-drop${
+                                rowChildVisible && isSelected ? 'down' : 'right'
+                              }`}
+                            ></i>
+                          )}
                         {!isDollarColumn
-                          ? row.material[header.name] || '-'
-                          : hasSubMaterials
-                          ? calculateDollars(row)
-                          : '-'}
+                          ? isCostColumn && formatCurrency
+                            ? calculateColons(row)
+                            : row.material[header.name] || '-'
+                          : calculateDollars(row)}
                       </Td>
                     );
                   })}
@@ -159,11 +199,20 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
                           </Center>
                         </MenuButton>
                         <MenuList>
+                          {onClickAddSubMaterial &&
+                            row?.material?.hasSubMaterials && (
+                              <MenuItem
+                                onClick={() =>
+                                  onClickAddSubMaterial(row.id.toString())
+                                }
+                              >
+                                Add sub material <Spacer></Spacer> <Plus />
+                              </MenuItem>
+                            )}
                           <MenuItem
                             onClick={() => onClickEdit(row.id.toString())}
                           >
-                            Edit<Spacer></Spacer>
-                            <Pencil />
+                            Edit <Spacer></Spacer> <Pencil />
                           </MenuItem>
                           <MenuItem
                             onClick={() => onClickDelete(row.id.toString())}
@@ -177,19 +226,72 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
                 </Tr>
                 {rowChildVisible &&
                   isSelected &&
+                  hasSubMaterials &&
+                  row?.material?.hasSubMaterials &&
                   row.subMaterials?.map((sub: any) => (
                     <Tr key={`table-row-${sub.id}`}>
                       {headers?.map(header => {
+                        const isDollarColumn = header.name === 'dollarCost';
+                        const isCostColumn = header.name === 'cost';
                         return (
                           <Td
                             key={`table-row-header-${header.name as string}`}
                             id={sub.id?.toString()}
                             className={`${styles.td}`}
                           >
-                            {sub[header.name]}
+                            {!isDollarColumn
+                              ? isCostColumn
+                                ? colonFormat(Number(sub.cost))
+                                : sub[header.name] || '-'
+                              : dolarFormat(
+                                  Number(sub.cost / Number(exchangeRate)),
+                                )}
                           </Td>
                         );
                       })}
+                      {onClickEditSubMaterial &&
+                      onClickDeleteSubMaterial &&
+                      !hideOptions ? (
+                        <Td
+                          id={row.id?.toString()}
+                          className={`${styles.td}`}
+                          textAlign="center"
+                          width="90px"
+                        >
+                          <Menu>
+                            <MenuButton boxSize="40px">
+                              <Center>
+                                <DotsThreeOutlineVertical
+                                  className={styles.cursor_pointer}
+                                  weight="fill"
+                                />
+                              </Center>
+                            </MenuButton>
+                            <MenuList>
+                              <MenuItem
+                                onClick={() =>
+                                  onClickEditSubMaterial(
+                                    row.id.toString(),
+                                    sub.id.toString(),
+                                  )
+                                }
+                              >
+                                Edit <Spacer></Spacer> <Pencil />
+                              </MenuItem>
+                              <MenuItem
+                                onClick={() =>
+                                  onClickDeleteSubMaterial(
+                                    row.id.toString(),
+                                    sub.id.toString(),
+                                  )
+                                }
+                              >
+                                Delete <Spacer></Spacer> <Trash />
+                              </MenuItem>
+                            </MenuList>
+                          </Menu>
+                        </Td>
+                      ) : null}
                     </Tr>
                   ))}
               </React.Fragment>

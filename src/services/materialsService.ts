@@ -10,18 +10,21 @@ import {
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
-import { IMaterial, IMaterialBreakdown } from '../types/collections';
+import { IMaterial, ISubMaterial } from '../types/collections';
 import { IService } from '../types/service';
 import { toastError, toastSuccess } from '../utils/toast';
 
 const materialDocRef = collection(db, 'materials');
 
-export const getMaterials = async (): Promise<IMaterialBreakdown[] | null> => {
+export const getMaterials = async ({
+  appStrings,
+  successCallback,
+  errorCallback,
+}: IService) => {
   try {
     const docSnap = await getDocs(materialDocRef);
 
     const materials = docSnap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-
     let allMaterials = null;
     let submaterialsPromise = materials.map(async elem => {
       const materialQ = query(
@@ -37,10 +40,12 @@ export const getMaterials = async (): Promise<IMaterialBreakdown[] | null> => {
     await Promise.all(submaterialsPromise).then(resul => {
       allMaterials = resul;
     });
-    return allMaterials;
-  } catch (error) {
-    console.log(error);
-    return null;
+    successCallback && successCallback(allMaterials);
+  } catch (e) {
+    let errorMessage = appStrings.genericError;
+    if (e instanceof FirebaseError) errorMessage = e.message;
+    toastError(appStrings.getInformationError, errorMessage);
+    errorCallback && errorCallback();
   }
 };
 
@@ -115,6 +120,54 @@ export const deleteMaterial = async ({
 
     toastError(appStrings.saveError, errorMessage);
 
+    errorCallback && errorCallback();
+  }
+};
+
+export const addSubmaterial = async ({
+  materialId,
+  submaterial,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: {
+  materialId: string;
+  submaterial: ISubMaterial;
+} & IService) => {
+  try {
+    const { id, ...rest } = submaterial;
+    const subMatRef = collection(db, 'materials', materialId, 'subMaterials');
+    const docRef = await addDoc(subMatRef, rest);
+    toastSuccess(appStrings.success, appStrings.saveSuccess);
+    successCallback && successCallback(materialId, docRef.id);
+  } catch (e) {
+    errorCallback && errorCallback();
+  }
+};
+
+export const updateSubMaterial = async ({
+  materialId,
+  submaterial,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: {
+  materialId: string;
+  submaterial: ISubMaterial;
+} & IService) => {
+  try {
+    const { id, ...rest } = submaterial;
+    const subMaterialDocRef = doc(
+      db,
+      'materials',
+      materialId,
+      'subMaterials',
+      id,
+    );
+    await setDoc(subMaterialDocRef, rest);
+    toastSuccess(appStrings.success, appStrings.saveSuccess);
+    successCallback && successCallback(materialId, id);
+  } catch (e) {
     errorCallback && errorCallback();
   }
 };
