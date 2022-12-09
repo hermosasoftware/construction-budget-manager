@@ -12,13 +12,14 @@ import AuthRoute from './components/common/AuthRoute';
 import Materials from './components/views/Materials/Materials';
 import './App.css';
 import { useEffect } from 'react';
-import { useAppDispatch } from './redux/hooks';
+import { useAppDispatch, useAppSelector } from './redux/hooks';
 import { handleAuthChange } from './providers/userAuthContextProvider';
 
 function App() {
   const dispatch = useAppDispatch();
+  const appStrings = useAppSelector(state => state.settings.appStrings);
   useEffect(() => {
-    handleAuthChange(dispatch);
+    handleAuthChange(dispatch, appStrings);
   }, []);
 
   return (
