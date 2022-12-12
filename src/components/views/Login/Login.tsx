@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { User } from 'firebase/auth';
 import { useAppSelector } from '../../../redux/hooks';
 import BrandPoster from '../../common/BrandPoster/BrandPoster';
 import LoginFormEmail, {
@@ -10,8 +11,6 @@ import LoginFormPassword, {
 } from '../../forms/LoginForm/LoginFormPassword';
 import { logIn, verifyEmail } from '../../../providers/userAuthContextProvider';
 
-import { useToast } from '@chakra-ui/react';
-
 import styles from './Login.module.css';
 
 interface ILogin {}
@@ -20,47 +19,20 @@ const LogIn: React.FC<ILogin> = props => {
   const navigate = useNavigate();
   const appStrings = useAppSelector(state => state.settings.appStrings);
   const appUser = useAppSelector(state => state.session.user);
-  const toast = useToast();
   const [loginPhase, setLoginPhase] = useState('email');
   const [email, setEmail] = useState('');
 
   const handleOnEmailSubmit = async (data: ILoginFormEmailData) => {
     const { email } = data;
-    const response = await verifyEmail(email);
-    console.log(response);
-    if (!response) {
-      // dispatch(changeUser(user));
+    const successCallback = () => {
       setLoginPhase('password');
       setEmail(email);
-      //navigate('/onboarding');
-    } else {
-      toast({
-        title: appStrings?.errorWhileLogIn,
-        description: response,
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-        position: 'top-right',
-      });
-    }
+    };
+    await verifyEmail({ email, appStrings, successCallback });
   };
   const handleOnPasswordSubmit = async (data: ILoginFormPasswordData) => {
     const { password } = data;
-    const [errors, user] = await logIn(email, password);
-    if (!errors && user) {
-      // dispatch(changeUser(user));
-
-      navigate('/onboarding');
-    } else {
-      toast({
-        title: appStrings?.errorWhileLogIn,
-        description: errors,
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-        position: 'top-right',
-      });
-    }
+    await logIn({ email, password, appStrings });
   };
 
   useEffect(() => {

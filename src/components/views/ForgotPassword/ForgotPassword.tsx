@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { passwordResetEmail } from '../../../providers/userAuthContextProvider';
 import { useAppSelector } from '../../../redux/hooks';
 import { TObject } from '../../../types/global';
 import BrandPoster from '../../common/BrandPoster/BrandPoster';
@@ -17,7 +19,7 @@ enum EStrategies {
 
 const ForgotPassword: React.FC<IForgotPassword> = props => {
   const [formEmail, setFormEmail] = useState('');
-
+  const navigate = useNavigate();
   const [strategy, setStrategy] = useState<EStrategies>(EStrategies.form);
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
@@ -36,10 +38,10 @@ const ForgotPassword: React.FC<IForgotPassword> = props => {
     },
   ];
 
-  const handleOnFormSubmit = (data: TObject) => {
-    console.log('Forgot Password Form: ', data);
-    setFormEmail(data.email || 'jesusac1992@gmail.com');
-    setStrategy(EStrategies.confirmation);
+  const handleOnFormSubmit = async (data: TObject) => {
+    const { email } = data;
+    const successCallback = () => navigate('/login');
+    await passwordResetEmail({ email, appStrings, successCallback });
   };
 
   return (
@@ -51,10 +53,6 @@ const ForgotPassword: React.FC<IForgotPassword> = props => {
         <div
           className={`center-content ${styles.forgot_password__form_container}`}
         >
-          <ToggleGroup
-            selectedOption="restorePassword"
-            options={toggleOptions}
-          />
           {strategy === EStrategies.form ? (
             <ForgotPasswordForm
               className={styles.forgot_password__form}

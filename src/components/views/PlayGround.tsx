@@ -13,7 +13,6 @@ import TabGroup from '../common/TabGroup/TabGroup';
 import * as yup from 'yup';
 
 import styles from './PlayGround.module.css';
-import { verifyEmail } from '../../providers/userAuthContextProvider';
 
 export const tableHeader: TTableHeader[] = [
   { name: 'name', value: 'Nombre' },
@@ -67,13 +66,6 @@ const Home = () => {
     username: yup.string().required('Campo requerido'),
     password: yup.string().required('Campo requerido'),
   });
-  useEffect(() => {
-    const test = async () => {
-      await verifyEmail('estebanvargasu@gmail.com');
-    };
-
-    test();
-  }, []);
 
   return (
     <div className={`red-text ${styles.home_container}`}>
