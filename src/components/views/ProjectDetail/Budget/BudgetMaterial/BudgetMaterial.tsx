@@ -27,7 +27,6 @@ import {
   IMaterialBreakdown,
   ISubMaterial,
 } from '../../../../../types/collections';
-import { colonFormat } from '../../../../../utils/numbers';
 
 import styles from './BudgetMaterial.module.css';
 
@@ -109,17 +108,6 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
     cost: yup.string().required(appStrings?.requiredField),
     quantity: yup.string().required(appStrings?.requiredField),
   });
-
-  const formatTableData = () =>
-    tableData.map(data => ({
-      ...data,
-      material: {
-        ...data.material,
-        // cost: colonFormat(data.material.cost),
-        subtotal: colonFormat(data.material.subtotal!),
-        // dollars: dolarFormat(data.material.subtotal! / budget.exchange),
-      },
-    }));
 
   const getMaterials = async () => {
     const successCallback = (response: IMaterialBreakdown[]) =>
@@ -473,7 +461,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
       />
       <MaterialsTableView
         headers={tableHeader}
-        items={formatTableData()}
+        items={tableData}
         filter={value =>
           searchTerm === '' ||
           value?.material?.name?.toUpperCase().includes(searchTerm)

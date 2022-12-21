@@ -94,7 +94,7 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
     }
 
     const exchange = Number(exchangeRate);
-    return dolarFormat(total / exchange);
+    return total / exchange;
   };
 
   const calculateColons = (row: any) => {
@@ -107,7 +107,35 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
     } else {
       total = Number(row?.material?.cost);
     }
-    return colonFormat(total);
+    return total;
+  };
+
+  const renderColumnValue = (row: any, headerName: any) => {
+    const isDollarColumn = headerName === 'dollarCost';
+    const isCostColumn = headerName === 'cost';
+    const isSubTotal = headerName === 'subtotal';
+    if (isDollarColumn && formatCurrency) {
+      return dolarFormat(calculateDollars(row));
+    } else if (isCostColumn && formatCurrency) {
+      return colonFormat(calculateColons(row));
+    } else if (isSubTotal) {
+      return colonFormat(calculateColons(row) * Number(row.material?.quantity));
+    }
+    return row.material[headerName] || '-';
+  };
+
+  const renderSubColumnValue = (row: any, headerName: any) => {
+    const isDollarColumn = headerName === 'dollarCost';
+    const isCostColumn = headerName === 'cost';
+    const isSubTotal = headerName === 'subtotal';
+    if (isDollarColumn && formatCurrency) {
+      return dolarFormat(Number(row.cost / Number(exchangeRate)));
+    } else if (isCostColumn && formatCurrency) {
+      return colonFormat(Number(row.cost));
+    } else if (isSubTotal) {
+      return colonFormat(Number(row.quantity) * Number(row.cost));
+    }
+    return row[headerName] || '-';
   };
 
   return (
@@ -143,8 +171,6 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
                 >
                   {headers?.map(header => {
                     const isNameColumn = header.name === 'name';
-                    const isDollarColumn = header.name === 'dollarCost';
-                    const isCostColumn = header.name === 'cost';
                     return (
                       <Td
                         key={`table-row-header-${header.name as string}`}
@@ -173,11 +199,8 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
                               }`}
                             ></i>
                           )}
-                        {!isDollarColumn
-                          ? isCostColumn && formatCurrency
-                            ? calculateColons(row)
-                            : row.material[header.name] || '-'
-                          : calculateDollars(row)}
+
+                        {renderColumnValue(row, header.name)}
                       </Td>
                     );
                   })}
@@ -237,21 +260,13 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
                         className={`${styles.childRowSelected} ${cssFormat}`}
                       >
                         {headers?.map(header => {
-                          const isDollarColumn = header.name === 'dollarCost';
-                          const isCostColumn = header.name === 'cost';
                           return (
                             <Td
                               key={`table-row-header-${header.name as string}`}
                               id={sub.id?.toString()}
                               className={`${styles.td}`}
                             >
-                              {!isDollarColumn
-                                ? isCostColumn
-                                  ? colonFormat(Number(sub.cost))
-                                  : sub[header.name] || '-'
-                                : dolarFormat(
-                                    Number(sub.cost / Number(exchangeRate)),
-                                  )}
+                              {renderSubColumnValue(sub, header.name)}
                             </Td>
                           );
                         })}
