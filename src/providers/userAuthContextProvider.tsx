@@ -6,48 +6,113 @@ import {
   signInWithPopup,
   onAuthStateChanged,
   fetchSignInMethodsForEmail,
-  User,
+  sendPasswordResetEmail,
 } from 'firebase/auth';
 import { query, where, collection, addDoc, getDocs } from 'firebase/firestore';
+import { FirebaseError } from 'firebase/app';
 import { auth, db } from '../config/firebaseConfig';
 import { login, logout } from '../redux/reducers/sessionSlice';
 import { changeMaterials } from '../redux/reducers/materialsSlice';
 import { getMaterials } from '../services/materialsService';
+import { IService } from '../types/service';
+import { toastError, toastSuccess } from '../utils/toast';
 import { IMaterialBreakdown } from '../types/collections';
 
-export const verifyEmail = async (email: string): Promise<String | null> => {
+export const verifyEmail = async ({
+  email,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: { email: string } & IService) => {
   try {
     const result = await fetchSignInMethodsForEmail(auth, email);
-    console.log(result);
-    if (!result.length) {
-      return Error('La direccion de correo electronico no exite') + '';
-    } else if (result[0] === 'google.com') {
-      return Error('Debe iniciar seccion con Google') + '';
-    }
-    return null;
+
+    if (!result.length) throw Error(appStrings.emailNotExist);
+
+    successCallback && successCallback();
   } catch (error) {
-    return error + '';
+    let errorMessage = appStrings.genericError;
+
+    if (error instanceof FirebaseError) {
+      errorMessage = appStrings[error.code];
+    } else if (
+      error instanceof Error &&
+      error.message === appStrings.emailNotExist
+    ) {
+      errorMessage = error.message;
+    }
+
+    toastError(appStrings.errorWhileLogIn, errorMessage);
+
+    errorCallback && errorCallback();
   }
 };
 
-export const logIn = async (
-  email: string,
-  password: string,
-): Promise<[String | null, User | null]> => {
+export const logIn = async ({
+  email,
+  password,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: { email: string; password: string } & IService) => {
   try {
     const userCredential = await signInWithEmailAndPassword(
       auth,
       email,
       password,
     );
-    console.log(userCredential.user);
-    return [null, userCredential.user];
+    successCallback && successCallback(userCredential.user);
   } catch (error) {
-    return [error + '', null];
+    let errorMessage = appStrings.genericError;
+
+    if (error instanceof FirebaseError) errorMessage = appStrings[error.code];
+
+    toastError(appStrings.errorWhileLogIn, errorMessage);
+
+    errorCallback && errorCallback();
   }
 };
 
-export const signUp = async (email: string, password: string) => {
+export const passwordResetEmail = async ({
+  email,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: { email: string } & IService) => {
+  try {
+    verifyEmail({
+      email,
+      appStrings,
+      successCallback: async () => {
+        await sendPasswordResetEmail(auth, email);
+        toastSuccess(
+          appStrings.success,
+          `${appStrings.passwordResetEmail} ${email}`,
+        );
+
+        successCallback && successCallback();
+      },
+    });
+  } catch (error) {
+    let errorMessage = appStrings.genericError;
+
+    if (error instanceof FirebaseError) {
+      errorMessage = appStrings[error.code];
+    }
+
+    toastError(appStrings.errorWhileLogIn, errorMessage);
+
+    errorCallback && errorCallback();
+  }
+};
+
+export const signUp = async ({
+  email,
+  password,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: { email: string; password: string } & IService) => {
   try {
     const res = await createUserWithEmailAndPassword(auth, email, password);
     const user = res.user;
@@ -56,9 +121,15 @@ export const signUp = async (email: string, password: string) => {
       authProvider: 'local',
       email,
     });
-    return [null, user];
+    successCallback && successCallback(user);
   } catch (error) {
-    return [error, null];
+    let errorMessage = appStrings.genericError;
+
+    if (error instanceof FirebaseError) errorMessage = appStrings[error.code];
+
+    toastError(appStrings.errorWhileLogIn, errorMessage);
+
+    errorCallback && errorCallback();
   }
 };
 

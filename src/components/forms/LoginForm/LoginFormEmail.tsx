@@ -57,7 +57,7 @@ const LoginForm: React.FC<ILoginForm> = props => {
         {appStrings?.restoreForgottenPassword}
       </Link>
       <Button type="submit" className="submit-button">
-        {appStrings?.logIn}
+        {appStrings?.next}
       </Button>
     </Form>
   );
