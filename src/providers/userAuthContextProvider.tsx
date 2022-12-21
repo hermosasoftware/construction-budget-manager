@@ -100,7 +100,7 @@ export const handleAuthChange = (dispatch: Function, appStrings: any) => {
         }),
       );
       const successCallback = (response: IMaterialBreakdown[]) =>
-        changeMaterials(response.map(m => m.material));
+        dispatch(changeMaterials(response.map(m => m.material)));
       await getMaterials({ appStrings, successCallback });
     } else {
       dispatch(logout());

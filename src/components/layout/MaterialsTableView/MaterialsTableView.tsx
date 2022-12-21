@@ -63,7 +63,6 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
     onClickAddSubMaterial,
     onClickEditSubMaterial,
     onClickDeleteSubMaterial,
-    rowChild,
     hideOptions,
     exchangeRate,
     formatCurrency,
@@ -228,72 +227,80 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
                   isSelected &&
                   hasSubMaterials &&
                   row?.material?.hasSubMaterials &&
-                  row.subMaterials?.map((sub: any) => (
-                    <Tr key={`table-row-${sub.id}`}>
-                      {headers?.map(header => {
-                        const isDollarColumn = header.name === 'dollarCost';
-                        const isCostColumn = header.name === 'cost';
-                        return (
+                  row.subMaterials?.map((sub: any, i: number, arr: any) => {
+                    let cssFormat = '';
+                    const isLastRow = i === arr.length - 1;
+                    cssFormat = isLastRow ? styles.bottomRoundBorder : '';
+                    return (
+                      <Tr
+                        key={`table-row-${sub.id}`}
+                        className={`${styles.childRowSelected} ${cssFormat}`}
+                      >
+                        {headers?.map(header => {
+                          const isDollarColumn = header.name === 'dollarCost';
+                          const isCostColumn = header.name === 'cost';
+                          return (
+                            <Td
+                              key={`table-row-header-${header.name as string}`}
+                              id={sub.id?.toString()}
+                              className={`${styles.td}`}
+                            >
+                              {!isDollarColumn
+                                ? isCostColumn
+                                  ? colonFormat(Number(sub.cost))
+                                  : sub[header.name] || '-'
+                                : dolarFormat(
+                                    Number(sub.cost / Number(exchangeRate)),
+                                  )}
+                            </Td>
+                          );
+                        })}
+                        {onClickEditSubMaterial &&
+                        onClickDeleteSubMaterial &&
+                        !hideOptions ? (
                           <Td
-                            key={`table-row-header-${header.name as string}`}
-                            id={sub.id?.toString()}
+                            id={row.id?.toString()}
                             className={`${styles.td}`}
+                            textAlign="center"
+                            width="90px"
                           >
-                            {!isDollarColumn
-                              ? isCostColumn
-                                ? colonFormat(Number(sub.cost))
-                                : sub[header.name] || '-'
-                              : dolarFormat(
-                                  Number(sub.cost / Number(exchangeRate)),
-                                )}
+                            <Menu>
+                              <MenuButton boxSize="40px">
+                                <Center>
+                                  <DotsThreeOutlineVertical
+                                    className={styles.cursor_pointer}
+                                    weight="fill"
+                                  />
+                                </Center>
+                              </MenuButton>
+                              <MenuList>
+                                <MenuItem
+                                  onClick={() =>
+                                    onClickEditSubMaterial(
+                                      row.id.toString(),
+                                      sub.id.toString(),
+                                    )
+                                  }
+                                >
+                                  Edit <Spacer></Spacer> <Pencil />
+                                </MenuItem>
+                                <MenuItem
+                                  onClick={() =>
+                                    onClickDeleteSubMaterial(
+                                      row.id.toString(),
+                                      sub.id.toString(),
+                                    )
+                                  }
+                                >
+                                  Delete <Spacer></Spacer> <Trash />
+                                </MenuItem>
+                              </MenuList>
+                            </Menu>
                           </Td>
-                        );
-                      })}
-                      {onClickEditSubMaterial &&
-                      onClickDeleteSubMaterial &&
-                      !hideOptions ? (
-                        <Td
-                          id={row.id?.toString()}
-                          className={`${styles.td}`}
-                          textAlign="center"
-                          width="90px"
-                        >
-                          <Menu>
-                            <MenuButton boxSize="40px">
-                              <Center>
-                                <DotsThreeOutlineVertical
-                                  className={styles.cursor_pointer}
-                                  weight="fill"
-                                />
-                              </Center>
-                            </MenuButton>
-                            <MenuList>
-                              <MenuItem
-                                onClick={() =>
-                                  onClickEditSubMaterial(
-                                    row.id.toString(),
-                                    sub.id.toString(),
-                                  )
-                                }
-                              >
-                                Edit <Spacer></Spacer> <Pencil />
-                              </MenuItem>
-                              <MenuItem
-                                onClick={() =>
-                                  onClickDeleteSubMaterial(
-                                    row.id.toString(),
-                                    sub.id.toString(),
-                                  )
-                                }
-                              >
-                                Delete <Spacer></Spacer> <Trash />
-                              </MenuItem>
-                            </MenuList>
-                          </Menu>
-                        </Td>
-                      ) : null}
-                    </Tr>
-                  ))}
+                        ) : null}
+                      </Tr>
+                    );
+                  })}
               </React.Fragment>
             );
           })}

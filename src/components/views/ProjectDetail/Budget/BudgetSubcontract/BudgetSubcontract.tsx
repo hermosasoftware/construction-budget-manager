@@ -211,7 +211,7 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
         </div>
       </Flex>
       <AlertDialog
-        tittle={appStrings.deleteSubcontract}
+        title={appStrings.deleteSubcontract}
         content={appStrings.deleteWarning}
         isOpen={isAlertDialogOpen}
         onClose={() => {

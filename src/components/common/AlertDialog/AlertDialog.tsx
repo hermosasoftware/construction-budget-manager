@@ -13,7 +13,7 @@ import React from 'react';
 import Button from '../Button/Button';
 
 interface IAlertDialog {
-  tittle: string;
+  title: string;
   content: string;
   isOpen: boolean;
   onClose: () => void;
@@ -21,7 +21,7 @@ interface IAlertDialog {
 }
 
 const AlertDialog: React.FC<IAlertDialog> = ({
-  tittle,
+  title,
   content,
   isOpen,
   onClose,
@@ -40,9 +40,7 @@ const AlertDialog: React.FC<IAlertDialog> = ({
     >
       <AlertDialogOverlay />
       <AlertDialogContent className={styles.content}>
-        <AlertDialogHeader className={styles.header}>
-          {tittle}
-        </AlertDialogHeader>
+        <AlertDialogHeader className={styles.header}>{title}</AlertDialogHeader>
         <AlertDialogBody className={styles.body}>{content}</AlertDialogBody>
         <AlertDialogFooter className={styles.footer}>
           <Button onClick={() => onClose()}>{appStrings.back}</Button>
