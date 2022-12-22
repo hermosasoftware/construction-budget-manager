@@ -56,10 +56,6 @@ export default function Materials() {
   const [selectedSubMaterial, setSelectedSubMaterial] = useState<ISubMaterial>(
     initialSelectedSubMaterialData,
   );
-  // eliminar y utilizar el que trae el selectedMaterial
-  const [hasSubMaterials, setHasSubMaterials] = useState<boolean | undefined>(
-    false,
-  );
   const [exchange, setExchange] = useState<string>('500');
   const [editExchange, setEditExchange] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -109,7 +105,7 @@ export default function Materials() {
   const onSubmit = async (data: IMaterial) => {
     const value: IMaterial = {
       ...data,
-      cost: !hasSubMaterials ? data.cost : 0,
+      cost: !data.hasSubMaterials ? data.cost : 0,
     };
     const successAddCallback = (materialId: string) => {
       Object.assign(value, { id: materialId });
@@ -193,7 +189,6 @@ export default function Materials() {
   const editButton = async (materialId: string) => {
     const materialBreakDown = materialsData.find(m => m.id === materialId);
     setSelectedMaterial(materialBreakDown as IMaterialBreakdown);
-    setHasSubMaterials(materialBreakDown?.material?.hasSubMaterials);
     setIsModalOpen(true);
   };
 
@@ -265,6 +260,16 @@ export default function Materials() {
     }
   };
 
+  const handleHasSubMaterialChange = (e: any) => {
+    setSelectedMaterial({
+      ...selectedMaterial,
+      material: {
+        ...selectedMaterial.material,
+        hasSubMaterials: e.value,
+      },
+    });
+  };
+
   useEffect(() => {
     (async function () {
       const successCallback = (response: IMaterialBreakdown[]) =>
@@ -318,7 +323,13 @@ export default function Materials() {
                 />
               </Form>
               <Button onClick={() => setIsModalOpen(true)}>+</Button>
-              <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+              <Modal
+                isOpen={isModalOpen}
+                onClose={() => {
+                  setIsModalOpen(false);
+                  setSelectedMaterial(initialSelectedMaterialData);
+                }}
+              >
                 <Heading as="h2" size="lg">
                   {selectedMaterial.id
                     ? appStrings.editMaterial
@@ -345,10 +356,10 @@ export default function Materials() {
                   <Switch
                     name="hasSubMaterials"
                     label={appStrings.hasSubmaterials}
-                    onChange={e => setHasSubMaterials(e.value)}
+                    onChange={e => handleHasSubMaterialChange(e)}
                     helperText={appStrings.submaterialsDisclaimer}
                   />
-                  {!hasSubMaterials && (
+                  {!selectedMaterial.material?.hasSubMaterials && (
                     <Input
                       name="cost"
                       type={'number'}
@@ -409,7 +420,7 @@ export default function Materials() {
             </div>
           </Flex>
           <AlertDialog
-            tittle={appStrings.deleteMaterial}
+            title={appStrings.deleteMaterial}
             content={appStrings.deleteWarning}
             isOpen={isAlertDialogOpen}
             onClose={() => {

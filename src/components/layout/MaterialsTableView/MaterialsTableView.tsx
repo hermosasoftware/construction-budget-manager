@@ -63,7 +63,6 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
     onClickAddSubMaterial,
     onClickEditSubMaterial,
     onClickDeleteSubMaterial,
-    rowChild,
     hideOptions,
     exchangeRate,
     formatCurrency,
@@ -87,7 +86,7 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
     let total = 0;
     const subMaterials = row.subMaterials;
     if (row?.material.hasSubMaterials) {
-      subMaterials.forEach((s: any) => {
+      subMaterials?.forEach((s: any) => {
         total += Number(s.quantity) * Number.parseFloat(s.cost);
       });
     } else {
@@ -95,20 +94,48 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
     }
 
     const exchange = Number(exchangeRate);
-    return dolarFormat(total / exchange);
+    return total / exchange;
   };
 
   const calculateColons = (row: any) => {
     let total = 0;
     const subMaterials = row.subMaterials;
     if (row?.material.hasSubMaterials) {
-      subMaterials.forEach((s: any) => {
+      subMaterials?.forEach((s: any) => {
         total += Number(s.quantity) * Number.parseFloat(s.cost);
       });
     } else {
       total = Number(row?.material?.cost);
     }
-    return colonFormat(total);
+    return total;
+  };
+
+  const renderColumnValue = (row: any, headerName: any) => {
+    const isDollarColumn = headerName === 'dollarCost';
+    const isCostColumn = headerName === 'cost';
+    const isSubTotal = headerName === 'subtotal';
+    if (isDollarColumn && formatCurrency) {
+      return dolarFormat(calculateDollars(row));
+    } else if (isCostColumn && formatCurrency) {
+      return colonFormat(calculateColons(row));
+    } else if (isSubTotal) {
+      return colonFormat(calculateColons(row) * Number(row.material?.quantity));
+    }
+    return row.material[headerName] || '-';
+  };
+
+  const renderSubColumnValue = (row: any, headerName: any) => {
+    const isDollarColumn = headerName === 'dollarCost';
+    const isCostColumn = headerName === 'cost';
+    const isSubTotal = headerName === 'subtotal';
+    if (isDollarColumn && formatCurrency) {
+      return dolarFormat(Number(row.cost / Number(exchangeRate)));
+    } else if (isCostColumn && formatCurrency) {
+      return colonFormat(Number(row.cost));
+    } else if (isSubTotal) {
+      return colonFormat(Number(row.quantity) * Number(row.cost));
+    }
+    return row[headerName] || '-';
   };
 
   return (
@@ -144,8 +171,6 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
                 >
                   {headers?.map(header => {
                     const isNameColumn = header.name === 'name';
-                    const isDollarColumn = header.name === 'dollarCost';
-                    const isCostColumn = header.name === 'cost';
                     return (
                       <Td
                         key={`table-row-header-${header.name as string}`}
@@ -174,11 +199,8 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
                               }`}
                             ></i>
                           )}
-                        {!isDollarColumn
-                          ? isCostColumn && formatCurrency
-                            ? calculateColons(row)
-                            : row.material[header.name] || '-'
-                          : calculateDollars(row)}
+
+                        {renderColumnValue(row, header.name)}
                       </Td>
                     );
                   })}
@@ -228,72 +250,72 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
                   isSelected &&
                   hasSubMaterials &&
                   row?.material?.hasSubMaterials &&
-                  row.subMaterials?.map((sub: any) => (
-                    <Tr key={`table-row-${sub.id}`}>
-                      {headers?.map(header => {
-                        const isDollarColumn = header.name === 'dollarCost';
-                        const isCostColumn = header.name === 'cost';
-                        return (
+                  row.subMaterials?.map((sub: any, i: number, arr: any) => {
+                    let cssFormat = '';
+                    const isLastRow = i === arr.length - 1;
+                    cssFormat = isLastRow ? styles.bottomRoundBorder : '';
+                    return (
+                      <Tr
+                        key={`table-row-${sub.id}`}
+                        className={`${styles.childRowSelected} ${cssFormat}`}
+                      >
+                        {headers?.map(header => {
+                          return (
+                            <Td
+                              key={`table-row-header-${header.name as string}`}
+                              id={sub.id?.toString()}
+                              className={`${styles.td}`}
+                            >
+                              {renderSubColumnValue(sub, header.name)}
+                            </Td>
+                          );
+                        })}
+                        {onClickEditSubMaterial &&
+                        onClickDeleteSubMaterial &&
+                        !hideOptions ? (
                           <Td
-                            key={`table-row-header-${header.name as string}`}
-                            id={sub.id?.toString()}
+                            id={row.id?.toString()}
                             className={`${styles.td}`}
+                            textAlign="center"
+                            width="90px"
                           >
-                            {!isDollarColumn
-                              ? isCostColumn
-                                ? colonFormat(Number(sub.cost))
-                                : sub[header.name] || '-'
-                              : dolarFormat(
-                                  Number(sub.cost / Number(exchangeRate)),
-                                )}
+                            <Menu>
+                              <MenuButton boxSize="40px">
+                                <Center>
+                                  <DotsThreeOutlineVertical
+                                    className={styles.cursor_pointer}
+                                    weight="fill"
+                                  />
+                                </Center>
+                              </MenuButton>
+                              <MenuList>
+                                <MenuItem
+                                  onClick={() =>
+                                    onClickEditSubMaterial(
+                                      row.id.toString(),
+                                      sub.id.toString(),
+                                    )
+                                  }
+                                >
+                                  Edit <Spacer></Spacer> <Pencil />
+                                </MenuItem>
+                                <MenuItem
+                                  onClick={() =>
+                                    onClickDeleteSubMaterial(
+                                      row.id.toString(),
+                                      sub.id.toString(),
+                                    )
+                                  }
+                                >
+                                  Delete <Spacer></Spacer> <Trash />
+                                </MenuItem>
+                              </MenuList>
+                            </Menu>
                           </Td>
-                        );
-                      })}
-                      {onClickEditSubMaterial &&
-                      onClickDeleteSubMaterial &&
-                      !hideOptions ? (
-                        <Td
-                          id={row.id?.toString()}
-                          className={`${styles.td}`}
-                          textAlign="center"
-                          width="90px"
-                        >
-                          <Menu>
-                            <MenuButton boxSize="40px">
-                              <Center>
-                                <DotsThreeOutlineVertical
-                                  className={styles.cursor_pointer}
-                                  weight="fill"
-                                />
-                              </Center>
-                            </MenuButton>
-                            <MenuList>
-                              <MenuItem
-                                onClick={() =>
-                                  onClickEditSubMaterial(
-                                    row.id.toString(),
-                                    sub.id.toString(),
-                                  )
-                                }
-                              >
-                                Edit <Spacer></Spacer> <Pencil />
-                              </MenuItem>
-                              <MenuItem
-                                onClick={() =>
-                                  onClickDeleteSubMaterial(
-                                    row.id.toString(),
-                                    sub.id.toString(),
-                                  )
-                                }
-                              >
-                                Delete <Spacer></Spacer> <Trash />
-                              </MenuItem>
-                            </MenuList>
-                          </Menu>
-                        </Td>
-                      ) : null}
-                    </Tr>
-                  ))}
+                        ) : null}
+                      </Tr>
+                    );
+                  })}
               </React.Fragment>
             );
           })}

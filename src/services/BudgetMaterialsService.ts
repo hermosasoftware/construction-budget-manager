@@ -6,12 +6,15 @@ import {
   query,
   runTransaction,
   writeBatch,
+  setDoc,
+  addDoc,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
 import { IBudgetMaterial } from '../types/budgetMaterial';
 import { IService } from '../types/service';
 import { toastSuccess, toastError } from '../utils/toast';
+import { ISubMaterial } from '../types/collections';
 
 export const getBudgetMaterials = async ({
   projectId,
@@ -260,6 +263,79 @@ export const deleteBudgetMaterial = async ({
 
     toastError(appStrings.deleteError, errorMessage);
 
+    errorCallback && errorCallback();
+  }
+};
+
+export const createBudgetSubMaterial = async ({
+  projectId,
+  materialId,
+  budgetSubMaterial,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: {
+  projectId: string;
+  materialId: string;
+  budgetSubMaterial: ISubMaterial;
+} & IService) => {
+  try {
+    const { id, ...rest } = budgetSubMaterial;
+    const subMatRef = collection(
+      db,
+      'projects',
+      projectId,
+      'projectBudget',
+      'summary',
+      'budgetMaterials',
+      materialId,
+      'subMaterials',
+    );
+
+    const docRef = await addDoc(subMatRef, rest);
+
+    toastSuccess(appStrings.success, appStrings.saveSuccess);
+
+    successCallback && successCallback(materialId, docRef.id);
+  } catch (error) {
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.saveError, errorMessage);
+
+    errorCallback && errorCallback();
+  }
+};
+
+export const updateBudgetSubMaterial = async ({
+  materialId,
+  projectId,
+  budgetSubMaterial,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: {
+  materialId: string;
+  projectId: string;
+  budgetSubMaterial: ISubMaterial;
+} & IService) => {
+  try {
+    const { id, ...rest } = budgetSubMaterial;
+    const subMaterialDocRef = doc(
+      db,
+      'projects',
+      projectId,
+      'projectBudget',
+      'summary',
+      'budgetMaterials',
+      materialId,
+      'subMaterials',
+      id,
+    );
+    await setDoc(subMaterialDocRef, rest);
+    toastSuccess(appStrings.success, appStrings.saveSuccess);
+    successCallback && successCallback(materialId, id);
+  } catch (e) {
     errorCallback && errorCallback();
   }
 };

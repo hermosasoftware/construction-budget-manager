@@ -225,7 +225,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
         </div>
       </Flex>
       <AlertDialog
-        tittle={appStrings.deleteInvoice}
+        title={appStrings.deleteInvoice}
         content={appStrings.deleteWarning}
         isOpen={isAlertDialogOpen}
         onClose={() => {

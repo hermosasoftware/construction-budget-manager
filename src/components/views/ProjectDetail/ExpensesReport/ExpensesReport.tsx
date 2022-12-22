@@ -196,7 +196,7 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
         </div>
       </Flex>
       <AlertDialog
-        tittle={appStrings.deleteExpense}
+        title={appStrings.deleteExpense}
         content={appStrings.deleteWarning}
         isOpen={isAlertDialogOpen}
         onClose={() => {

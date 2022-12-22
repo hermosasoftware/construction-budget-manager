@@ -43,20 +43,29 @@ td.td {
 }
 
 .rowSelected td:first-child {
-  border-radius: 10px 0 0 10px;
+  border-radius: 10px 0 0 0;
 }
+
 .rowSelected td:last-child {
-  border-radius: 0 10px 10px 0;
+  border-radius: 0 10px 0 0;
+}
+
+.childRowSelected {
+  background-color: var(--chakra-colors-green-50);
+}
+
+.bottomRoundBorder td:first-child {
+  border-radius: 0 0 0 10px;
+}
+
+.bottomRoundBorder td:last-child {
+  border-radius: 0 0 10px 0;
 }
 
 .materialArrow {
   position: absolute;
   transform: translate(-15px, 0px);
 }
-
-/* .rowSelected:last-child td:last-child {
-  border-radius: 0 10px 10px 0;
-} */
 
 .sub::after {
   content: '';
