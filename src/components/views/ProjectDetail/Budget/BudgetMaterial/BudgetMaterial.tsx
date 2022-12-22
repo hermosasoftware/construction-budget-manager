@@ -227,7 +227,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
           m.material?.id === materialId
             ? {
                 ...m,
-                subMaterials: m.subMaterials.map(s =>
+                subMaterials: m.subMaterials?.map(s =>
                   s.id === subMaterialId ? data : s,
                 ),
               }
@@ -298,7 +298,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
       const MatBreakdown = {
         id: item.id,
         material: item,
-        subMaterials: material?.subMaterials!,
+        subMaterials: material?.subMaterials || [],
       };
       budgetMaterial.id ? updateItem(MatBreakdown) : addItem(MatBreakdown);
       getBudget();
