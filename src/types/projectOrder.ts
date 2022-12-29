@@ -7,10 +7,10 @@ export interface IProjectOrder {
   imp: number;
   subtotal: number;
   total: number;
-  materials: IOrderMaterials[];
+  products: IOrderProduct[];
 }
 
-export interface IOrderMaterials {
+export interface IOrderProduct {
   id: string;
   quantity: string;
   description: string;

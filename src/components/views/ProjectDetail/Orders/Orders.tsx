@@ -7,38 +7,40 @@ import SearchInput from '../../../common/SearchInput/SearchInput';
 import Form, { DatePicker, Input } from '../../../common/Form';
 import AlertDialog from '../../../common/AlertDialog/AlertDialog';
 import {
+  addOrderProduct,
   createProjectOrder,
+  deleteOrderProduct,
   deleteProjectOrder,
   getProjectOrderById,
-  getProjectOrder,
+  getProjectOrders,
+  updateOrderProduct,
   updateProjectOrder,
 } from '../../../../services/ProjectOrderService';
-import { IOrderMaterials, IProjectOrder } from '../../../../types/projectOrder';
+import { IOrderProduct, IProjectOrder } from '../../../../types/projectOrder';
 import { useAppSelector } from '../../../../redux/hooks';
-import { colonFormat } from '../../../../utils/numbers';
 import OrdersTableView, {
   TTableHeader,
 } from '../../../layout/OrdersTableView/OrdersTableView';
 
 import styles from './Orders.module.css';
 
-interface IOrders {
+interface IOrdersView {
   projectId: string;
 }
 
 const initialSelectedOrderData = {
   id: '',
-  order: 0,
+  order: 1,
   proforma: '',
   date: new Date(),
   cost: 0,
   imp: 0,
   subtotal: 0,
   total: 0,
-  materials: [],
+  products: [],
 };
 
-const initialSelectedMaterialData = {
+const initialSelectedProductData = {
   id: '',
   quantity: '1',
   description: '',
@@ -49,69 +51,48 @@ const initialSelectedMaterialData = {
   total: 0,
 };
 
-const temporalArray = [
-  {
-    id: '324fghg',
-    order: 1,
-    proforma: '325423',
-    date: new Date(),
-    cost: 340,
-    imp: 10,
-    subtotal: 350,
-    total: 350,
-    materials: [
-      {
-        id: '3245fc',
-        quantity: '1',
-        description: 'vbgfng',
-        activity: 'sdgdsf',
-        cost: 120,
-        imp: 120,
-        subtotal: 240,
-        total: 240,
-      },
-    ],
-  },
-];
-const Orders: React.FC<IOrders> = props => {
+const Orders: React.FC<IOrdersView> = props => {
+  const { projectId } = props;
   const [tableData, setTableData] = useState<IProjectOrder[]>([]);
   const [selectedItem, setSelectedItem] = useState<IProjectOrder>(
     initialSelectedOrderData,
   );
-  const [selectedSubMaterial, setSelectedSubMaterial] =
-    useState<IOrderMaterials>(initialSelectedMaterialData);
+  const [selectedProduct, setSelectedProduct] = useState<IOrderProduct>(
+    initialSelectedProductData,
+  );
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
+  const [isProductAlertDialogOpen, setIsProductAlertDialogOpen] =
+    useState(false);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSubMaterialModalOpen, setIsSubMaterialModalOpen] = useState(false);
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const { projectId } = props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
   const tableHeader: TTableHeader[] = [
     { name: 'order', value: appStrings.order },
     { name: 'proforma', value: appStrings.proforma },
     { name: 'date', value: appStrings.date },
-    { name: 'quantity', value: appStrings.quantity, isGreen: true },
+    { name: 'quantity', value: appStrings.quantity },
     { name: 'description', value: appStrings.description },
     { name: 'activity', value: appStrings.activity },
     { name: 'cost', value: appStrings.cost },
-    { name: 'imp', value: appStrings.imp },
-    { name: 'subtotal', value: appStrings.subtotal },
-    { name: 'total', value: appStrings.total },
+    { name: 'imp', value: appStrings.imp, isGreen: true },
+    { name: 'subtotal', value: appStrings.subtotal, isGreen: true },
+    { name: 'total', value: appStrings.total, isGreen: true },
   ];
 
   const formatTableData = () =>
     tableData.map(data => ({
       ...data,
       date: data.date.toDateString(),
-      cost: colonFormat(data.cost),
-      subtotal: colonFormat(data.subtotal),
     }));
 
   const getOrders = async () => {
-    const successCallback = (response: IProjectOrder[]) =>
+    const successCallback = (response: IProjectOrder[]) => {
       setTableData(response);
-    await getProjectOrder({
+    };
+    await getProjectOrders({
       projectId,
       appStrings,
       successCallback,
@@ -138,49 +119,17 @@ const Orders: React.FC<IOrders> = props => {
     setSearchTerm(event.target.value.toUpperCase());
   };
 
-  const handleRowClick = (event: MouseEvent) => {
-    const row = event.target as HTMLInputElement;
-    const materialID = row.id;
-  };
-
-  const editButton = async (projectInvoiceDetailId: string) => {
+  const editButton = async (projectOrderId: string) => {
     const successCallback = (response: IProjectOrder) => {
       setSelectedItem(response);
       setIsModalOpen(true);
     };
     await getProjectOrderById({
       projectId,
-      projectInvoiceDetailId,
+      projectOrderId,
       appStrings,
       successCallback,
     });
-  };
-
-  const addSubMaterial = async (materialId: string) => {
-    const materialBreakDown = tableData.find(m => m.id === materialId);
-    setSelectedItem(materialBreakDown as IProjectOrder);
-    setIsSubMaterialModalOpen(true);
-  };
-
-  const editSubMaterial = async (orderId: string, materialId: string) => {
-    const submaterial = tableData
-      .find(m => m?.id === orderId)
-      ?.materials?.find(s => s.id === materialId);
-    if (submaterial) {
-      const materialBreakDown = tableData.find(m => m.id === orderId);
-      setSelectedItem(materialBreakDown as IProjectOrder);
-      setSelectedSubMaterial(submaterial);
-      setIsSubMaterialModalOpen(true);
-    }
-  };
-
-  const delSubMaterial = async (materialId: string, submaterialId: string) => {
-    setSelectedItem({ ...selectedItem, id: materialId });
-    setSelectedSubMaterial({
-      ...selectedSubMaterial,
-      id: submaterialId,
-    });
-    setIsAlertDialogOpen(true);
   };
 
   const deleteButton = async () => {
@@ -191,99 +140,145 @@ const Orders: React.FC<IOrders> = props => {
     };
     await deleteProjectOrder({
       projectId,
-      projectInvoiceDetailId: selectedItem.id,
+      projectOrderId: selectedItem.id,
       appStrings,
       successCallback,
     });
   };
 
-  const handleOnSubmit = async (projectInvoiceDetail: IProjectOrder) => {
+  const addProduct = async (productId: string) => {
+    setSelectedItem(tableData.find(m => m.id === productId)!);
+    setIsProductModalOpen(true);
+  };
+
+  const editProduct = async (orderId: string, productId: string) => {
+    const product = tableData
+      .find(m => m?.id === orderId)
+      ?.products?.find(s => s.id === productId);
+    if (product) {
+      const order = tableData.find(m => m.id === orderId);
+      setSelectedItem(order as IProjectOrder);
+      setSelectedProduct(product);
+      setIsProductModalOpen(true);
+    }
+  };
+
+  const delProduct = async (orderId: string, productId: string) => {
+    setSelectedItem({ ...selectedItem, id: orderId });
+    setSelectedProduct({
+      ...selectedProduct,
+      id: productId,
+    });
+    setIsProductAlertDialogOpen(true);
+  };
+
+  const deleteProduct = async () => {
+    const successCallback = () => {
+      setTableData(
+        tableData.map(e =>
+          e.id === selectedItem.id
+            ? {
+                ...e,
+                products: e.products?.filter(s => s.id !== selectedProduct.id),
+              }
+            : e,
+        ),
+      );
+      setSelectedItem(initialSelectedOrderData);
+      setSelectedProduct(initialSelectedProductData);
+      setIsProductAlertDialogOpen(false);
+    };
+    await deleteOrderProduct({
+      projectId,
+      projectOrderId: selectedItem.id,
+      orderProductId: selectedProduct.id,
+      appStrings,
+      successCallback,
+    });
+  };
+
+  const handleOnSubmit = async (projectOrder: IProjectOrder) => {
     const successCallback = (item: IProjectOrder) => {
       setSelectedItem(initialSelectedOrderData);
       setIsModalOpen(false);
-      projectInvoiceDetail.id ? updateItem(item) : addItem(item);
+      projectOrder.id ? updateItem(item) : addItem(item);
     };
     const serviceCallParameters = {
       projectId,
-      projectInvoiceDetail: {
-        ...projectInvoiceDetail,
-        order: +projectInvoiceDetail.order,
-        cost: +projectInvoiceDetail.cost,
-        subtotal: projectInvoiceDetail.cost,
+      projectOrder: {
+        ...projectOrder,
+        order: +projectOrder.order,
+        cost: +projectOrder.cost,
+        subtotal: projectOrder.cost,
       },
       appStrings,
       successCallback,
     };
-    projectInvoiceDetail.id
+    projectOrder.id
       ? await updateProjectOrder(serviceCallParameters)
       : await createProjectOrder(serviceCallParameters);
   };
 
-  const onSubmitSubmaterial = async (data: IOrderMaterials) => {
-    const successAddCallback = (materialId: string, subMaterialId: string) => {
+  const onSubmitProduct = async (data: IOrderProduct) => {
+    const successAddCallback = (orderId: string, productId: string) => {
       setTableData(
         tableData.map(m =>
-          m?.id === materialId
+          m?.id === orderId
             ? {
                 ...m,
-                materials: [...m.materials, { ...data, id: subMaterialId }],
+                products: [...m.products, { ...data, id: productId }],
               }
             : m,
         ),
       );
-      setIsSubMaterialModalOpen(false);
+      setSelectedProduct(initialSelectedProductData);
+      setIsProductModalOpen(false);
     };
 
-    const successUpdateCallback = (
-      materialId: string,
-      subMaterialId: string,
-    ) => {
+    const successUpdateCallback = (orderId: string, productId: string) => {
       setTableData(
         tableData.map(m =>
-          m?.id === materialId
+          m?.id === orderId
             ? {
                 ...m,
-                materials: m?.materials.map(s =>
-                  s.id === subMaterialId ? data : s,
+                products: m?.products?.map(s =>
+                  s.id === productId ? data : s,
                 ),
               }
             : m,
         ),
       );
-      setIsSubMaterialModalOpen(false);
+      setSelectedProduct(initialSelectedProductData);
+      setIsProductModalOpen(false);
     };
     const serviceCallParameters = {
-      materialId: selectedItem?.id,
-      submaterial: data,
+      projectId,
+      orderId: selectedItem?.id,
+      product: data,
       appStrings,
       successCallback: !data.id ? successAddCallback : successUpdateCallback,
     };
-    // !data.id
-    //   ? await addSubmaterial(serviceCallParameters)
-    //   : await updateSubMaterial(serviceCallParameters);
+    !data.id
+      ? await addOrderProduct(serviceCallParameters)
+      : await updateOrderProduct(serviceCallParameters);
   };
 
   const validationSchema = yup.object().shape({
     order: yup.number().positive().required(appStrings?.requiredField),
-    quantity: yup.number().positive().required(appStrings?.requiredField),
-    name: yup.string().required(appStrings?.requiredField),
-    date: yup.date().required(appStrings?.requiredField),
-    cost: yup.number().positive().required(appStrings?.requiredField),
-    activity: yup.string().required(appStrings?.requiredField),
     proforma: yup.string().required(appStrings?.requiredField),
+    date: yup.date().required(appStrings?.requiredField),
   });
 
-  const subMaterialValSchema = yup.object().shape({
-    name: yup.string().required(appStrings?.requiredField),
-    unit: yup.string().required(appStrings?.requiredField),
-    cost: yup.string().required(appStrings?.requiredField),
+  const productValSchema = yup.object().shape({
+    description: yup.string().required(appStrings?.requiredField),
+    activity: yup.string().required(appStrings?.requiredField),
     quantity: yup.string().required(appStrings?.requiredField),
+    cost: yup.string().required(appStrings?.requiredField),
   });
 
   useEffect(() => {
     let abortController = new AbortController();
-    setTableData(temporalArray);
-    // getOrders();
+    getOrders();
     return () => abortController.abort();
   }, []);
 
@@ -296,7 +291,19 @@ const Orders: React.FC<IOrders> = props => {
           onChange={handleSearch}
         ></SearchInput>
         <div style={{ textAlign: 'end' }}>
-          <Button onClick={() => setIsModalOpen(true)}>+</Button>
+          <Button
+            onClick={() => {
+              setIsModalOpen(true);
+              tableData.length
+                ? setSelectedItem({
+                    ...initialSelectedOrderData,
+                    order: tableData[0].order + 1,
+                  })
+                : setSelectedItem(initialSelectedOrderData);
+            }}
+          >
+            +
+          </Button>
           <Modal
             isOpen={isModalOpen}
             onClose={() => {
@@ -315,7 +322,12 @@ const Orders: React.FC<IOrders> = props => {
               validateOnBlur
               onSubmit={handleOnSubmit}
             >
-              <Input name="order" type="number" label={appStrings.order} />
+              <Input
+                name="order"
+                type="number"
+                label={appStrings.order}
+                isDisabled
+              />
               <Input
                 name="proforma"
                 type="number"
@@ -329,30 +341,33 @@ const Orders: React.FC<IOrders> = props => {
             </Form>
           </Modal>
           <Modal
-            isOpen={isSubMaterialModalOpen}
-            onClose={() => setIsSubMaterialModalOpen(false)}
+            isOpen={isProductModalOpen}
+            onClose={() => {
+              setSelectedProduct(initialSelectedProductData);
+              setIsProductModalOpen(false);
+            }}
           >
             <Heading as="h2" size="lg">
-              {selectedItem.id
-                ? appStrings.editMaterial
-                : appStrings.createMaterial}
+              {selectedProduct.id
+                ? appStrings.editProduct
+                : appStrings.addProduct}
             </Heading>
             <Form
-              id="submaterial-form"
-              initialFormData={selectedSubMaterial}
-              validationSchema={subMaterialValSchema}
+              id="product-form"
+              initialFormData={selectedProduct}
+              validationSchema={productValSchema}
               validateOnChange
               validateOnBlur
-              onSubmit={onSubmitSubmaterial}
+              onSubmit={onSubmitProduct}
             >
               <Input
-                name="name"
-                label={appStrings.name}
+                name="description"
+                label={appStrings.description}
                 innerStyle={{ width: '200px', marginRight: '5px' }}
               />
               <Input
-                name="unit"
-                label={appStrings.unit}
+                name="activity"
+                label={appStrings.activity}
                 innerStyle={{ width: '200px', marginRight: '5px' }}
               />
               <Input
@@ -375,7 +390,7 @@ const Orders: React.FC<IOrders> = props => {
         </div>
       </Flex>
       <AlertDialog
-        tittle={appStrings.deleteInvoice}
+        tittle={appStrings.deleteOrder}
         content={appStrings.deleteWarning}
         isOpen={isAlertDialogOpen}
         onClose={() => {
@@ -384,26 +399,36 @@ const Orders: React.FC<IOrders> = props => {
         }}
         onSubmit={() => deleteButton()}
       />
+      <AlertDialog
+        tittle={appStrings.deleteProduct}
+        content={appStrings.deleteWarning}
+        isOpen={isProductAlertDialogOpen}
+        onClose={() => {
+          setSelectedProduct(initialSelectedProductData);
+          setIsProductAlertDialogOpen(false);
+        }}
+        onSubmit={() => deleteProduct()}
+      />
       <OrdersTableView
         headers={tableHeader}
         items={formatTableData()}
         filter={value =>
           searchTerm === '' || value?.order?.toString()?.includes(searchTerm)
         }
-        handleRowClick={handleRowClick}
+        handleRowClick={() => {}}
         onClickEdit={id => editButton(id)}
         onClickDelete={id => {
           setSelectedItem({ ...selectedItem, id });
           setIsAlertDialogOpen(true);
         }}
-        onClickAddSubMaterial={id => addSubMaterial(id)}
-        onClickEditSubMaterial={(materialId, submaterialId) =>
-          editSubMaterial(materialId, submaterialId)
+        onClickAddProduct={id => addProduct(id)}
+        onClickEditProduct={(orderId, productId) =>
+          editProduct(orderId, productId)
         }
-        onClickDeleteSubMaterial={(materialId, submaterialId) => {
-          delSubMaterial(materialId, submaterialId);
+        onClickDeleteProduct={(orderId, productId) => {
+          delProduct(orderId, productId);
         }}
-        // exchangeRate={Number(exchange)}
+        exchangeRate={Number('0.13')}
         formatCurrency
       />
       {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}

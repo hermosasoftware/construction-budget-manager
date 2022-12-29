@@ -40,12 +40,9 @@ interface ITableProps<T> {
   handleRowClick?: (event: any) => void;
   onClickEdit?: (id: string) => void;
   onClickDelete?: (id: string) => void;
-  onClickAddSubMaterial?: (id: string) => void;
-  onClickEditSubMaterial?: (materialId: string, submaterialId: string) => void;
-  onClickDeleteSubMaterial?: (
-    materialId: string,
-    submaterialId: string,
-  ) => void;
+  onClickAddProduct?: (id: string) => void;
+  onClickEditProduct?: (itemId: string, productId: string) => void;
+  onClickDeleteProduct?: (itemId: string, productId: string) => void;
   rowChild?: React.ReactElement;
   hideOptions?: boolean;
   exchangeRate?: Number;
@@ -60,9 +57,9 @@ const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
     onClickEdit,
     onClickDelete,
     handleRowClick,
-    onClickAddSubMaterial,
-    onClickEditSubMaterial,
-    onClickDeleteSubMaterial,
+    onClickAddProduct,
+    onClickEditProduct,
+    onClickDeleteProduct,
     rowChild,
     hideOptions,
     exchangeRate,
@@ -85,30 +82,69 @@ const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
 
   const calculateDollars = (row: any) => {
     let total = 0;
-    const subMaterials = row?.materials;
-    if (row?.materials?.length) {
-      subMaterials.forEach((s: any) => {
-        total += Number(s.quantity) * Number.parseFloat(s.cost);
+    const products = row?.products;
+    if (row?.products?.length) {
+      products?.forEach((s: any) => {
+        total += Number(s?.quantity) * Number.parseFloat(s?.cost);
       });
     } else {
       total = Number(row?.cost);
     }
 
     const exchange = Number(exchangeRate);
-    return dolarFormat(total / exchange);
+    return total / exchange;
   };
 
   const calculateColons = (row: any) => {
     let total = 0;
-    const subMaterials = row?.materials;
-    if (row?.materials?.length) {
-      subMaterials.forEach((s: any) => {
-        total += Number(s.quantity) * Number.parseFloat(s.cost);
+    const products = row?.products;
+    if (row?.products?.length) {
+      products?.forEach((s: any) => {
+        total += Number(s?.quantity) * Number.parseFloat(s?.cost);
       });
-    } else {
-      total = Number(row?.cost);
     }
-    return colonFormat(total);
+    return total;
+  };
+
+  const renderColumnValue = (row: any, headerName: any) => {
+    const isDollarColumn = headerName === 'dollarCost';
+    const isImp = headerName === 'imp';
+    const isSubTotal = headerName === 'subtotal';
+    const isTotal = headerName === 'total';
+    if (isDollarColumn && formatCurrency) {
+      return dolarFormat(calculateDollars(row));
+    } else if (isImp) {
+      return colonFormat(calculateColons(row) * Number(exchangeRate));
+    } else if (isSubTotal) {
+      return colonFormat(calculateColons(row));
+    } else if (isTotal) {
+      const subtotal = calculateColons(row);
+      return colonFormat(subtotal + subtotal * Number(exchangeRate));
+    }
+    return row[headerName] || '-';
+  };
+
+  const renderSubColumnValue = (row: any, headerName: any) => {
+    const isDollarColumn = headerName === 'dollarCost';
+    const isCostColumn = headerName === 'cost';
+    const isImp = headerName === 'imp';
+    const isSubTotal = headerName === 'subtotal';
+    const isTotal = headerName === 'total';
+    if (isDollarColumn && formatCurrency) {
+      return dolarFormat(Number(row?.cost / Number(exchangeRate)));
+    } else if (isCostColumn && formatCurrency) {
+      return colonFormat(Number(row?.cost));
+    } else if (isImp) {
+      return colonFormat(
+        Number(row?.quantity) * Number(row?.cost) * Number(exchangeRate),
+      );
+    } else if (isSubTotal) {
+      return colonFormat(Number(row?.quantity) * Number(row?.cost));
+    } else if (isTotal) {
+      const subtotal = Number(row?.quantity) * Number(row?.cost);
+      return colonFormat(subtotal + subtotal * Number(exchangeRate));
+    }
+    return row[headerName] || '-';
   };
 
   return (
@@ -129,21 +165,19 @@ const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
         <Tbody>
           {items?.map(row => {
             const isSelected = selectedRow === row.id && rowChildVisible;
-            const hasSubMaterials = row.materials?.length;
+            const hasProducts = row?.products?.length > 0;
             return (
               <React.Fragment key={`table-row-${row.id}`}>
                 <Tr
                   key={`table-row-${row.id}`}
                   className={`${
-                    isSelected && hasSubMaterials && row?.materials?.length
+                    isSelected && hasProducts && row?.products?.length
                       ? styles.rowSelected
                       : ''
                   }`}
                 >
                   {headers?.map(header => {
                     const isFirstColumn = headers[0] === header;
-                    const isDollarColumn = header.name === 'dollarCost';
-                    const isCostColumn = header.name === 'cost';
                     return (
                       <Td
                         key={`table-row-header-${header.name as string}`}
@@ -154,29 +188,24 @@ const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
                             ? styles.column_color__green
                             : styles.column_color__black
                         } ${isFirstColumn ? styles.column_bold_text : ''} ${
-                          handleRowClick &&
-                          hasSubMaterials &&
-                          row?.materials?.length
+                          handleRowClick && hasProducts && row?.products?.length
                             ? styles.cursor_pointer
                             : ''
                         }`}
                       >
-                        {hasSubMaterials &&
-                          row?.materials?.length &&
+                        {hasProducts &&
+                          row?.products?.length &&
                           isFirstColumn && (
                             <i
                               className={`${
-                                styles.materialArrow
+                                styles.itemArrow
                               } icon ion-md-arrow-drop${
                                 rowChildVisible && isSelected ? 'down' : 'right'
                               }`}
                             ></i>
                           )}
-                        {!isDollarColumn
-                          ? isCostColumn && formatCurrency
-                            ? calculateColons(row)
-                            : row[header.name] || '-'
-                          : calculateDollars(row)}
+
+                        {renderColumnValue(row, header.name)}
                       </Td>
                     );
                   })}
@@ -197,13 +226,13 @@ const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
                           </Center>
                         </MenuButton>
                         <MenuList>
-                          {onClickAddSubMaterial && row?.materials?.length && (
+                          {onClickAddProduct && (
                             <MenuItem
                               onClick={() =>
-                                onClickAddSubMaterial(row.id.toString())
+                                onClickAddProduct(row.id.toString())
                               }
                             >
-                              Add material <Spacer /> <Plus />
+                              Add product <Spacer /> <Plus />
                             </MenuItem>
                           )}
                           <MenuItem
@@ -223,74 +252,74 @@ const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
                 </Tr>
                 {rowChildVisible &&
                   isSelected &&
-                  hasSubMaterials &&
-                  row?.materials?.length &&
-                  row?.materials?.map((sub: any) => (
-                    <Tr key={`table-row-${sub.id}`}>
-                      {headers?.map(header => {
-                        const isDollarColumn = header.name === 'dollarCost';
-                        const isCostColumn = header.name === 'cost';
-                        return (
+                  hasProducts &&
+                  row?.products?.length &&
+                  row?.products?.map((prod: any, i: number, arr: any) => {
+                    let cssFormat = '';
+                    const isLastRow = i === arr.length - 1;
+                    cssFormat = isLastRow ? styles.bottomRoundBorder : '';
+                    return (
+                      <Tr
+                        key={`table-row-${prod.id}`}
+                        className={`${styles.childRowSelected} ${cssFormat}`}
+                      >
+                        {headers?.map(header => {
+                          return (
+                            <Td
+                              key={`table-row-header-${header.name as string}`}
+                              id={prod.id?.toString()}
+                              className={`${styles.td}`}
+                            >
+                              {renderSubColumnValue(prod, header.name)}
+                            </Td>
+                          );
+                        })}
+                        {onClickEditProduct &&
+                        onClickDeleteProduct &&
+                        !hideOptions ? (
                           <Td
-                            key={`table-row-header-${header.name as string}`}
-                            id={sub.id?.toString()}
+                            id={row.id?.toString()}
                             className={`${styles.td}`}
+                            textAlign="center"
+                            width="90px"
                           >
-                            {!isDollarColumn
-                              ? isCostColumn
-                                ? colonFormat(Number(sub.cost))
-                                : sub[header.name] || '-'
-                              : dolarFormat(
-                                  Number(sub.cost / Number(exchangeRate)),
-                                )}
+                            <Menu>
+                              <MenuButton boxSize="40px">
+                                <Center>
+                                  <DotsThreeOutlineVertical
+                                    className={styles.cursor_pointer}
+                                    weight="fill"
+                                  />
+                                </Center>
+                              </MenuButton>
+                              <MenuList>
+                                <MenuItem
+                                  onClick={() =>
+                                    onClickEditProduct(
+                                      row.id?.toString(),
+                                      prod.id?.toString(),
+                                    )
+                                  }
+                                >
+                                  Edit <Spacer /> <Pencil />
+                                </MenuItem>
+                                <MenuItem
+                                  onClick={() =>
+                                    onClickDeleteProduct(
+                                      row.id?.toString(),
+                                      prod.id?.toString(),
+                                    )
+                                  }
+                                >
+                                  Delete <Spacer /> <Trash />
+                                </MenuItem>
+                              </MenuList>
+                            </Menu>
                           </Td>
-                        );
-                      })}
-                      {onClickEditSubMaterial &&
-                      onClickDeleteSubMaterial &&
-                      !hideOptions ? (
-                        <Td
-                          id={row.id?.toString()}
-                          className={`${styles.td}`}
-                          textAlign="center"
-                          width="90px"
-                        >
-                          <Menu>
-                            <MenuButton boxSize="40px">
-                              <Center>
-                                <DotsThreeOutlineVertical
-                                  className={styles.cursor_pointer}
-                                  weight="fill"
-                                />
-                              </Center>
-                            </MenuButton>
-                            <MenuList>
-                              <MenuItem
-                                onClick={() =>
-                                  onClickEditSubMaterial(
-                                    row.id.toString(),
-                                    sub.id.toString(),
-                                  )
-                                }
-                              >
-                                Edit <Spacer /> <Pencil />
-                              </MenuItem>
-                              <MenuItem
-                                onClick={() =>
-                                  onClickDeleteSubMaterial(
-                                    row.id.toString(),
-                                    sub.id.toString(),
-                                  )
-                                }
-                              >
-                                Delete <Spacer /> <Trash />
-                              </MenuItem>
-                            </MenuList>
-                          </Menu>
-                        </Td>
-                      ) : null}
-                    </Tr>
-                  ))}
+                        ) : null}
+                      </Tr>
+                    );
+                  })}
               </React.Fragment>
             );
           })}
