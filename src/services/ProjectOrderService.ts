@@ -102,7 +102,7 @@ export const createProjectOrder = async ({
   projectOrder: IProjectOrder;
 } & IService) => {
   try {
-    const { id, subtotal, cost, imp, total, products, ...rest } = projectOrder;
+    const { id, cost, products, ...rest } = projectOrder;
     const orderRef = collection(db, 'projects', projectId, 'projectOrders');
     const result = await addDoc(orderRef, rest);
     const data = {
@@ -134,7 +134,7 @@ export const updateProjectOrder = async ({
   projectOrder: IProjectOrder;
 } & IService) => {
   try {
-    const { id, subtotal, cost, imp, total, products, ...rest } = projectOrder;
+    const { id, cost, products, ...rest } = projectOrder;
     const orderRef = doc(db, 'projects', projectId, 'projectOrders', id);
     await setDoc(orderRef, rest);
 
@@ -188,6 +188,7 @@ export const addOrderProduct = async ({
   projectId,
   orderId,
   product,
+  materialRef,
   appStrings,
   successCallback,
   errorCallback,
@@ -195,10 +196,16 @@ export const addOrderProduct = async ({
   projectId: string;
   orderId: string;
   product: IOrderProduct;
+  materialRef: {
+    materialId: string;
+    subMaterialId: string;
+    isExtraMaterial: boolean;
+    isSubMaterial: boolean;
+  };
 } & IService) => {
   try {
     const { id, ...rest } = product;
-    const matRef = collection(
+    const productRef = collection(
       db,
       'projects',
       projectId,
@@ -206,12 +213,36 @@ export const addOrderProduct = async ({
       orderId,
       'products',
     );
-    const docRef = await addDoc(matRef, rest);
+    const matRef = doc(
+      db,
+      'projects',
+      projectId,
+      materialRef?.isExtraMaterial ? 'projectExtraBudget' : 'projectBudget',
+      'summary',
+      'budgetMaterials',
+      materialRef?.isSubMaterial
+        ? `${materialRef.materialId}/submaterials/${materialRef.subMaterialId}`
+        : materialRef.materialId,
+    );
+    const docRef = await addDoc(productRef, {
+      ...rest,
+      materialRef: matRef.path,
+    });
+    const data = {
+      ...rest,
+      id: docRef.id,
+      materialRef: matRef.path,
+    };
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
-    successCallback && successCallback(orderId, docRef.id);
-  } catch (e) {
+    successCallback && successCallback(orderId, data);
+  } catch (error) {
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.saveError, errorMessage);
+
     errorCallback && errorCallback();
   }
 };
@@ -229,6 +260,7 @@ export const updateOrderProduct = async ({
   product: IOrderProduct;
 } & IService) => {
   try {
+    console.log(product);
     const { id, ...rest } = product;
     const matRef = doc(
       db,
@@ -243,8 +275,13 @@ export const updateOrderProduct = async ({
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
-    successCallback && successCallback(orderId, id);
-  } catch (e) {
+    successCallback && successCallback(orderId, product);
+  } catch (error) {
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.saveError, errorMessage);
+
     errorCallback && errorCallback();
   }
 };

@@ -23,9 +23,17 @@ import OrdersTableView, {
 } from '../../../layout/OrdersTableView/OrdersTableView';
 
 import styles from './Orders.module.css';
+import { getExtraBudgetMaterials } from '../../../../services/ExtraBudgetMaterialsService';
+import { IMaterialBreakdown } from '../../../../types/collections';
+import { getBudgetMaterials } from '../../../../services/BudgetMaterialsService';
+import SearchSelect from '../../../common/Form/Elements/SearchSelect';
 
 interface IOrdersView {
   projectId: string;
+}
+
+interface IProduct extends Omit<IOrderProduct, 'description'> {
+  description: { value: string; label: string };
 }
 
 const initialSelectedOrderData = {
@@ -34,36 +42,42 @@ const initialSelectedOrderData = {
   proforma: '',
   date: new Date(),
   cost: 0,
-  imp: 0,
-  subtotal: 0,
-  total: 0,
   products: [],
 };
 
 const initialSelectedProductData = {
   id: '',
-  quantity: '1',
-  description: '',
-  activity: '',
+  quantity: 1,
+  description: { value: '', label: '' },
+  activity: 'Piscina', // TODO (the activity need to be auto-populate from materials)
   cost: 0,
-  imp: 0,
-  subtotal: 0,
-  total: 0,
+  materialRef: '',
+};
+
+const initialMaterialRefData = {
+  materialId: '',
+  subMaterialId: '',
+  isExtraMaterial: false,
+  isSubMaterial: false,
 };
 
 const Orders: React.FC<IOrdersView> = props => {
   const { projectId } = props;
   const [tableData, setTableData] = useState<IProjectOrder[]>([]);
-  const [selectedItem, setSelectedItem] = useState<IProjectOrder>(
+  const [materials, setMaterials] = useState<IMaterialBreakdown[]>([]);
+  const [extraMaterials, setExtraMaterials] = useState<IMaterialBreakdown[]>(
+    [],
+  );
+  const [selectedOrder, setSelectedOrder] = useState<IProjectOrder>(
     initialSelectedOrderData,
   );
-  const [selectedProduct, setSelectedProduct] = useState<IOrderProduct>(
+  const [selectedProduct, setSelectedProduct] = useState<IProduct>(
     initialSelectedProductData,
   );
+  const [materialRef, setMaterialRef] = useState(initialMaterialRefData);
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
   const [isProductAlertDialogOpen, setIsProductAlertDialogOpen] =
     useState(false);
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -73,12 +87,12 @@ const Orders: React.FC<IOrdersView> = props => {
     { name: 'order', value: appStrings.order },
     { name: 'proforma', value: appStrings.proforma },
     { name: 'date', value: appStrings.date },
-    { name: 'quantity', value: appStrings.quantity },
     { name: 'description', value: appStrings.description },
     { name: 'activity', value: appStrings.activity },
+    { name: 'quantity', value: appStrings.quantity },
     { name: 'cost', value: appStrings.cost },
-    { name: 'imp', value: appStrings.imp, isGreen: true },
     { name: 'subtotal', value: appStrings.subtotal, isGreen: true },
+    { name: 'imp', value: appStrings.imp, isGreen: true },
     { name: 'total', value: appStrings.total, isGreen: true },
   ];
 
@@ -93,6 +107,26 @@ const Orders: React.FC<IOrdersView> = props => {
       setTableData(response);
     };
     await getProjectOrders({
+      projectId,
+      appStrings,
+      successCallback,
+    });
+  };
+
+  const getMaterials = async () => {
+    const successCallback = (response: IMaterialBreakdown[]) =>
+      setMaterials(response);
+    await getBudgetMaterials({
+      projectId,
+      appStrings,
+      successCallback,
+    });
+  };
+
+  const getExtraMaterials = async () => {
+    const successCallback = (response: IMaterialBreakdown[]) =>
+      setExtraMaterials(response);
+    await getExtraBudgetMaterials({
       projectId,
       appStrings,
       successCallback,
@@ -119,9 +153,58 @@ const Orders: React.FC<IOrdersView> = props => {
     setSearchTerm(event.target.value.toUpperCase());
   };
 
+  const handleSearchSelect = async (id: string) => {
+    let material, matRef;
+    matRef = materials.find(mat =>
+      id === mat.id
+        ? (material = mat?.material)
+        : (material = mat?.subMaterials.find(subMat => id === subMat.id)!),
+    );
+
+    if (material) {
+      const { id, quantity, cost, name } = material;
+      setSelectedProduct({
+        ...selectedProduct,
+        quantity,
+        cost,
+        description: { value: id, label: name },
+      });
+      setMaterialRef({
+        materialId: matRef?.id!,
+        subMaterialId: id,
+        isExtraMaterial: false,
+        isSubMaterial: matRef?.material?.hasSubMaterials!,
+      });
+    } else {
+      let extraMaterial, extraMatRef;
+      extraMatRef = extraMaterials.find(mat =>
+        id === mat.id
+          ? (extraMaterial = mat?.material)
+          : (extraMaterial = mat?.subMaterials.find(
+              subMat => id === subMat.id,
+            )!),
+      );
+      if (extraMaterial) {
+        const { id, quantity, cost, name } = extraMaterial;
+        setSelectedProduct({
+          ...selectedProduct,
+          quantity,
+          cost,
+          description: { value: id, label: name },
+        });
+        setMaterialRef({
+          materialId: extraMatRef?.id!,
+          subMaterialId: id,
+          isExtraMaterial: true,
+          isSubMaterial: extraMatRef?.material?.hasSubMaterials!,
+        });
+      }
+    }
+  };
+
   const editButton = async (projectOrderId: string) => {
     const successCallback = (response: IProjectOrder) => {
-      setSelectedItem(response);
+      setSelectedOrder(response);
       setIsModalOpen(true);
     };
     await getProjectOrderById({
@@ -134,20 +217,20 @@ const Orders: React.FC<IOrdersView> = props => {
 
   const deleteButton = async () => {
     const successCallback = () => {
-      removeItem(selectedItem.id);
-      setSelectedItem(initialSelectedOrderData);
+      removeItem(selectedOrder.id);
+      setSelectedOrder(initialSelectedOrderData);
       setIsAlertDialogOpen(false);
     };
     await deleteProjectOrder({
       projectId,
-      projectOrderId: selectedItem.id,
+      projectOrderId: selectedOrder.id,
       appStrings,
       successCallback,
     });
   };
 
   const addProduct = async (productId: string) => {
-    setSelectedItem(tableData.find(m => m.id === productId)!);
+    setSelectedOrder(tableData.find(m => m.id === productId)!);
     setIsProductModalOpen(true);
   };
 
@@ -157,14 +240,17 @@ const Orders: React.FC<IOrdersView> = props => {
       ?.products?.find(s => s.id === productId);
     if (product) {
       const order = tableData.find(m => m.id === orderId);
-      setSelectedItem(order as IProjectOrder);
-      setSelectedProduct(product);
+      setSelectedOrder(order!);
+      setSelectedProduct({
+        ...product,
+        description: { value: product.id, label: product.description },
+      });
       setIsProductModalOpen(true);
     }
   };
 
   const delProduct = async (orderId: string, productId: string) => {
-    setSelectedItem({ ...selectedItem, id: orderId });
+    setSelectedOrder({ ...selectedOrder, id: orderId });
     setSelectedProduct({
       ...selectedProduct,
       id: productId,
@@ -176,7 +262,7 @@ const Orders: React.FC<IOrdersView> = props => {
     const successCallback = () => {
       setTableData(
         tableData.map(e =>
-          e.id === selectedItem.id
+          e.id === selectedOrder.id
             ? {
                 ...e,
                 products: e.products?.filter(s => s.id !== selectedProduct.id),
@@ -184,13 +270,13 @@ const Orders: React.FC<IOrdersView> = props => {
             : e,
         ),
       );
-      setSelectedItem(initialSelectedOrderData);
+      setSelectedOrder(initialSelectedOrderData);
       setSelectedProduct(initialSelectedProductData);
       setIsProductAlertDialogOpen(false);
     };
     await deleteOrderProduct({
       projectId,
-      projectOrderId: selectedItem.id,
+      projectOrderId: selectedOrder.id,
       orderProductId: selectedProduct.id,
       appStrings,
       successCallback,
@@ -199,18 +285,13 @@ const Orders: React.FC<IOrdersView> = props => {
 
   const handleOnSubmit = async (projectOrder: IProjectOrder) => {
     const successCallback = (item: IProjectOrder) => {
-      setSelectedItem(initialSelectedOrderData);
+      setSelectedOrder(initialSelectedOrderData);
       setIsModalOpen(false);
       projectOrder.id ? updateItem(item) : addItem(item);
     };
     const serviceCallParameters = {
       projectId,
-      projectOrder: {
-        ...projectOrder,
-        order: +projectOrder.order,
-        cost: +projectOrder.cost,
-        subtotal: projectOrder.cost,
-      },
+      projectOrder,
       appStrings,
       successCallback,
     };
@@ -219,46 +300,54 @@ const Orders: React.FC<IOrdersView> = props => {
       : await createProjectOrder(serviceCallParameters);
   };
 
-  const onSubmitProduct = async (data: IOrderProduct) => {
-    const successAddCallback = (orderId: string, productId: string) => {
+  const onSubmitProduct = async (data: IProduct) => {
+    const { description, ...rest } = data;
+    const product = {
+      ...rest,
+      description: description.label,
+      quantity: +rest.quantity,
+      cost: +rest.cost,
+    };
+    const successAddCallback = (orderId: string, item: IOrderProduct) => {
       setTableData(
         tableData.map(m =>
           m?.id === orderId
             ? {
                 ...m,
-                products: [...m.products, { ...data, id: productId }],
+                products: [...m.products, item],
               }
             : m,
         ),
       );
       setSelectedProduct(initialSelectedProductData);
+      setMaterialRef(initialMaterialRefData);
       setIsProductModalOpen(false);
     };
 
-    const successUpdateCallback = (orderId: string, productId: string) => {
+    const successUpdateCallback = (orderId: string, item: IOrderProduct) => {
       setTableData(
         tableData.map(m =>
           m?.id === orderId
             ? {
                 ...m,
-                products: m?.products?.map(s =>
-                  s.id === productId ? data : s,
-                ),
+                products: m?.products?.map(s => (s.id === item.id ? item : s)),
               }
             : m,
         ),
       );
       setSelectedProduct(initialSelectedProductData);
+      setMaterialRef(initialMaterialRefData);
       setIsProductModalOpen(false);
     };
     const serviceCallParameters = {
       projectId,
-      orderId: selectedItem?.id,
-      product: data,
+      orderId: selectedOrder?.id,
+      product: { ...product, cost: +product.cost, quantity: +product.quantity },
+      materialRef,
       appStrings,
-      successCallback: !data.id ? successAddCallback : successUpdateCallback,
+      successCallback: !product.id ? successAddCallback : successUpdateCallback,
     };
-    !data.id
+    !product.id
       ? await addOrderProduct(serviceCallParameters)
       : await updateOrderProduct(serviceCallParameters);
   };
@@ -270,7 +359,10 @@ const Orders: React.FC<IOrdersView> = props => {
   });
 
   const productValSchema = yup.object().shape({
-    description: yup.string().required(appStrings?.requiredField),
+    description: yup.object().shape({
+      value: yup.string().required(appStrings?.requiredField),
+      label: yup.string().required(appStrings?.requiredField),
+    }),
     activity: yup.string().required(appStrings?.requiredField),
     quantity: yup.string().required(appStrings?.requiredField),
     cost: yup.string().required(appStrings?.requiredField),
@@ -279,8 +371,45 @@ const Orders: React.FC<IOrdersView> = props => {
   useEffect(() => {
     let abortController = new AbortController();
     getOrders();
+    getMaterials();
+    getExtraMaterials();
     return () => abortController.abort();
   }, []);
+
+  const options = () => {
+    let optionsList: { value: string; label: string }[] = [];
+    materials.forEach(material => {
+      if (!material?.material?.hasSubMaterials) {
+        optionsList.push({
+          value: material.id,
+          label: material?.material?.name,
+        });
+      } else {
+        material?.subMaterials.forEach(subMaterial =>
+          optionsList.push({
+            value: subMaterial.id,
+            label: subMaterial?.name,
+          }),
+        );
+      }
+    });
+    extraMaterials.forEach(material => {
+      if (!material?.material?.hasSubMaterials) {
+        optionsList.push({
+          value: material.id,
+          label: material?.material?.name,
+        });
+      } else {
+        material?.subMaterials.forEach(subMaterial =>
+          optionsList.push({
+            value: subMaterial.id,
+            label: subMaterial?.name,
+          }),
+        );
+      }
+    });
+    return optionsList;
+  };
 
   return (
     <div className={`${styles.operations_container}`}>
@@ -295,11 +424,11 @@ const Orders: React.FC<IOrdersView> = props => {
             onClick={() => {
               setIsModalOpen(true);
               tableData.length
-                ? setSelectedItem({
+                ? setSelectedOrder({
                     ...initialSelectedOrderData,
                     order: tableData[0].order + 1,
                   })
-                : setSelectedItem(initialSelectedOrderData);
+                : setSelectedOrder(initialSelectedOrderData);
             }}
           >
             +
@@ -307,16 +436,16 @@ const Orders: React.FC<IOrdersView> = props => {
           <Modal
             isOpen={isModalOpen}
             onClose={() => {
-              setSelectedItem(initialSelectedOrderData);
+              setSelectedOrder(initialSelectedOrderData);
               setIsModalOpen(false);
             }}
           >
             <Heading as="h2" size="lg">
-              {selectedItem.id ? appStrings.editOrder : appStrings.addOrder}
+              {selectedOrder.id ? appStrings.editOrder : appStrings.addOrder}
             </Heading>
             <Form
               id="order-form"
-              initialFormData={selectedItem}
+              initialFormData={selectedOrder}
               validationSchema={validationSchema}
               validateOnChange
               validateOnBlur
@@ -343,7 +472,7 @@ const Orders: React.FC<IOrdersView> = props => {
           <Modal
             isOpen={isProductModalOpen}
             onClose={() => {
-              setSelectedProduct(initialSelectedProductData);
+              setSelectedOrder(initialSelectedOrderData);
               setIsProductModalOpen(false);
             }}
           >
@@ -360,15 +489,20 @@ const Orders: React.FC<IOrdersView> = props => {
               validateOnBlur
               onSubmit={onSubmitProduct}
             >
-              <Input
+              <SearchSelect
                 name="description"
-                label={appStrings.description}
-                innerStyle={{ width: '200px', marginRight: '5px' }}
+                label={appStrings.material}
+                placeholder={appStrings.material}
+                isDisabled={!!selectedProduct.id}
+                options={options()}
+                value={selectedProduct.description}
+                onChange={item => handleSearchSelect(item?.value?.value)}
               />
               <Input
                 name="activity"
                 label={appStrings.activity}
                 innerStyle={{ width: '200px', marginRight: '5px' }}
+                isDisabled
               />
               <Input
                 name="quantity"
@@ -394,7 +528,7 @@ const Orders: React.FC<IOrdersView> = props => {
         content={appStrings.deleteWarning}
         isOpen={isAlertDialogOpen}
         onClose={() => {
-          setSelectedItem(initialSelectedOrderData);
+          setSelectedOrder(initialSelectedOrderData);
           setIsAlertDialogOpen(false);
         }}
         onSubmit={() => deleteButton()}
@@ -405,6 +539,7 @@ const Orders: React.FC<IOrdersView> = props => {
         isOpen={isProductAlertDialogOpen}
         onClose={() => {
           setSelectedProduct(initialSelectedProductData);
+          setMaterialRef(initialMaterialRefData);
           setIsProductAlertDialogOpen(false);
         }}
         onSubmit={() => deleteProduct()}
@@ -418,17 +553,17 @@ const Orders: React.FC<IOrdersView> = props => {
         handleRowClick={() => {}}
         onClickEdit={id => editButton(id)}
         onClickDelete={id => {
-          setSelectedItem({ ...selectedItem, id });
+          setSelectedOrder({ ...selectedOrder, id });
           setIsAlertDialogOpen(true);
         }}
         onClickAddProduct={id => addProduct(id)}
         onClickEditProduct={(orderId, productId) =>
           editProduct(orderId, productId)
         }
-        onClickDeleteProduct={(orderId, productId) => {
-          delProduct(orderId, productId);
-        }}
-        exchangeRate={Number('0.13')}
+        onClickDeleteProduct={(orderId, productId) =>
+          delProduct(orderId, productId)
+        }
+        exchangeRate={Number('0.13')} //Modify with the exchange of the project when is done
         formatCurrency
       />
       {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
