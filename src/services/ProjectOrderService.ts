@@ -260,7 +260,6 @@ export const updateOrderProduct = async ({
   product: IOrderProduct;
 } & IService) => {
   try {
-    console.log(product);
     const { id, ...rest } = product;
     const matRef = doc(
       db,
