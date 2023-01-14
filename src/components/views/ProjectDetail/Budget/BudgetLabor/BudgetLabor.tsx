@@ -216,7 +216,7 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
         </div>
       </Flex>
       <AlertDialog
-        tittle={appStrings.deleteLabor}
+        title={appStrings.deleteLabor}
         content={appStrings.deleteWarning}
         isOpen={isAlertDialogOpen}
         onClose={() => {
