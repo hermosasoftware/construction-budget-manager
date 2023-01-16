@@ -524,7 +524,7 @@ const Orders: React.FC<IOrdersView> = props => {
         </div>
       </Flex>
       <AlertDialog
-        tittle={appStrings.deleteOrder}
+        title={appStrings.deleteOrder}
         content={appStrings.deleteWarning}
         isOpen={isAlertDialogOpen}
         onClose={() => {
@@ -534,7 +534,7 @@ const Orders: React.FC<IOrdersView> = props => {
         onSubmit={() => deleteButton()}
       />
       <AlertDialog
-        tittle={appStrings.deleteProduct}
+        title={appStrings.deleteProduct}
         content={appStrings.deleteWarning}
         isOpen={isProductAlertDialogOpen}
         onClose={() => {

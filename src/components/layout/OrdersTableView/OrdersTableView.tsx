@@ -73,8 +73,11 @@ const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
   }, [props.items, filter]);
 
   const onRowClick = (isSelected: boolean, row: any, e: React.MouseEvent) => {
-    if (isSelected) setRowChildVisible(!rowChildVisible);
-    else setRowChildVisible(true);
+    if (isSelected) {
+      setRowChildVisible(!rowChildVisible);
+    } else {
+      setRowChildVisible(true);
+    }
     setSelectedRow(row.id);
 
     handleRowClick && handleRowClick(e);

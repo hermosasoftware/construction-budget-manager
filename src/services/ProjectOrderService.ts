@@ -30,14 +30,14 @@ export const getProjectOrders = async ({
       date: doc.data()?.date?.toDate(),
     })) as IProjectOrder[];
 
-    let allOrders = null;
+    let allOrders: IProjectOrder[] = [];
     let productsPromise = orders.map(async elem => {
       const productQ = query(collection(orderRef, elem.id, 'products'));
       const products = await getDocs(productQ);
       const data = products.docs.map(doc => ({
         ...doc.data(),
         id: doc.id,
-      }));
+      })) as IOrderProduct[];
       return { ...elem, products: data };
     });
     await Promise.all(productsPromise).then(resul => {
