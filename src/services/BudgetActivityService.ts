@@ -5,35 +5,35 @@ import {
   doc,
   runTransaction,
   writeBatch,
+  addDoc,
+  setDoc,
+  query,
+  where,
+  documentId,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
-import { IBudgetSubcontract } from '../types/budgetSubcontract';
+import { IBudgetActivity } from '../types/budgetActivity';
 import { IService } from '../types/service';
 import { toastSuccess, toastError } from '../utils/toast';
 
-export const getBudgetSubcontracts = async ({
+export const getBudgetActivity = async ({
   projectId,
-  activityId,
   appStrings,
   successCallback,
   errorCallback,
-}: { projectId: string; activityId?: string } & IService) => {
+}: { projectId: string } & IService) => {
   try {
-    const subCtRef = collection(
-      db,
-      'projects',
-      projectId,
-      'projectBudget',
-      activityId || 'summary',
-      'budgetSubcontracts',
+    const subCtRef = query(
+      collection(db, 'projects', projectId, 'projectBudget'),
+      where(documentId(), '!=', 'summary'),
     );
     const result = await getDocs(subCtRef);
     const data = result.docs.map(doc => ({
       ...doc.data(),
       id: doc.id,
-      subtotal: doc.data().cost * doc.data().quantity,
-    })) as IBudgetSubcontract[];
+      date: doc.data().date.toDate(),
+    })) as IBudgetActivity[];
 
     successCallback && successCallback(data);
   } catch (error) {
@@ -46,17 +46,15 @@ export const getBudgetSubcontracts = async ({
   }
 };
 
-export const getBudgetSubcontractById = async ({
+export const getBudgetActivityById = async ({
   projectId,
-  activityId,
-  budgetSubcontractId,
+  budgetActivityId,
   appStrings,
   successCallback,
   errorCallback,
 }: {
   projectId: string;
-  activityId: string;
-  budgetSubcontractId: string;
+  budgetActivityId: string;
 } & IService) => {
   try {
     const subCtRef = doc(
@@ -64,16 +62,14 @@ export const getBudgetSubcontractById = async ({
       'projects',
       projectId,
       'projectBudget',
-      activityId,
-      'budgetSubcontracts',
-      budgetSubcontractId,
+      budgetActivityId,
     );
     const result = await getDoc(subCtRef);
     const data = {
       ...result.data(),
       id: result.id,
-      subtotal: result.data()?.cost * result.data()?.quantity,
-    } as IBudgetSubcontract;
+      date: result.data()?.date.toDate(),
+    } as IBudgetActivity;
 
     successCallback && successCallback(data);
   } catch (error) {
@@ -86,46 +82,24 @@ export const getBudgetSubcontractById = async ({
   }
 };
 
-export const createBudgetSubcontract = async ({
+export const createBudgetActivity = async ({
   projectId,
-  activityId,
-  budgetSubcontract,
+  budgetActivity,
   appStrings,
   successCallback,
   errorCallback,
 }: {
   projectId: string;
-  activityId: string;
-  budgetSubcontract: IBudgetSubcontract;
+  budgetActivity: IBudgetActivity;
 } & IService) => {
   try {
-    const data = await runTransaction(db, async transaction => {
-      const { id, subtotal, ...rest } = budgetSubcontract;
-      const subCtRef = doc(
-        collection(
-          db,
-          'projects',
-          projectId,
-          'projectBudget',
-          activityId,
-          'budgetSubcontracts',
-        ),
-      );
-      const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
-      const sumDoc = await transaction.get(sumRef);
-
-      if (!sumDoc.exists()) throw Error(appStrings.noRecords);
-
-      const total = sumDoc.data().sumSubcontracts + subtotal;
-
-      transaction.update(sumRef, { sumSubcontracts: total });
-      transaction.set(subCtRef, rest);
-
-      return {
-        ...budgetSubcontract,
-        id: subCtRef.id,
-      } as IBudgetSubcontract;
-    });
+    const { id, ...rest } = budgetActivity;
+    const subCtRef = collection(db, 'projects', projectId, 'projectBudget');
+    const result = await addDoc(subCtRef, rest);
+    const data = {
+      ...budgetActivity,
+      id: result.id,
+    } as IBudgetActivity;
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
@@ -140,48 +114,24 @@ export const createBudgetSubcontract = async ({
   }
 };
 
-export const updateBudgetSubcontract = async ({
+export const updateBudgetActivity = async ({
   projectId,
-  activityId,
-  budgetSubcontract,
+  budgetActivity,
   appStrings,
   successCallback,
   errorCallback,
 }: {
   projectId: string;
-  activityId: string;
-  budgetSubcontract: IBudgetSubcontract;
+  budgetActivity: IBudgetActivity;
 } & IService) => {
   try {
-    await runTransaction(db, async transaction => {
-      const { id, subtotal, ...rest } = budgetSubcontract;
-      const subCtRef = doc(
-        db,
-        'projects',
-        projectId,
-        'projectBudget',
-        activityId,
-        'budgetSubcontracts',
-        id,
-      );
-      const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
-      const subCtDoc = await transaction.get(subCtRef);
-      const sumDoc = await transaction.get(sumRef);
-
-      if (!subCtDoc.exists() || !sumDoc.exists()) {
-        throw Error(appStrings.noRecords);
-      }
-
-      const newSum = subtotal - subCtDoc.data().cost * subCtDoc.data().quantity;
-      const total = sumDoc.data().sumSubcontracts + newSum;
-
-      transaction.update(sumRef, { sumSubcontracts: total });
-      transaction.set(subCtRef, rest);
-    });
+    const { id, ...rest } = budgetActivity;
+    const invRef = doc(db, 'projects', projectId, 'projectBudget', id);
+    await setDoc(invRef, rest);
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
-    successCallback && successCallback(budgetSubcontract);
+    successCallback && successCallback(budgetActivity);
   } catch (error) {
     let errorMessage = appStrings.genericError;
     if (error instanceof FirebaseError) errorMessage = error.message;
@@ -192,17 +142,15 @@ export const updateBudgetSubcontract = async ({
   }
 };
 
-export const deleteBudgetSubcontract = async ({
+export const deleteBudgetActivity = async ({
   projectId,
-  activityId,
-  budgetSubcontractId,
+  budgetActivityId,
   appStrings,
   successCallback,
   errorCallback,
 }: {
   projectId: string;
-  activityId: string;
-  budgetSubcontractId: string;
+  budgetActivityId: string;
 } & IService) => {
   try {
     const subCtRef = doc(
@@ -210,9 +158,9 @@ export const deleteBudgetSubcontract = async ({
       'projects',
       projectId,
       'projectBudget',
-      activityId,
-      'budgetSubcontracts',
-      budgetSubcontractId,
+      'summary',
+      'budgetActivity',
+      budgetActivityId,
     );
     const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
     const subCtDoc = await getDoc(subCtRef);

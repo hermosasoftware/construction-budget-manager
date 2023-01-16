@@ -18,17 +18,18 @@ import { ISubMaterial } from '../types/collections';
 
 export const getBudgetMaterials = async ({
   projectId,
+  activityId,
   appStrings,
   successCallback,
   errorCallback,
-}: { projectId: string } & IService) => {
+}: { projectId: string; activityId?: string } & IService) => {
   try {
     const matRef = collection(
       db,
       'projects',
       projectId,
       'projectBudget',
-      'summary',
+      activityId || 'summary',
       'budgetMaterials',
     );
     const result = await getDocs(matRef);
@@ -46,7 +47,7 @@ export const getBudgetMaterials = async ({
           'projects',
           projectId,
           'projectBudget',
-          'summary',
+          activityId || 'summary',
           'budgetMaterials',
           elem.id,
           'subMaterials',
@@ -76,12 +77,14 @@ export const getBudgetMaterials = async ({
 
 export const getBudgetMaterialById = async ({
   projectId,
+  activityId,
   budgetMaterialId,
   appStrings,
   successCallback,
   errorCallback,
 }: {
   projectId: string;
+  activityId: string;
   budgetMaterialId: string;
 } & IService) => {
   try {
@@ -90,7 +93,7 @@ export const getBudgetMaterialById = async ({
       'projects',
       projectId,
       'projectBudget',
-      'summary',
+      activityId,
       'budgetMaterials',
       budgetMaterialId,
     );
@@ -114,12 +117,14 @@ export const getBudgetMaterialById = async ({
 
 export const createBudgetMaterial = async ({
   projectId,
+  activityId,
   budgetMaterial,
   appStrings,
   successCallback,
   errorCallback,
 }: {
   projectId: string;
+  activityId: string;
   budgetMaterial: IBudgetMaterial;
 } & IService) => {
   try {
@@ -131,7 +136,7 @@ export const createBudgetMaterial = async ({
           'projects',
           projectId,
           'projectBudget',
-          'summary',
+          activityId,
           'budgetMaterials',
         ),
       );
@@ -166,12 +171,14 @@ export const createBudgetMaterial = async ({
 
 export const updateBudgetMaterial = async ({
   projectId,
+  activityId,
   budgetMaterial,
   appStrings,
   successCallback,
   errorCallback,
 }: {
   projectId: string;
+  activityId: string;
   budgetMaterial: IBudgetMaterial;
 } & IService) => {
   try {
@@ -182,7 +189,7 @@ export const updateBudgetMaterial = async ({
         'projects',
         projectId,
         'projectBudget',
-        'summary',
+        activityId,
         'budgetMaterials',
         id,
       );
@@ -216,12 +223,14 @@ export const updateBudgetMaterial = async ({
 
 export const deleteBudgetMaterial = async ({
   projectId,
+  activityId,
   budgetMaterialId,
   appStrings,
   successCallback,
   errorCallback,
 }: {
   projectId: string;
+  activityId: string;
   budgetMaterialId: string;
 } & IService) => {
   try {
@@ -230,7 +239,7 @@ export const deleteBudgetMaterial = async ({
       'projects',
       projectId,
       'projectBudget',
-      'summary',
+      activityId,
       'budgetMaterials',
       budgetMaterialId,
     );
@@ -269,6 +278,7 @@ export const deleteBudgetMaterial = async ({
 
 export const createBudgetSubMaterial = async ({
   projectId,
+  activityId,
   materialId,
   budgetSubMaterial,
   appStrings,
@@ -276,6 +286,7 @@ export const createBudgetSubMaterial = async ({
   errorCallback,
 }: {
   projectId: string;
+  activityId: string;
   materialId: string;
   budgetSubMaterial: ISubMaterial;
 } & IService) => {
@@ -286,7 +297,7 @@ export const createBudgetSubMaterial = async ({
       'projects',
       projectId,
       'projectBudget',
-      'summary',
+      activityId,
       'budgetMaterials',
       materialId,
       'subMaterials',
@@ -308,15 +319,17 @@ export const createBudgetSubMaterial = async ({
 };
 
 export const updateBudgetSubMaterial = async ({
-  materialId,
   projectId,
+  activityId,
+  materialId,
   budgetSubMaterial,
   appStrings,
   successCallback,
   errorCallback,
 }: {
-  materialId: string;
   projectId: string;
+  activityId: string;
+  materialId: string;
   budgetSubMaterial: ISubMaterial;
 } & IService) => {
   try {
@@ -326,7 +339,7 @@ export const updateBudgetSubMaterial = async ({
       'projects',
       projectId,
       'projectBudget',
-      'summary',
+      activityId,
       'budgetMaterials',
       materialId,
       'subMaterials',
@@ -342,6 +355,7 @@ export const updateBudgetSubMaterial = async ({
 
 export const deleteBudgetSubMaterial = async ({
   projectId,
+  activityId,
   budgetMaterialId,
   budgetSubMaterialId,
   appStrings,
@@ -349,6 +363,7 @@ export const deleteBudgetSubMaterial = async ({
   errorCallback,
 }: {
   projectId: string;
+  activityId: string;
   budgetMaterialId: string;
   budgetSubMaterialId: string;
 } & IService) => {
@@ -358,7 +373,7 @@ export const deleteBudgetSubMaterial = async ({
       'projects',
       projectId,
       'projectBudget',
-      'summary',
+      activityId,
       'budgetMaterials',
       budgetMaterialId,
     );

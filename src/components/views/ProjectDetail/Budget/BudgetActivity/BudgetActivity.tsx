@@ -8,81 +8,82 @@ import TableView, {
   TTableHeader,
 } from '../../../../common/TableView/TableView';
 import {
-  createBudgetLabor,
-  deleteBudgetLabor,
-  getBudgetLaborById,
-  getBudgetLabors,
-  updateBudgetLabor,
-} from '../../../../../services/BudgetLaborsService';
-import { IBudgetLabor } from '../../../../../types/budgetLabor';
-import { IProjectBudget } from '../../../../../types/projectBudget';
+  createBudgetActivity,
+  deleteBudgetActivity,
+  getBudgetActivityById,
+  getBudgetActivity,
+  updateBudgetActivity,
+} from '../../../../../services/BudgetActivityService';
 import { IBudgetActivity } from '../../../../../types/budgetActivity';
-import Form, { Input } from '../../../../common/Form';
+import { IProjectBudget } from '../../../../../types/projectBudget';
+import Form, { DatePicker, Input } from '../../../../common/Form';
 import AlertDialog from '../../../../common/AlertDialog/AlertDialog';
 import { useAppSelector } from '../../../../../redux/hooks';
 import { colonFormat, dolarFormat } from '../../../../../utils/numbers';
 
-import styles from './BudgetLabor.module.css';
+import styles from './BudgetActivity.module.css';
 
-interface IBudgetLaborView {
+interface IBudgetActivityView {
   projectId: string;
   isBudgetOpen: boolean;
   getBudget: Function;
   budget: IProjectBudget;
-  activity: IBudgetActivity;
+  setActivity: Function;
 }
 
 const initialSelectedItemData = {
   id: '',
-  name: '',
-  unit: '',
-  quantity: 1,
-  cost: 0,
-  subtotal: 0,
+  activity: '',
+  sumLabors: 0,
+  sumMaterials: 0,
+  sumSubcontracts: 0,
+  date: new Date(),
 };
 
-const BudgetLabor: React.FC<IBudgetLaborView> = props => {
-  const { projectId, isBudgetOpen, getBudget, budget, activity } = props;
-  const [tableData, setTableData] = useState<IBudgetLabor[]>([]);
-  const [selectedItem, setSelectedItem] = useState<IBudgetLabor>(
+const BudgetActivity: React.FC<IBudgetActivityView> = props => {
+  const [tableData, setTableData] = useState<IBudgetActivity[]>([]);
+  const [selectedItem, setSelectedItem] = useState<IBudgetActivity>(
     initialSelectedItemData,
   );
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const { projectId, isBudgetOpen, getBudget, budget, setActivity } = props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
-
   const tableHeader: TTableHeader[] = [
-    { name: 'name', value: appStrings.name },
-    { name: 'unit', value: appStrings.unit },
-    { name: 'quantity', value: appStrings.quantity },
-    { name: 'cost', value: appStrings.cost, isGreen: true },
-    { name: 'subtotal', value: appStrings.subtotal, isGreen: true },
-    { name: 'dollars', value: appStrings.dollars, isGreen: true },
+    { name: 'activity', value: appStrings.name },
+    { name: 'date', value: appStrings.date },
+    {
+      name: 'sumSubcontracts',
+      value: appStrings.subcontracts,
+      isGreen: true,
+    },
+    { name: 'sumLabors', value: appStrings.labors, isGreen: true },
+    { name: 'sumMaterials', value: appStrings.materials, isGreen: true },
   ];
 
   const formatTableData = () =>
     tableData.map(data => ({
       ...data,
-      cost: colonFormat(data.cost),
-      subtotal: colonFormat(data.subtotal),
-      dollars: dolarFormat(data.subtotal / budget.exchange),
+      date: data.date.toDateString(),
+      sumSubcontracts: colonFormat(data.sumSubcontracts),
+      sumLabors: colonFormat(data.sumLabors),
+      sumMaterials: dolarFormat(data.sumMaterials),
     }));
 
-  const getLabors = async () => {
-    const successCallback = (response: IBudgetLabor[]) =>
+  const getActivities = async () => {
+    const successCallback = (response: IBudgetActivity[]) =>
       setTableData(response);
-    await getBudgetLabors({
+    await getBudgetActivity({
       projectId,
-      activityId: activity.id,
       appStrings,
       successCallback,
     });
   };
 
-  const addItem = (item: IBudgetLabor) => setTableData([item, ...tableData]);
+  const addItem = (item: IBudgetActivity) => setTableData([item, ...tableData]);
 
-  const updateItem = (item: IBudgetLabor) => {
+  const updateItem = (item: IBudgetActivity) => {
     const index = tableData.findIndex(e => e.id === item.id);
     const data = [...tableData];
     data.splice(index, 1, item);
@@ -96,15 +97,14 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
     setTableData(data);
   };
 
-  const editButton = async (budgetLaborId: string) => {
-    const successCallback = (response: IBudgetLabor) => {
+  const editButton = async (budgetActivityId: string) => {
+    const successCallback = (response: IBudgetActivity) => {
       setSelectedItem(response);
       setIsModalOpen(true);
     };
-    await getBudgetLaborById({
+    await getBudgetActivityById({
       projectId,
-      activityId: activity.id,
-      budgetLaborId,
+      budgetActivityId,
       appStrings,
       successCallback,
     });
@@ -117,10 +117,9 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
       setIsAlertDialogOpen(false);
       getBudget();
     };
-    await deleteBudgetLabor({
+    await deleteBudgetActivity({
       projectId,
-      activityId: activity.id,
-      budgetLaborId: selectedItem.id,
+      budgetActivityId: selectedItem.id,
       appStrings,
       successCallback,
     });
@@ -130,40 +129,39 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
     setSearchTerm(event.target.value.toUpperCase());
   };
 
-  const handleOnSubmit = async (budgetLabor: IBudgetLabor) => {
-    const successCallback = (item: IBudgetLabor) => {
+  const handleRowClick = (event: MouseEvent) => {
+    const row = event.target as HTMLInputElement;
+    const projectId = row.id;
+    const activity = tableData.find(row => row.id === projectId);
+    setActivity(activity);
+  };
+
+  const handleOnSubmit = async (budgetActivity: IBudgetActivity) => {
+    const successCallback = (item: IBudgetActivity) => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
-      budgetLabor.id ? updateItem(item) : addItem(item);
+      budgetActivity.id ? updateItem(item) : addItem(item);
       getBudget();
     };
     const serviceCallParameters = {
       projectId,
-      activityId: activity.id,
-      budgetLabor: {
-        ...budgetLabor,
-        quantity: +budgetLabor.quantity,
-        cost: +budgetLabor.cost,
-        subtotal: budgetLabor.cost * budgetLabor.quantity,
-      },
+      budgetActivity,
       appStrings,
       successCallback,
     };
-    budgetLabor.id
-      ? await updateBudgetLabor(serviceCallParameters)
-      : await createBudgetLabor(serviceCallParameters);
+    budgetActivity.id
+      ? await updateBudgetActivity(serviceCallParameters)
+      : await createBudgetActivity(serviceCallParameters);
   };
 
   const validationSchema = yup.object().shape({
-    name: yup.string().required(appStrings?.requiredField),
-    unit: yup.string().required(appStrings?.requiredField),
-    quantity: yup.number().positive().required(appStrings?.requiredField),
-    cost: yup.number().positive().required(appStrings?.requiredField),
+    activity: yup.string().required(appStrings?.requiredField),
+    date: yup.date().required(appStrings?.requiredField),
   });
 
   useEffect(() => {
     let abortController = new AbortController();
-    getLabors();
+    getActivities();
     return () => abortController.abort();
   }, []);
 
@@ -187,7 +185,9 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
             }}
           >
             <Heading as="h2" size="lg">
-              {selectedItem.id ? appStrings.editLabor : appStrings.addLabor}
+              {selectedItem.id
+                ? appStrings.editActivity
+                : appStrings.addActivity}
             </Heading>
             <Form
               id="project-form"
@@ -197,22 +197,8 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
               validateOnBlur
               onSubmit={handleOnSubmit}
             >
-              <Input
-                name="name"
-                label={appStrings.name}
-                placeholder={appStrings.projectName}
-              />
-              <Input
-                name="unit"
-                label="Unit"
-                placeholder={appStrings.metricUnit}
-              />
-              <Input
-                name="quantity"
-                type="number"
-                label={appStrings.quantity}
-              />
-              <Input name="cost" type="number" label={appStrings.cost} />
+              <Input name="activity" label={appStrings.name} />
+              <DatePicker name="date" label={appStrings.date}></DatePicker>
               <br />
               <Button width="full" type="submit">
                 {appStrings.submit}
@@ -222,7 +208,7 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
         </div>
       </Flex>
       <AlertDialog
-        title={appStrings.deleteLabor}
+        title={appStrings.deleteActivity}
         content={appStrings.deleteWarning}
         isOpen={isAlertDialogOpen}
         onClose={() => {
@@ -235,8 +221,9 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
         headers={tableHeader}
         items={formatTableData()}
         filter={value =>
-          searchTerm === '' || value.name.toUpperCase().includes(searchTerm)
+          searchTerm === '' || value.activity.toUpperCase().includes(searchTerm)
         }
+        handleRowClick={handleRowClick}
         onClickEdit={id => editButton(id)}
         onClickDelete={id => {
           setSelectedItem({ ...selectedItem, id: id });
@@ -249,4 +236,4 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
   );
 };
 
-export default BudgetLabor;
+export default BudgetActivity;

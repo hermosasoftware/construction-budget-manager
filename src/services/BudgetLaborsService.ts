@@ -14,17 +14,18 @@ import { toastSuccess, toastError } from '../utils/toast';
 
 export const getBudgetLabors = async ({
   projectId,
+  activityId,
   appStrings,
   successCallback,
   errorCallback,
-}: { projectId: string } & IService) => {
+}: { projectId: string; activityId?: string } & IService) => {
   try {
     const laborRef = collection(
       db,
       'projects',
       projectId,
       'projectBudget',
-      'summary',
+      activityId || 'summary',
       'budgetLabors',
     );
     const result = await getDocs(laborRef);
@@ -47,12 +48,14 @@ export const getBudgetLabors = async ({
 
 export const getBudgetLaborById = async ({
   projectId,
+  activityId,
   budgetLaborId,
   appStrings,
   successCallback,
   errorCallback,
 }: {
   projectId: string;
+  activityId: string;
   budgetLaborId: string;
 } & IService) => {
   try {
@@ -61,7 +64,7 @@ export const getBudgetLaborById = async ({
       'projects',
       projectId,
       'projectBudget',
-      'summary',
+      activityId,
       'budgetLabors',
       budgetLaborId,
     );
@@ -85,12 +88,14 @@ export const getBudgetLaborById = async ({
 
 export const createBudgetLabor = async ({
   projectId,
+  activityId,
   budgetLabor,
   appStrings,
   successCallback,
   errorCallback,
 }: {
   projectId: string;
+  activityId: string;
   budgetLabor: IBudgetLabor;
 } & IService) => {
   try {
@@ -102,7 +107,7 @@ export const createBudgetLabor = async ({
           'projects',
           projectId,
           'projectBudget',
-          'summary',
+          activityId,
           'budgetLabors',
         ),
       );
@@ -137,12 +142,14 @@ export const createBudgetLabor = async ({
 
 export const updateBudgetLabor = async ({
   projectId,
+  activityId,
   budgetLabor,
   appStrings,
   successCallback,
   errorCallback,
 }: {
   projectId: string;
+  activityId: string;
   budgetLabor: IBudgetLabor;
 } & IService) => {
   try {
@@ -153,7 +160,7 @@ export const updateBudgetLabor = async ({
         'projects',
         projectId,
         'projectBudget',
-        'summary',
+        activityId,
         'budgetLabors',
         id,
       );
@@ -187,12 +194,14 @@ export const updateBudgetLabor = async ({
 
 export const deleteBudgetLabor = async ({
   projectId,
+  activityId,
   budgetLaborId,
   appStrings,
   successCallback,
   errorCallback,
 }: {
   projectId: string;
+  activityId: string;
   budgetLaborId: string;
 } & IService) => {
   try {
@@ -201,7 +210,7 @@ export const deleteBudgetLabor = async ({
       'projects',
       projectId,
       'projectBudget',
-      'summary',
+      activityId,
       'budgetLabors',
       budgetLaborId,
     );

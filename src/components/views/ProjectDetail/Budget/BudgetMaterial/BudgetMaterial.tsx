@@ -19,6 +19,7 @@ import {
 } from '../../../../../services/BudgetMaterialsService';
 import { IBudgetMaterial } from '../../../../../types/budgetMaterial';
 import { IProjectBudget } from '../../../../../types/projectBudget';
+import { IBudgetActivity } from '../../../../../types/budgetActivity';
 import Form, { Input, Switch } from '../../../../common/Form';
 import { useAppSelector } from '../../../../../redux/hooks';
 import SearchSelect from '../../../../common/Form/Elements/SearchSelect';
@@ -35,6 +36,7 @@ interface IBudgetMaterialView {
   isBudgetOpen: boolean;
   getBudget: Function;
   budget: IProjectBudget;
+  activity: IBudgetActivity;
 }
 
 interface IItem extends Omit<IBudgetMaterial, 'name'> {
@@ -59,6 +61,7 @@ const initialSelectedSubMaterialData = {
 };
 
 const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
+  const { projectId, isBudgetOpen, getBudget, budget, activity } = props;
   const [tableData, setTableData] = useState<IMaterialBreakdown[]>([]);
   const [selectedItem, setSelectedItem] = useState<IItem>(
     initialSelectedItemData,
@@ -72,7 +75,6 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubMaterialModalOpen, setIsSubMaterialModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const { projectId, isBudgetOpen, getBudget, budget } = props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
   const materials = useAppSelector(state => state.materials.materials);
 
@@ -114,6 +116,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
       setTableData(response);
     await getBudgetMaterials({
       projectId,
+      activityId: activity.id,
       appStrings,
       successCallback,
     });
@@ -146,6 +149,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
     };
     await getBudgetMaterialById({
       projectId,
+      activityId: activity.id,
       budgetMaterialId,
       appStrings,
       successCallback,
@@ -161,6 +165,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
     };
     await deleteBudgetMaterial({
       projectId,
+      activityId: activity.id,
       budgetMaterialId: selectedItem.id,
       appStrings,
       successCallback,
@@ -187,6 +192,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
     };
     await deleteBudgetSubMaterial({
       projectId,
+      activityId: activity.id,
       budgetMaterialId: selectedMaterial,
       budgetSubMaterialId: selectedSubMaterial.id,
       appStrings,
@@ -239,6 +245,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
     const serviceCallParameters = {
       materialId: selectedMaterial,
       projectId,
+      activityId: activity.id,
       budgetSubMaterial: data,
       appStrings,
       successCallback: !data.id ? successAddCallback : successUpdateCallback,
@@ -305,6 +312,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
     };
     const serviceCallParameters = {
       projectId,
+      activityId: activity.id,
       budgetMaterial,
       appStrings,
       successCallback,
