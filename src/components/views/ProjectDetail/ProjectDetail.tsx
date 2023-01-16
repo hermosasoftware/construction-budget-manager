@@ -11,6 +11,7 @@ import ExtraBudget from './ExtraBudget/ExtraBudget';
 import Sidebar from '../../layout/Sidebar';
 import { useAppSelector } from '../../../redux/hooks';
 import styles from './ProjectDetail.module.css';
+import Orders from './Orders';
 
 const defaultProjectData = {
   id: '',
@@ -70,10 +71,16 @@ export default function Projects() {
               isDisable: project?.budgetOpen,
             },
             {
+              id: 'orders',
+              name: appStrings.orders,
+              isDisable: project?.budgetOpen,
+            },
+            {
               id: 'invoicing',
               name: appStrings.invoicing,
               isDisable: project?.budgetOpen,
             },
+
             {
               id: 'expenses',
               name: appStrings.expensesReport,
@@ -90,6 +97,8 @@ export default function Projects() {
           />
         ) : selectedTab === 'extras' ? (
           <ExtraBudget projectId={projectId} />
+        ) : selectedTab === 'orders' ? (
+          <Orders projectId={projectId} />
         ) : selectedTab === 'invoicing' ? (
           <Invoicing projectId={projectId} />
         ) : selectedTab === 'expenses' ? (
