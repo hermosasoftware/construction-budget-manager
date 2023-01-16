@@ -204,7 +204,7 @@ export default function Projects() {
             </div>
           </Flex>
           <AlertDialog
-            tittle={appStrings.deleteProject}
+            title={appStrings.deleteProject}
             content={appStrings.deleteWarning}
             isOpen={isAlertDialogOpen}
             onClose={() => {
