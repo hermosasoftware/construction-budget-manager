@@ -36,6 +36,7 @@ interface IBudgetMaterialView {
   isBudgetOpen: boolean;
   getBudget: Function;
   budget: IProjectBudget;
+  getActivity: Function;
   activity: IBudgetActivity;
 }
 
@@ -61,7 +62,8 @@ const initialSelectedSubMaterialData = {
 };
 
 const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
-  const { projectId, isBudgetOpen, getBudget, budget, activity } = props;
+  const { projectId, isBudgetOpen, getBudget, budget, getActivity, activity } =
+    props;
   const [tableData, setTableData] = useState<IMaterialBreakdown[]>([]);
   const [selectedItem, setSelectedItem] = useState<IItem>(
     initialSelectedItemData,
@@ -162,6 +164,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
       setSelectedItem(initialSelectedItemData);
       setIsAlertDialogOpen(false);
       getBudget();
+      getActivity(activity.id);
     };
     await deleteBudgetMaterial({
       projectId,
@@ -309,6 +312,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
       };
       budgetMaterial.id ? updateItem(MatBreakdown) : addItem(MatBreakdown);
       getBudget();
+      getActivity(activity.id);
     };
     const serviceCallParameters = {
       projectId,

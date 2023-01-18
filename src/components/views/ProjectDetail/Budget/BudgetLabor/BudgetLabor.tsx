@@ -29,6 +29,7 @@ interface IBudgetLaborView {
   isBudgetOpen: boolean;
   getBudget: Function;
   budget: IProjectBudget;
+  getActivity: Function;
   activity: IBudgetActivity;
 }
 
@@ -42,7 +43,8 @@ const initialSelectedItemData = {
 };
 
 const BudgetLabor: React.FC<IBudgetLaborView> = props => {
-  const { projectId, isBudgetOpen, getBudget, budget, activity } = props;
+  const { projectId, isBudgetOpen, getBudget, budget, getActivity, activity } =
+    props;
   const [tableData, setTableData] = useState<IBudgetLabor[]>([]);
   const [selectedItem, setSelectedItem] = useState<IBudgetLabor>(
     initialSelectedItemData,
@@ -116,6 +118,7 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
       setSelectedItem(initialSelectedItemData);
       setIsAlertDialogOpen(false);
       getBudget();
+      getActivity(activity.id);
     };
     await deleteBudgetLabor({
       projectId,
@@ -136,6 +139,7 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
       setIsModalOpen(false);
       budgetLabor.id ? updateItem(item) : addItem(item);
       getBudget();
+      getActivity(activity.id);
     };
     const serviceCallParameters = {
       projectId,

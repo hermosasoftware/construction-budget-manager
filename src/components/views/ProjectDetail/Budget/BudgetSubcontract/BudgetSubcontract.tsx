@@ -29,6 +29,7 @@ interface IBudgetSubcontractView {
   isBudgetOpen: boolean;
   getBudget: Function;
   budget: IProjectBudget;
+  getActivity: Function;
   activity: IBudgetActivity;
 }
 
@@ -41,7 +42,8 @@ const initialSelectedItemData = {
 };
 
 const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
-  const { projectId, isBudgetOpen, getBudget, budget, activity } = props;
+  const { projectId, isBudgetOpen, getBudget, budget, getActivity, activity } =
+    props;
   const [tableData, setTableData] = useState<IBudgetSubcontract[]>([]);
   const [selectedItem, setSelectedItem] = useState<IBudgetSubcontract>(
     initialSelectedItemData,
@@ -115,6 +117,7 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
       setSelectedItem(initialSelectedItemData);
       setIsAlertDialogOpen(false);
       getBudget();
+      getActivity(activity.id);
     };
     await deleteBudgetSubcontract({
       projectId,
@@ -135,6 +138,7 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
       setIsModalOpen(false);
       budgetSubcontract.id ? updateItem(item) : addItem(item);
       getBudget();
+      getActivity(activity.id);
     };
     const serviceCallParameters = {
       projectId,

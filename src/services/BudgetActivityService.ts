@@ -3,19 +3,20 @@ import {
   getDocs,
   getDoc,
   doc,
-  runTransaction,
   writeBatch,
   addDoc,
   setDoc,
   query,
   where,
   documentId,
+  increment,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
 import { IBudgetActivity } from '../types/budgetActivity';
 import { IService } from '../types/service';
 import { toastSuccess, toastError } from '../utils/toast';
+import { deleteCollect } from './herperService';
 
 export const getBudgetActivity = async ({
   projectId,
@@ -24,11 +25,11 @@ export const getBudgetActivity = async ({
   errorCallback,
 }: { projectId: string } & IService) => {
   try {
-    const subCtRef = query(
+    const actRef = query(
       collection(db, 'projects', projectId, 'projectBudget'),
       where(documentId(), '!=', 'summary'),
     );
-    const result = await getDocs(subCtRef);
+    const result = await getDocs(actRef);
     const data = result.docs.map(doc => ({
       ...doc.data(),
       id: doc.id,
@@ -57,14 +58,14 @@ export const getBudgetActivityById = async ({
   budgetActivityId: string;
 } & IService) => {
   try {
-    const subCtRef = doc(
+    const actRef = doc(
       db,
       'projects',
       projectId,
       'projectBudget',
       budgetActivityId,
     );
-    const result = await getDoc(subCtRef);
+    const result = await getDoc(actRef);
     const data = {
       ...result.data(),
       id: result.id,
@@ -94,8 +95,8 @@ export const createBudgetActivity = async ({
 } & IService) => {
   try {
     const { id, ...rest } = budgetActivity;
-    const subCtRef = collection(db, 'projects', projectId, 'projectBudget');
-    const result = await addDoc(subCtRef, rest);
+    const actRef = collection(db, 'projects', projectId, 'projectBudget');
+    const result = await addDoc(actRef, rest);
     const data = {
       ...budgetActivity,
       id: result.id,
@@ -126,8 +127,8 @@ export const updateBudgetActivity = async ({
 } & IService) => {
   try {
     const { id, ...rest } = budgetActivity;
-    const invRef = doc(db, 'projects', projectId, 'projectBudget', id);
-    await setDoc(invRef, rest);
+    const actRef = doc(db, 'projects', projectId, 'projectBudget', id);
+    await setDoc(actRef, rest);
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
@@ -153,29 +154,33 @@ export const deleteBudgetActivity = async ({
   budgetActivityId: string;
 } & IService) => {
   try {
-    const subCtRef = doc(
+    const actRef = doc(
       db,
       'projects',
       projectId,
       'projectBudget',
-      'summary',
-      'budgetActivity',
       budgetActivityId,
     );
     const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
-    const subCtDoc = await getDoc(subCtRef);
+    const actDoc = await getDoc(actRef);
     const sumDoc = await getDoc(sumRef);
 
-    if (!subCtDoc.exists() || !sumDoc.exists()) {
+    if (!actDoc.exists() || !sumDoc.exists()) {
       throw Error(appStrings.noRecords);
     }
 
-    const batch = writeBatch(db);
-    const newSum = subCtDoc.data().cost * subCtDoc.data().quantity;
-    const total = sumDoc.data().sumSubcontracts - newSum;
+    await deleteCollect(`${actRef.path}/budgetMaterials`, ['subMaterials']);
+    await deleteCollect(`${actRef.path}/budgetLabors`);
+    await deleteCollect(`${actRef.path}/budgetSubcontracts`);
 
-    batch.update(sumRef, { sumSubcontracts: total });
-    batch.delete(subCtRef);
+    const batch = writeBatch(db);
+
+    batch.update(sumRef, {
+      sumMaterials: increment(-actDoc.data().sumMaterials),
+      sumLabors: increment(-actDoc.data().sumLabors),
+      sumSubcontracts: increment(-actDoc.data().sumSubcontracts),
+    });
+    batch.delete(actRef);
 
     await batch.commit();
 

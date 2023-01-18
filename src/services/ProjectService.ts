@@ -10,7 +10,6 @@ import {
   doc,
   setDoc,
   runTransaction,
-  writeBatch,
   deleteDoc,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
@@ -19,6 +18,7 @@ import { IProject } from '../types/project';
 import { IService } from '../types/service';
 import { toastSuccess, toastError } from '../utils/toast';
 import { IProjectBudget } from '../types/projectBudget';
+import { deleteCollect } from './herperService';
 
 export const getAllProjects = async ({
   appStrings,
@@ -202,15 +202,13 @@ export const deleteProject = async ({
 }: { projectId: string } & IService) => {
   try {
     const projectRef = `projects/${projectId}`;
-    const budgetRef = `${projectRef}/projectBudget/summary`;
-    const extraBudgetRef = `${projectRef}/projectExtraBudget/summary`;
+    const budgetRef = `${projectRef}/projectBudget`;
+    const extraBudgetRef = `${projectRef}/projectExtraBudget`;
 
-    await deleteCollect(`${budgetRef}/budgetLabors`);
-    await deleteCollect(`${budgetRef}/budgetSubcontracts`);
-    await deleteCollect(`${budgetRef}/budgetMaterials`, ['subMaterials']);
-    await deleteCollect(`${extraBudgetRef}/budgetLabors`);
-    await deleteCollect(`${extraBudgetRef}/budgetSubcontracts`);
-    await deleteCollect(`${extraBudgetRef}/budgetMaterials`, ['subMaterials']);
+    await deleteMaterialAndSubmaterials(budgetRef);
+    await deleteCollect(budgetRef, ['budgetLabors', 'budgetSubcontracts']);
+    await deleteMaterialAndSubmaterials(extraBudgetRef);
+    await deleteCollect(extraBudgetRef, ['budgetLabors', 'budgetSubcontracts']);
     await deleteCollect(`${projectRef}/projectBudget`);
     await deleteCollect(`${projectRef}/projectExtraBudget`);
     await deleteCollect(`${projectRef}/projectInvoicing`);
@@ -230,39 +228,13 @@ export const deleteProject = async ({
   }
 };
 
-const deleteCollect = async (collect: string, subCollects?: string[]) => {
-  const collectRef = collection(db, collect);
-  const collectDocs = await getDocs(collectRef);
+const deleteMaterialAndSubmaterials = async (budgetRef: string) => {
+  const collectDocs = await getDocs(collection(db, budgetRef));
   if (!collectDocs.empty) {
-    let batch = writeBatch(db);
-    let i = 0;
     for (const data of collectDocs.docs) {
-      if (subCollects) {
-        for (const subCollect of subCollects) {
-          const subCollectDocs = await getDocs(
-            collection(doc(collectRef, data.id), subCollect),
-          );
-          for (const subData of subCollectDocs.docs) {
-            batch.delete(
-              doc(collection(doc(collectRef, data.id), subCollect), subData.id),
-            );
-            i++;
-            if (i > 400) {
-              i = 0;
-              await batch.commit();
-              batch = writeBatch(db);
-            }
-          }
-        }
-      }
-      batch.delete(doc(collectRef, data.id));
-      i++;
-      if (i > 400) {
-        i = 0;
-        await batch.commit();
-        batch = writeBatch(db);
-      }
+      await deleteCollect(`${budgetRef}/${data.id}/budgetMaterials`, [
+        'subMaterials',
+      ]);
     }
-    if (i > 0) await batch.commit();
   }
 };
