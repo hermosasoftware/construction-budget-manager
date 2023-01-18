@@ -7,6 +7,13 @@
   flex-wrap: wrap;
   display: flex;
 }
+
+.tab__container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .tabs {
   flex-wrap: wrap;
   min-width: 250px;

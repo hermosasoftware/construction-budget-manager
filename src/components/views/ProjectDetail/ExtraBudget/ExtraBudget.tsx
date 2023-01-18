@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Box } from '@chakra-ui/react';
+import { Box, Divider, Text } from '@chakra-ui/react';
 import * as yup from 'yup';
-import { MagicWand } from 'phosphor-react';
+import { CaretLeft, MagicWand } from 'phosphor-react';
 import { useAppSelector } from '../../../../redux/hooks';
 import TabGroup from '../../../common/TabGroup/TabGroup';
 import BudgetMaterial from './BudgetMaterial/BudgetMaterial';
@@ -19,6 +19,11 @@ import {
 import { IProjectBudget } from '../../../../types/projectBudget';
 
 import styles from './ExtraBudget.module.css';
+import { IBudgetActivity } from '../../../../types/budgetActivity';
+import { getExtraBudgetActivityById } from '../../../../services/ExtraBudgetActivityService';
+import BudgetActivity from './BudgetActivity/BudgetActivity';
+import ActivitySummary from './BudgetActivity/ActivitySummary/ActivitySummary';
+import Button from '../../../common/Button/Button';
 
 interface IExtraBudgetView {
   projectId: string;
@@ -30,6 +35,7 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
   const [selectedTab, setSelectedTab] = useState('summary');
   const [editExchange, setEditExchange] = useState(false);
   const [budget, setBudget] = useState<IProjectBudget>();
+  const [activity, setActivity] = useState<IBudgetActivity>();
   const [budgetFlag, setbudgetFlag] = useState(false);
 
   const getExtraBudget = async () => {
@@ -39,6 +45,17 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
     };
     await getProjectExtraBudget({
       projectId,
+      appStrings,
+      successCallback,
+    });
+  };
+
+  const getActivity = async (extraBudgetActivityId: string) => {
+    const successCallback = (response: IBudgetActivity) =>
+      setActivity(response);
+    await getExtraBudgetActivityById({
+      projectId,
+      extraBudgetActivityId,
       appStrings,
       successCallback,
     });
@@ -81,30 +98,54 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
   }, []);
 
   const contentToDisplay = (option: string) => {
-    const contentOptions: any = {
-      summary: <BudgetSummary budget={budget!} projectId={projectId} />,
-      materials: (
-        <BudgetMaterial
-          projectId={projectId}
-          getExtraBudget={getExtraBudget}
-          budget={budget!}
-        />
-      ),
-      labors: (
-        <BudgetLabor
-          projectId={projectId}
-          getExtraBudget={getExtraBudget}
-          budget={budget!}
-        />
-      ),
-      subcontracts: (
-        <BudgetSubcontract
-          projectId={projectId}
-          getExtraBudget={getExtraBudget}
-          budget={budget!}
-        />
-      ),
-    };
+    const contentOptions: any = activity
+      ? {
+          summary: (
+            <ActivitySummary
+              projectId={projectId}
+              budget={budget!}
+              activity={activity}
+            />
+          ),
+          materials: (
+            <BudgetMaterial
+              projectId={projectId}
+              getExtraBudget={getExtraBudget}
+              budget={budget!}
+              getActivity={getActivity}
+              activity={activity}
+            />
+          ),
+          labors: (
+            <BudgetLabor
+              projectId={projectId}
+              getExtraBudget={getExtraBudget}
+              budget={budget!}
+              getActivity={getActivity}
+              activity={activity}
+            />
+          ),
+          subcontracts: (
+            <BudgetSubcontract
+              projectId={projectId}
+              getExtraBudget={getExtraBudget}
+              budget={budget!}
+              getActivity={getActivity}
+              activity={activity}
+            />
+          ),
+        }
+      : {
+          summary: <BudgetSummary budget={budget!} projectId={projectId} />,
+          activity: (
+            <BudgetActivity
+              projectId={projectId}
+              getExtraBudget={getExtraBudget}
+              budget={budget!}
+              setActivity={setActivity}
+            />
+          ),
+        };
     return contentOptions[option];
   };
 
@@ -114,19 +155,48 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
         {budget ? (
           <>
             <div className={styles.toolBar__container}>
-              <TabGroup
-                className={styles.tabs}
-                tabs={[
-                  { id: 'summary', name: 'Summary', selected: true },
-                  { id: 'materials', name: appStrings.materials },
-                  { id: 'labors', name: 'Labors' },
-                  { id: 'subcontracts', name: 'Subcontracts' },
-                ]}
-                variant="rounded"
-                onSelectedTabChange={activeTabs =>
-                  setSelectedTab(activeTabs[0])
-                }
-              />
+              {activity ? (
+                <div className={styles.tab__container}>
+                  <Button
+                    onClick={() => {
+                      setActivity(undefined);
+                    }}
+                    variant={'ghost'}
+                  >
+                    <CaretLeft size={24} /> <Text>{activity.activity}</Text>
+                  </Button>
+                  <Divider orientation="vertical" />
+                  <TabGroup
+                    className={styles.tabs}
+                    tabs={[
+                      {
+                        id: 'summary',
+                        name: appStrings.summary,
+                        selected: true,
+                      },
+                      { id: 'materials', name: appStrings.materials },
+                      { id: 'labors', name: appStrings.labors },
+                      { id: 'subcontracts', name: appStrings.subcontracts },
+                    ]}
+                    variant="rounded"
+                    onSelectedTabChange={activeTabs =>
+                      setSelectedTab(activeTabs[0])
+                    }
+                  />
+                </div>
+              ) : (
+                <TabGroup
+                  className={styles.tabs}
+                  tabs={[
+                    { id: 'summary', name: appStrings.summary, selected: true },
+                    { id: 'activity', name: appStrings.activities },
+                  ]}
+                  variant="rounded"
+                  onSelectedTabChange={activeTabs =>
+                    setSelectedTab(activeTabs[0])
+                  }
+                />
+              )}
               <Form
                 id="exchange-form"
                 initialFormData={budget}

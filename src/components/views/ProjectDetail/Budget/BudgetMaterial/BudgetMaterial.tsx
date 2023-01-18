@@ -407,12 +407,15 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
           </Modal>
           <Modal
             isOpen={isSubMaterialModalOpen}
-            onClose={() => setIsSubMaterialModalOpen(false)}
+            onClose={() => {
+              setSelectedSubMaterial(initialSelectedSubMaterialData);
+              setIsSubMaterialModalOpen(false);
+            }}
           >
             <Heading as="h2" size="lg">
-              {selectedMaterial
+              {selectedSubMaterial.id
                 ? appStrings.editSubmaterial
-                : appStrings.createSubmaterial}
+                : appStrings.addSubmaterial}
             </Heading>
             <Form
               id="submaterial-form"
