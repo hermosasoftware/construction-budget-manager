@@ -19,7 +19,7 @@ import {
   getProjectInvoiceProductsById,
   updateProjectInvoiceProductsById,
 } from '../../../../../services/ProjectInvoiceService';
-import { Formik, FormikProps, useFormikContext } from 'formik';
+import { Formik, useFormikContext } from 'formik';
 import * as yup from 'yup';
 import styles from './InvoicingDetail.module.css';
 
@@ -27,18 +27,19 @@ interface IInvoicingDetail {
   isOpen: boolean;
   item: IProjectInvoiceDetail;
   onClose: () => void;
+  updateStatus: (invoiceDetail: any[], InvoiceId: string) => void;
   projectId: string;
 }
 
 const InvoicingDetail = (props: IInvoicingDetail) => {
-  const { isOpen, item, onClose, projectId } = props;
+  const { isOpen, item, onClose, projectId, updateStatus } = props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
   const [tableData, setTableData] = useState<any[]>([]);
-  const [modified, setModified] = useState<any[]>([]);
   const [disableSubmit, setDisableSubmit] = useState<boolean>(false);
   const tableHeader: TTableHeader[] = [
     { name: 'description', value: appStrings.description },
     { name: 'quantity', value: appStrings.quantity },
+    { name: 'activity', value: appStrings.activity },
     { name: 'delivered', value: appStrings.delivered },
     { name: 'incoming', value: 'Incoming' },
   ];
@@ -47,8 +48,8 @@ const InvoicingDetail = (props: IInvoicingDetail) => {
     setFieldValue: Function,
     errors: any,
     touched: any,
-  ) => {
-    return tableData.map((e: any) => {
+  ) =>
+    tableData.map((e: any) => {
       const max = e.quantity - e.delivered;
       return {
         ...e,
@@ -60,15 +61,11 @@ const InvoicingDetail = (props: IInvoicingDetail) => {
             isDisabled={max === 0}
             errors={errors}
             touched={touched}
-            // handleOnChange={(newValue: number) =>
-            //   handleDeliveredNumber(e.id, newValue)
-            // }
             handleOnChange={(newValue: number) => setFieldValue(e.id, newValue)}
           />
         ),
       };
     });
-  };
 
   const initialValues = tableData.reduce((a, b) => {
     return { ...a, [b.id]: 0 };
@@ -109,8 +106,9 @@ const InvoicingDetail = (props: IInvoicingDetail) => {
     tableData.forEach((e: any) => {
       data[e.id] = e.delivered + data[e.id];
     });
-    const successCallback = (data: any) => {
+    const successCallback = (data: any[]) => {
       onClose();
+      updateStatus(data, item.id);
     };
     const serviceCallParameters = {
       projectId,
@@ -127,20 +125,25 @@ const InvoicingDetail = (props: IInvoicingDetail) => {
   }, [isOpen]);
 
   const FormObserver: React.FC = () => {
-    const { values, isValid, setFieldValue } = useFormikContext();
+    const { isValid, setFieldValue, isSubmitting, dirty } = useFormikContext();
     useEffect(() => {
       setDisableSubmit(!isValid);
     }, [isValid]);
+
     useEffect(() => {
-      tableData.forEach(e => {
-        setFieldValue(e.id, 0);
-      });
+      if (!dirty) {
+        tableData.forEach(e => {
+          setFieldValue(e.id, 0);
+        });
+      }
     }, []);
+
+    useEffect(() => {
+      setDisableSubmit(isSubmitting);
+    }, [isSubmitting]);
 
     return null;
   };
-
-  console.log(modified);
 
   return (
     <>
@@ -173,10 +176,15 @@ const InvoicingDetail = (props: IInvoicingDetail) => {
           </ModalBody>
           <ModalFooter>
             <div className={styles.optionContainer}>
-              <Button type="submit" form={'test-id'} disabled={disableSubmit}>
-                {appStrings.submit}
+              {!item.completed && (
+                <Button type="submit" form={'test-id'} disabled={disableSubmit}>
+                  {appStrings.submit}
+                </Button>
+              )}
+
+              <Button onClick={onClose}>
+                {!item.completed ? appStrings.cancel : appStrings.close}
               </Button>
-              <Button onClick={onClose}>{appStrings.cancel}</Button>
             </div>
           </ModalFooter>
         </ModalContent>

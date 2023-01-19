@@ -1,8 +1,8 @@
 export interface IProjectInvoiceDetail {
   id: string;
   order: number;
+  completed: boolean;
   date: Date;
   cost: number;
-  // subtotal: number;
-  activity: string;
+  invoice: string;
 }

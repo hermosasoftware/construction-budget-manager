@@ -14,7 +14,6 @@ import { IProjectInvoiceDetail } from '../types/projectInvoiceDetail';
 import { IService } from '../types/service';
 import { toastSuccess, toastError } from '../utils/toast';
 import { get, omit } from 'lodash';
-// import { get, omit } from '../utils/objects';
 
 export const getProjectInvoicing = async ({
   projectId,
@@ -73,7 +72,6 @@ export const getProjectInvoiceDetailById = async ({
       ...result.data(),
       id: result.id,
       date: result.data()?.date.toDate(),
-      // subtotal: result.data()?.cost * result.data()?.quantity,
     } as IProjectInvoiceDetail;
 
     successCallback && successCallback(data);
@@ -142,16 +140,26 @@ export const updateProjectInvoiceProductsById = async ({
       projectInvoiceId,
       'products',
     );
+    const allUpdatedInvoicesRef: any[] = [];
     Object.keys(deliveredMaterial).forEach((productId: any) => {
       const quantity = deliveredMaterial[productId];
-      if (quantity > 0)
-        batch.update(doc(destCollection, productId), { delivered: quantity });
+      const ref = doc(destCollection, productId);
+      allUpdatedInvoicesRef.push(ref);
+      batch.update(ref, { delivered: quantity });
     });
     await batch.commit();
 
+    const allUpdatedInvoices: any = allUpdatedInvoicesRef.map(
+      async e => await getDoc(e),
+    );
+    let data: IProjectInvoiceDetail[] = [];
+    await Promise.all(allUpdatedInvoices).then(response => {
+      data = response.map(e => e.data());
+    });
+
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
-    successCallback && successCallback();
+    successCallback && successCallback(data);
   } catch (error) {
     let errorMessage = appStrings.genericError;
     if (error instanceof FirebaseError) errorMessage = error.message;
