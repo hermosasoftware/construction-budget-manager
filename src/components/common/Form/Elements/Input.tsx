@@ -18,6 +18,7 @@ export interface IInput extends IFormControl, IFormElementProps {
   isDisabled?: boolean;
   type?: React.HTMLInputTypeAttribute;
   viewPassword?: boolean;
+  showTooltip?: boolean;
 }
 
 const Input: React.FC<IInput> = props => {
@@ -39,6 +40,7 @@ const Input: React.FC<IInput> = props => {
     onKeyDown,
     sx,
     onFocus,
+    showTooltip,
   } = props;
 
   const {
@@ -100,6 +102,7 @@ const Input: React.FC<IInput> = props => {
       innerId={uuid}
       errorMessage={error || errors[name]}
       {...formControlProps}
+      showTooltip={showTooltip}
     >
       <InputGroup>
         {icon && <InputLeftElement children={icon}></InputLeftElement>}

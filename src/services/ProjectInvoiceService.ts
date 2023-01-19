@@ -6,12 +6,15 @@ import {
   setDoc,
   getDoc,
   deleteDoc,
+  writeBatch,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
 import { IProjectInvoiceDetail } from '../types/projectInvoiceDetail';
 import { IService } from '../types/service';
 import { toastSuccess, toastError } from '../utils/toast';
+import { get, omit } from 'lodash';
+// import { get, omit } from '../utils/objects';
 
 export const getProjectInvoicing = async ({
   projectId,
@@ -32,8 +35,8 @@ export const getProjectInvoicing = async ({
       ...doc.data(),
       id: doc.id,
       date: doc.data()?.date.toDate(),
-      subtotal: doc.data().cost * doc.data().quantity,
-      difference: doc.data().quantity - doc.data().delivered,
+      // subtotal: doc.data().cost * doc.data().quantity,
+      // difference: doc.data().quantity - doc.data().delivered,
     })) as IProjectInvoiceDetail[];
 
     successCallback && successCallback(data);
@@ -70,7 +73,7 @@ export const getProjectInvoiceDetailById = async ({
       ...result.data(),
       id: result.id,
       date: result.data()?.date.toDate(),
-      subtotal: result.data()?.cost * result.data()?.quantity,
+      // subtotal: result.data()?.cost * result.data()?.quantity,
     } as IProjectInvoiceDetail;
 
     successCallback && successCallback(data);
@@ -84,7 +87,82 @@ export const getProjectInvoiceDetailById = async ({
   }
 };
 
-export const createProjectInvoiceDetail = async ({
+export const getProjectInvoiceProductsById = async ({
+  projectId,
+  projectInvoiceId,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: { projectId: string; projectInvoiceId: string } & IService) => {
+  try {
+    const invRef = collection(
+      db,
+      'projects',
+      projectId,
+      'projectInvoicing',
+      projectInvoiceId,
+      'products',
+    );
+    const result = await getDocs(invRef);
+    const data = result.docs.map(doc => ({
+      ...doc.data(),
+      id: doc.id,
+    }));
+
+    successCallback && successCallback(data);
+  } catch (error) {
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.saveError, errorMessage);
+
+    errorCallback && errorCallback();
+  }
+};
+
+export const updateProjectInvoiceProductsById = async ({
+  projectId,
+  projectInvoiceId,
+  deliveredMaterial,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: {
+  projectId: string;
+  projectInvoiceId: string;
+  deliveredMaterial: any;
+} & IService) => {
+  try {
+    let batch = writeBatch(db); // write batch only allows maximum 500 writes per batch
+    const destCollection = collection(
+      db,
+      'projects',
+      projectId,
+      'projectInvoicing',
+      projectInvoiceId,
+      'products',
+    );
+    Object.keys(deliveredMaterial).forEach((productId: any) => {
+      const quantity = deliveredMaterial[productId];
+      if (quantity > 0)
+        batch.update(doc(destCollection, productId), { delivered: quantity });
+    });
+    await batch.commit();
+
+    toastSuccess(appStrings.success, appStrings.saveSuccess);
+
+    successCallback && successCallback();
+  } catch (error) {
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.saveError, errorMessage);
+
+    errorCallback && errorCallback();
+  }
+};
+
+export const createProjectInvoice = async ({
   projectId,
   projectInvoiceDetail,
   appStrings,
@@ -95,9 +173,26 @@ export const createProjectInvoiceDetail = async ({
   projectInvoiceDetail: IProjectInvoiceDetail;
 } & IService) => {
   try {
-    const { id, subtotal, difference, ...rest } = projectInvoiceDetail;
+    const { id, ...rest } = projectInvoiceDetail;
+    const products = get(rest, 'products', []);
+    let toSave = omit(rest, ['option', 'products']);
     const invRef = collection(db, 'projects', projectId, 'projectInvoicing');
-    const result = await addDoc(invRef, rest);
+    const result = await addDoc(invRef, toSave);
+
+    let batch = writeBatch(db); // write batch only allows maximum 500 writes per batch
+    const destCollection = collection(
+      db,
+      'projects',
+      projectId,
+      'projectInvoicing',
+      result.id,
+      'products',
+    );
+    products.forEach((product: any) => {
+      const { id, ...p } = product;
+      batch.set(doc(destCollection, id), { ...p, delivered: 0 });
+    });
+    await batch.commit();
     const data = {
       ...projectInvoiceDetail,
       id: result.id,
@@ -116,7 +211,7 @@ export const createProjectInvoiceDetail = async ({
   }
 };
 
-export const updateProjectInvoiceDetail = async ({
+export const updateProjectInvoice = async ({
   projectId,
   projectInvoiceDetail,
   appStrings,
@@ -127,7 +222,7 @@ export const updateProjectInvoiceDetail = async ({
   projectInvoiceDetail: IProjectInvoiceDetail;
 } & IService) => {
   try {
-    const { id, subtotal, difference, ...rest } = projectInvoiceDetail;
+    const { id, ...rest } = projectInvoiceDetail;
     const invRef = doc(db, 'projects', projectId, 'projectInvoicing', id);
     await setDoc(invRef, rest);
 
@@ -144,7 +239,7 @@ export const updateProjectInvoiceDetail = async ({
   }
 };
 
-export const deleteProjectInvoiceDetail = async ({
+export const deleteProjectInvoice = async ({
   projectId,
   projectInvoiceDetailId,
   appStrings,

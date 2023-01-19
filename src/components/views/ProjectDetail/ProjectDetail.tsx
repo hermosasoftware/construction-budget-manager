@@ -78,7 +78,8 @@ export default function Projects() {
             {
               id: 'invoicing',
               name: appStrings.invoicing,
-              isDisable: project?.budgetOpen,
+              // isDisable: project?.budgetOpen,
+              isDisable: false, //<----------- eliminar
             },
 
             {

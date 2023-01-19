@@ -26,6 +26,12 @@ export type TTableHeader<T = TObject> = {
   isEditable?: boolean;
 };
 
+interface ICustomOption {
+  name: string;
+  action: Function;
+  icon: any;
+}
+
 export type TTableItem<T = TObject> = T & { id: string | number };
 
 interface ITableProps<T> {
@@ -42,6 +48,7 @@ interface ITableProps<T> {
   onClickDelete?: (id: string) => void;
   rowChild?: React.ReactElement;
   hideOptions?: boolean;
+  customOptions?: ICustomOption[];
 }
 
 const TableView = <T extends TObject>(props: ITableProps<T>) => {
@@ -54,6 +61,7 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
     handleRowClick,
     rowChild,
     hideOptions,
+    customOptions,
   } = props;
   const [rowChildVisible, seTrowChildVisible] = useState<boolean>(false);
   const [selectedRow, setSelectedRow] = useState<string | number>('');
@@ -137,6 +145,34 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
                     </Menu>
                   </Td>
                 ) : null}
+                {customOptions && (
+                  <Td
+                    id={row.id?.toString()}
+                    className={`${styles.td}`}
+                    textAlign="center"
+                    width="90px"
+                  >
+                    <Menu>
+                      <MenuButton>
+                        <Center>
+                          <DotsThreeOutlineVertical
+                            className={styles.cursor_pointer}
+                            weight="fill"
+                          />
+                        </Center>
+                      </MenuButton>
+                      <MenuList>
+                        {customOptions.map(c => (
+                          <MenuItem onClick={() => c.action(row.id.toString())}>
+                            {c.name}
+                            <Spacer></Spacer>
+                            {c.icon}
+                          </MenuItem>
+                        ))}
+                      </MenuList>
+                    </Menu>
+                  </Td>
+                )}
               </Tr>
               {rowChildVisible && rowChild && row.id === selectedRow && (
                 <Tr>

@@ -4,8 +4,9 @@ import {
   FormHelperText,
   FormErrorMessage,
   FormLabel,
+  Tooltip,
 } from '@chakra-ui/react';
-import { Circle } from 'phosphor-react';
+import { Circle, WarningCircle } from 'phosphor-react';
 import { IStyledComponent } from '../../../../../types/global';
 
 import styles from './FormControl.module.css';
@@ -21,6 +22,7 @@ export interface IFormControl {
   isRequired?: boolean;
   helperText?: string;
   errorMessage?: string;
+  showTooltip?: boolean;
 }
 
 const FormControl: React.FC<IFormControl> = props => {
@@ -36,10 +38,17 @@ const FormControl: React.FC<IFormControl> = props => {
     helperText,
     errorMessage,
     children,
+    showTooltip,
   } = props;
 
   const helperMessage = errorMessage ? (
-    <FormErrorMessage>{errorMessage}</FormErrorMessage>
+    showTooltip ? (
+      <Tooltip label={errorMessage} fontSize="md">
+        <WarningCircle />
+      </Tooltip>
+    ) : (
+      <FormErrorMessage>{errorMessage}</FormErrorMessage>
+    )
   ) : (
     helperText && <FormHelperText>{helperText}</FormHelperText>
   );
