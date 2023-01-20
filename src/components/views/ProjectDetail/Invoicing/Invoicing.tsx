@@ -178,7 +178,6 @@ const Invoicing: React.FC<IInvoicing> = props => {
           return e.id === invoiceId ? { ...e, completed: isComplete } : e;
         }),
       );
-      debugger;
     };
     const projectInvoice = tableData.find((e: IInvoice) => e.id === invoiceId)!;
     const serviceCallParameters = {
@@ -193,6 +192,25 @@ const Invoicing: React.FC<IInvoicing> = props => {
 
     await updateProjectInvoice(serviceCallParameters);
   };
+
+  const customOptions = [
+    {
+      action: (id: string) => {
+        setSelectedItem(tableData.find(e => e.id === id)!);
+        setIsInvoiceModalOpen(true);
+      },
+      name: 'View',
+      icon: <Pencil />,
+    },
+    {
+      action: (id: string) => {
+        setSelectedItem({ ...selectedItem, id: id });
+        setIsAlertDialogOpen(true);
+      },
+      name: 'Delete',
+      icon: <Trash />,
+    },
+  ];
 
   const validationSchema = yup.object().shape({
     option: yup.object().shape({
@@ -283,24 +301,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
         filter={value =>
           searchTerm === '' || value.invoice.toUpperCase().includes(searchTerm)
         }
-        customOptions={[
-          {
-            action: (id: string) => {
-              setSelectedItem(tableData.find(e => e.id === id)!);
-              setIsInvoiceModalOpen(true);
-            },
-            name: 'View',
-            icon: <Pencil></Pencil>,
-          },
-          {
-            action: (id: string) => {
-              setSelectedItem({ ...selectedItem, id: id });
-              setIsAlertDialogOpen(true);
-            },
-            name: 'Delete',
-            icon: <Trash></Trash>,
-          },
-        ]}
+        customOptions={customOptions}
       />
       {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
     </div>

@@ -67,9 +67,7 @@ const InvoicingDetail = (props: IInvoicingDetail) => {
       };
     });
 
-  const initialValues = tableData.reduce((a, b) => {
-    return { ...a, [b.id]: 0 };
-  }, {});
+  const initialValues = tableData.reduce((a, b) => ({ ...a, [b.id]: 0 }), {});
 
   const validationSchema = yup.object().shape(
     tableData.reduce((a, b) => {
@@ -89,9 +87,7 @@ const InvoicingDetail = (props: IInvoicingDetail) => {
   );
 
   const fetchMaterials = () => {
-    const successCallback = (data: any[]) => {
-      setTableData(data);
-    };
+    const successCallback = (data: any[]) => setTableData(data);
     const serviceCallParameters = {
       projectId,
       projectInvoiceId: item.id,
