@@ -14,9 +14,16 @@ import {
   Thead,
   Tr,
 } from '@chakra-ui/react';
-import { DotsThreeOutlineVertical, Pencil, Plus, Trash } from 'phosphor-react';
+import {
+  DotsThreeOutlineVertical,
+  Pencil,
+  FilePdf,
+  Plus,
+  Trash,
+} from 'phosphor-react';
 import { TObject } from '../../../types/global';
 import { colonFormat, dolarFormat } from '../../../utils/numbers';
+
 import styles from './OrdersTableView.module.css';
 
 export type TTableHeader<T = TObject> = {
@@ -40,6 +47,7 @@ interface ITableProps<T> {
   handleRowClick?: (event: any) => void;
   onClickEdit?: (id: string) => void;
   onClickDelete?: (id: string) => void;
+  onClickExportPDF?: (id: string) => void;
   onClickAddProduct?: (id: string) => void;
   onClickEditProduct?: (itemId: string, productId: string) => void;
   onClickDeleteProduct?: (itemId: string, productId: string) => void;
@@ -56,6 +64,7 @@ const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
     boxStyle,
     onClickEdit,
     onClickDelete,
+    onClickExportPDF,
     handleRowClick,
     onClickAddProduct,
     onClickEditProduct,
@@ -212,7 +221,10 @@ const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
                       </Td>
                     );
                   })}
-                  {onClickEdit && onClickDelete && !hideOptions ? (
+                  {onClickEdit &&
+                  onClickDelete &&
+                  onClickExportPDF &&
+                  !hideOptions ? (
                     <Td
                       id={row.id?.toString()}
                       className={`${styles.td}`}
@@ -247,6 +259,11 @@ const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
                             onClick={() => onClickDelete(row.id.toString())}
                           >
                             Delete <Spacer /> <Trash />
+                          </MenuItem>
+                          <MenuItem
+                            onClick={() => onClickExportPDF(row.id.toString())}
+                          >
+                            Export to PDF <Spacer /> <FilePdf size={24} />
                           </MenuItem>
                         </MenuList>
                       </Menu>
