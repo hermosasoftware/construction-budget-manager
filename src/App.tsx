@@ -5,6 +5,7 @@ import Login from './components/views/Login/Login';
 import SignUp from './components/views/SignUp/SignUp';
 import Projects from './components/views/Projects/Projects';
 import ProjectDetail from './components/views/ProjectDetail/ProjectDetail';
+import OrderPreview from './components/views/ProjectDetail/Orders/OrderPreview/OrderPreview';
 import ForgotPassword from './components/views/ForgotPassword/ForgotPassword';
 import PlayGround from './components/views/PlayGround';
 import Sidebar from './components/layout/Sidebar';
@@ -41,6 +42,10 @@ function App() {
           <Route
             path="/project-detail/:id"
             element={<AuthRoute component={ProjectDetail} />}
+          />
+          <Route
+            path="/project-detail/:projectId/order-pdf-preview/:orderId"
+            element={<AuthRoute component={OrderPreview} />}
           />
           <Route path="/forgot-password" element={<ForgotPassword />} />
 

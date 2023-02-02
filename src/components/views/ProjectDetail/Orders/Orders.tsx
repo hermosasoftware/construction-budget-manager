@@ -1,6 +1,7 @@
 import { Flex, Heading } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import * as yup from 'yup';
+import { useNavigate } from 'react-router-dom';
 import Button from '../../../common/Button/Button';
 import Modal from '../../../common/Modal/Modal';
 import SearchInput from '../../../common/SearchInput/SearchInput';
@@ -21,12 +22,12 @@ import { useAppSelector } from '../../../../redux/hooks';
 import OrdersTableView, {
   TTableHeader,
 } from '../../../layout/OrdersTableView/OrdersTableView';
-
-import styles from './Orders.module.css';
 import { getExtraBudgetMaterials } from '../../../../services/ExtraBudgetMaterialsService';
 import { IMaterialBreakdown } from '../../../../types/collections';
 import { getBudgetMaterials } from '../../../../services/BudgetMaterialsService';
 import SearchSelect from '../../../common/Form/Elements/SearchSelect';
+
+import styles from './Orders.module.css';
 
 interface IOrdersView {
   projectId: string;
@@ -82,6 +83,7 @@ const Orders: React.FC<IOrdersView> = props => {
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const appStrings = useAppSelector(state => state.settings.appStrings);
+  const navigate = useNavigate();
 
   const tableHeader: TTableHeader[] = [
     { name: 'order', value: appStrings.order },
@@ -213,6 +215,12 @@ const Orders: React.FC<IOrdersView> = props => {
       appStrings,
       successCallback,
     });
+  };
+
+  const exportPDFButton = (id: string) => {
+    const order = tableData.find(e => e.id === id);
+    order &&
+      navigate(`/project-detail/${projectId}/order-pdf-preview/${order.id}`);
   };
 
   const deleteButton = async () => {
@@ -556,6 +564,7 @@ const Orders: React.FC<IOrdersView> = props => {
           setSelectedOrder({ ...selectedOrder, id });
           setIsAlertDialogOpen(true);
         }}
+        onClickExportPDF={id => exportPDFButton(id)}
         onClickAddProduct={id => addProduct(id)}
         onClickEditProduct={(orderId, productId) =>
           editProduct(orderId, productId)
