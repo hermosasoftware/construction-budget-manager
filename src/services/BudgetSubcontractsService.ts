@@ -14,17 +14,18 @@ import { toastSuccess, toastError } from '../utils/toast';
 
 export const getBudgetSubcontracts = async ({
   projectId,
+  activityId,
   appStrings,
   successCallback,
   errorCallback,
-}: { projectId: string } & IService) => {
+}: { projectId: string; activityId?: string } & IService) => {
   try {
     const subCtRef = collection(
       db,
       'projects',
       projectId,
       'projectBudget',
-      'summary',
+      activityId || 'summary',
       'budgetSubcontracts',
     );
     const result = await getDocs(subCtRef);
@@ -47,12 +48,14 @@ export const getBudgetSubcontracts = async ({
 
 export const getBudgetSubcontractById = async ({
   projectId,
+  activityId,
   budgetSubcontractId,
   appStrings,
   successCallback,
   errorCallback,
 }: {
   projectId: string;
+  activityId: string;
   budgetSubcontractId: string;
 } & IService) => {
   try {
@@ -61,7 +64,7 @@ export const getBudgetSubcontractById = async ({
       'projects',
       projectId,
       'projectBudget',
-      'summary',
+      activityId,
       'budgetSubcontracts',
       budgetSubcontractId,
     );
@@ -85,35 +88,37 @@ export const getBudgetSubcontractById = async ({
 
 export const createBudgetSubcontract = async ({
   projectId,
+  activityId,
   budgetSubcontract,
   appStrings,
   successCallback,
   errorCallback,
 }: {
   projectId: string;
+  activityId: string;
   budgetSubcontract: IBudgetSubcontract;
 } & IService) => {
   try {
     const data = await runTransaction(db, async transaction => {
       const { id, subtotal, ...rest } = budgetSubcontract;
+      const budgetRef = collection(db, 'projects', projectId, 'projectBudget');
       const subCtRef = doc(
-        collection(
-          db,
-          'projects',
-          projectId,
-          'projectBudget',
-          'summary',
-          'budgetSubcontracts',
-        ),
+        collection(budgetRef, activityId, 'budgetSubcontracts'),
       );
-      const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
-      const sumDoc = await transaction.get(sumRef);
+      const summaryRef = doc(budgetRef, 'summary');
+      const activityRef = doc(budgetRef, activityId);
+      const summaryDoc = await transaction.get(summaryRef);
+      const activityDoc = await transaction.get(activityRef);
 
-      if (!sumDoc.exists()) throw Error(appStrings.noRecords);
+      if (!summaryDoc.exists() || !activityDoc.exists()) {
+        throw Error(appStrings.noRecords);
+      }
 
-      const total = sumDoc.data().sumSubcontracts + subtotal;
+      const summaryTotal = summaryDoc.data().sumSubcontracts + subtotal;
+      const activityTotal = activityDoc.data().sumSubcontracts + subtotal;
 
-      transaction.update(sumRef, { sumSubcontracts: total });
+      transaction.update(summaryRef, { sumSubcontracts: summaryTotal });
+      transaction.update(activityRef, { sumSubcontracts: activityTotal });
       transaction.set(subCtRef, rest);
 
       return {
@@ -137,38 +142,37 @@ export const createBudgetSubcontract = async ({
 
 export const updateBudgetSubcontract = async ({
   projectId,
+  activityId,
   budgetSubcontract,
   appStrings,
   successCallback,
   errorCallback,
 }: {
   projectId: string;
+  activityId: string;
   budgetSubcontract: IBudgetSubcontract;
 } & IService) => {
   try {
     await runTransaction(db, async transaction => {
       const { id, subtotal, ...rest } = budgetSubcontract;
-      const subCtRef = doc(
-        db,
-        'projects',
-        projectId,
-        'projectBudget',
-        'summary',
-        'budgetSubcontracts',
-        id,
-      );
-      const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
+      const budgetRef = collection(db, 'projects', projectId, 'projectBudget');
+      const subCtRef = doc(budgetRef, activityId, 'budgetSubcontracts', id);
+      const summaryRef = doc(budgetRef, 'summary');
+      const activityRef = doc(budgetRef, activityId);
       const subCtDoc = await transaction.get(subCtRef);
-      const sumDoc = await transaction.get(sumRef);
+      const summaryDoc = await transaction.get(summaryRef);
+      const activityDoc = await transaction.get(activityRef);
 
-      if (!subCtDoc.exists() || !sumDoc.exists()) {
+      if (!subCtDoc.exists() || !summaryDoc.exists() || !activityDoc.exists()) {
         throw Error(appStrings.noRecords);
       }
 
       const newSum = subtotal - subCtDoc.data().cost * subCtDoc.data().quantity;
-      const total = sumDoc.data().sumSubcontracts + newSum;
+      const summaryTotal = summaryDoc.data().sumSubcontracts + newSum;
+      const activityTotal = activityDoc.data().sumSubcontracts + newSum;
 
-      transaction.update(sumRef, { sumSubcontracts: total });
+      transaction.update(summaryRef, { sumSubcontracts: summaryTotal });
+      transaction.update(activityRef, { sumSubcontracts: activityTotal });
       transaction.set(subCtRef, rest);
     });
 
@@ -187,37 +191,41 @@ export const updateBudgetSubcontract = async ({
 
 export const deleteBudgetSubcontract = async ({
   projectId,
+  activityId,
   budgetSubcontractId,
   appStrings,
   successCallback,
   errorCallback,
 }: {
   projectId: string;
+  activityId: string;
   budgetSubcontractId: string;
 } & IService) => {
   try {
+    const budgetRef = collection(db, 'projects', projectId, 'projectBudget');
     const subCtRef = doc(
-      db,
-      'projects',
-      projectId,
-      'projectBudget',
-      'summary',
+      budgetRef,
+      activityId,
       'budgetSubcontracts',
       budgetSubcontractId,
     );
-    const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
+    const summaryRef = doc(budgetRef, 'summary');
+    const activityRef = doc(budgetRef, activityId);
     const subCtDoc = await getDoc(subCtRef);
-    const sumDoc = await getDoc(sumRef);
+    const summaryDoc = await getDoc(summaryRef);
+    const activityDoc = await getDoc(activityRef);
 
-    if (!subCtDoc.exists() || !sumDoc.exists()) {
+    if (!subCtDoc.exists() || !summaryDoc.exists() || !activityDoc.exists()) {
       throw Error(appStrings.noRecords);
     }
 
     const batch = writeBatch(db);
     const newSum = subCtDoc.data().cost * subCtDoc.data().quantity;
-    const total = sumDoc.data().sumSubcontracts - newSum;
+    const summaryTotal = summaryDoc.data().sumSubcontracts - newSum;
+    const activityTotal = activityDoc.data().sumSubcontracts - newSum;
 
-    batch.update(sumRef, { sumSubcontracts: total });
+    batch.update(summaryRef, { sumSubcontracts: summaryTotal });
+    batch.update(activityRef, { sumSubcontracts: activityTotal });
     batch.delete(subCtRef);
 
     await batch.commit();

@@ -18,17 +18,18 @@ import { ISubMaterial } from '../types/collections';
 
 export const getBudgetMaterials = async ({
   projectId,
+  activityId,
   appStrings,
   successCallback,
   errorCallback,
-}: { projectId: string } & IService) => {
+}: { projectId: string; activityId?: string } & IService) => {
   try {
     const matRef = collection(
       db,
       'projects',
       projectId,
       'projectBudget',
-      'summary',
+      activityId || 'summary',
       'budgetMaterials',
     );
     const result = await getDocs(matRef);
@@ -46,7 +47,7 @@ export const getBudgetMaterials = async ({
           'projects',
           projectId,
           'projectBudget',
-          'summary',
+          activityId || 'summary',
           'budgetMaterials',
           elem.id,
           'subMaterials',
@@ -76,12 +77,14 @@ export const getBudgetMaterials = async ({
 
 export const getBudgetMaterialById = async ({
   projectId,
+  activityId,
   budgetMaterialId,
   appStrings,
   successCallback,
   errorCallback,
 }: {
   projectId: string;
+  activityId: string;
   budgetMaterialId: string;
 } & IService) => {
   try {
@@ -90,7 +93,7 @@ export const getBudgetMaterialById = async ({
       'projects',
       projectId,
       'projectBudget',
-      'summary',
+      activityId,
       'budgetMaterials',
       budgetMaterialId,
     );
@@ -114,35 +117,35 @@ export const getBudgetMaterialById = async ({
 
 export const createBudgetMaterial = async ({
   projectId,
+  activityId,
   budgetMaterial,
   appStrings,
   successCallback,
   errorCallback,
 }: {
   projectId: string;
+  activityId: string;
   budgetMaterial: IBudgetMaterial;
 } & IService) => {
   try {
     const data = await runTransaction(db, async transaction => {
       const { id, subtotal, ...rest } = budgetMaterial;
-      const matRef = doc(
-        collection(
-          db,
-          'projects',
-          projectId,
-          'projectBudget',
-          'summary',
-          'budgetMaterials',
-        ),
-      );
-      const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
-      const sumDoc = await transaction.get(sumRef);
+      const budgetRef = collection(db, 'projects', projectId, 'projectBudget');
+      const matRef = doc(collection(budgetRef, activityId, 'budgetMaterials'));
+      const summaryRef = doc(budgetRef, 'summary');
+      const activityRef = doc(budgetRef, activityId);
+      const summaryDoc = await transaction.get(summaryRef);
+      const activityDoc = await transaction.get(activityRef);
 
-      if (!sumDoc.exists()) throw Error(appStrings.noRecords);
+      if (!summaryDoc.exists() || !activityDoc.exists()) {
+        throw Error(appStrings.noRecords);
+      }
 
-      const total = sumDoc.data().sumMaterials + subtotal;
+      const summaryTotal = summaryDoc.data().sumMaterials + subtotal;
+      const activityTotal = activityDoc.data().sumMaterials + subtotal;
 
-      transaction.update(sumRef, { sumMaterials: total });
+      transaction.update(summaryRef, { sumMaterials: summaryTotal });
+      transaction.update(activityRef, { sumMaterials: activityTotal });
       transaction.set(matRef, rest);
 
       return {
@@ -166,38 +169,37 @@ export const createBudgetMaterial = async ({
 
 export const updateBudgetMaterial = async ({
   projectId,
+  activityId,
   budgetMaterial,
   appStrings,
   successCallback,
   errorCallback,
 }: {
   projectId: string;
+  activityId: string;
   budgetMaterial: IBudgetMaterial;
 } & IService) => {
   try {
     await runTransaction(db, async transaction => {
       const { id, subtotal, ...rest } = budgetMaterial;
-      const matRef = doc(
-        db,
-        'projects',
-        projectId,
-        'projectBudget',
-        'summary',
-        'budgetMaterials',
-        id,
-      );
-      const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
+      const budgetRef = collection(db, 'projects', projectId, 'projectBudget');
+      const matRef = doc(budgetRef, activityId, 'budgetMaterials', id);
+      const summaryRef = doc(budgetRef, 'summary');
+      const activityRef = doc(budgetRef, activityId);
       const matDoc = await transaction.get(matRef);
-      const sumDoc = await transaction.get(sumRef);
+      const summaryDoc = await transaction.get(summaryRef);
+      const activityDoc = await transaction.get(activityRef);
 
-      if (!matDoc.exists() || !sumDoc.exists()) {
+      if (!matDoc.exists() || !summaryDoc.exists() || !activityDoc.exists()) {
         throw Error(appStrings.noRecords);
       }
 
       const newSum = subtotal - matDoc.data().cost * matDoc.data().quantity;
-      const total = sumDoc.data().sumMaterials + newSum;
+      const summaryTotal = summaryDoc.data().sumMaterials + newSum;
+      const activityTotal = activityDoc.data().sumMaterials + newSum;
 
-      transaction.update(sumRef, { sumMaterials: total });
+      transaction.update(summaryRef, { sumMaterials: summaryTotal });
+      transaction.update(activityRef, { sumMaterials: activityTotal });
       transaction.set(matRef, rest);
     });
 
@@ -216,31 +218,35 @@ export const updateBudgetMaterial = async ({
 
 export const deleteBudgetMaterial = async ({
   projectId,
+  activityId,
   budgetMaterialId,
   appStrings,
   successCallback,
   errorCallback,
 }: {
   projectId: string;
+  activityId: string;
   budgetMaterialId: string;
 } & IService) => {
   try {
+    const budgetRef = collection(db, 'projects', projectId, 'projectBudget');
     const matRef = doc(
-      db,
-      'projects',
-      projectId,
-      'projectBudget',
-      'summary',
+      budgetRef,
+      activityId,
       'budgetMaterials',
       budgetMaterialId,
     );
     const subMatRef = collection(matRef, 'subMaterials');
-    const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
-    const sumDoc = await getDoc(sumRef);
+    const summaryRef = doc(budgetRef, 'summary');
+    const activityRef = doc(budgetRef, activityId);
     const matDoc = await getDoc(matRef);
     const subMatDocs = await getDocs(subMatRef);
+    const summaryDoc = await getDoc(summaryRef);
+    const activityDoc = await getDoc(activityRef);
 
-    if (!matDoc.exists() || !sumDoc.exists()) throw Error(appStrings.noRecords);
+    if (!matDoc.exists() || !summaryDoc.exists() || !activityDoc.exists()) {
+      throw Error(appStrings.noRecords);
+    }
 
     const batch = writeBatch(db);
     for (const subMaterial of subMatDocs.docs) {
@@ -248,8 +254,11 @@ export const deleteBudgetMaterial = async ({
     }
 
     const newSum = matDoc.data().cost * matDoc.data().quantity;
-    const total = sumDoc.data().sumMaterials - newSum;
-    batch.update(sumRef, { sumMaterials: total });
+    const summaryTotal = summaryDoc.data().sumMaterials - newSum;
+    const activityTotal = activityDoc.data().sumMaterials - newSum;
+
+    batch.update(summaryRef, { sumMaterials: summaryTotal });
+    batch.update(activityRef, { sumMaterials: activityTotal });
     batch.delete(matRef);
 
     await batch.commit();
@@ -269,6 +278,7 @@ export const deleteBudgetMaterial = async ({
 
 export const createBudgetSubMaterial = async ({
   projectId,
+  activityId,
   materialId,
   budgetSubMaterial,
   appStrings,
@@ -276,6 +286,7 @@ export const createBudgetSubMaterial = async ({
   errorCallback,
 }: {
   projectId: string;
+  activityId: string;
   materialId: string;
   budgetSubMaterial: ISubMaterial;
 } & IService) => {
@@ -286,7 +297,7 @@ export const createBudgetSubMaterial = async ({
       'projects',
       projectId,
       'projectBudget',
-      'summary',
+      activityId,
       'budgetMaterials',
       materialId,
       'subMaterials',
@@ -308,15 +319,17 @@ export const createBudgetSubMaterial = async ({
 };
 
 export const updateBudgetSubMaterial = async ({
-  materialId,
   projectId,
+  activityId,
+  materialId,
   budgetSubMaterial,
   appStrings,
   successCallback,
   errorCallback,
 }: {
-  materialId: string;
   projectId: string;
+  activityId: string;
+  materialId: string;
   budgetSubMaterial: ISubMaterial;
 } & IService) => {
   try {
@@ -326,7 +339,7 @@ export const updateBudgetSubMaterial = async ({
       'projects',
       projectId,
       'projectBudget',
-      'summary',
+      activityId,
       'budgetMaterials',
       materialId,
       'subMaterials',
@@ -342,6 +355,7 @@ export const updateBudgetSubMaterial = async ({
 
 export const deleteBudgetSubMaterial = async ({
   projectId,
+  activityId,
   budgetMaterialId,
   budgetSubMaterialId,
   appStrings,
@@ -349,29 +363,32 @@ export const deleteBudgetSubMaterial = async ({
   errorCallback,
 }: {
   projectId: string;
+  activityId: string;
   budgetMaterialId: string;
   budgetSubMaterialId: string;
 } & IService) => {
   try {
+    const budgetRef = collection(db, 'projects', projectId, 'projectBudget');
     const matRef = doc(
-      db,
-      'projects',
-      projectId,
-      'projectBudget',
-      'summary',
+      budgetRef,
+      activityId,
       'budgetMaterials',
       budgetMaterialId,
     );
-    const subMatRef = doc(
-      collection(matRef, 'subMaterials'),
-      budgetSubMaterialId,
-    );
-    const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
-    const sumDoc = await getDoc(sumRef);
+    const subMatRef = doc(matRef, 'subMaterials', budgetSubMaterialId);
+    const summaryRef = doc(budgetRef, 'summary');
+    const activityRef = doc(budgetRef, activityId);
     const matDoc = await getDoc(matRef);
     const subMatDoc = await getDoc(subMatRef);
+    const summaryDoc = await getDoc(summaryRef);
+    const activityDoc = await getDoc(activityRef);
 
-    if (!matDoc.exists() || !sumDoc.exists() || !subMatDoc.exists()) {
+    if (
+      !matDoc.exists() ||
+      !subMatDoc.exists() ||
+      !summaryDoc.exists() ||
+      !activityDoc.exists()
+    ) {
       throw Error(appStrings.noRecords);
     }
 
@@ -380,10 +397,12 @@ export const deleteBudgetSubMaterial = async ({
     const totalSubMat = subMatDoc.data().cost * subMatDoc.data().quantity;
     const totalMatCost = matDoc.data().cost - totalSubMat;
     const totalMatSum = totalMatCost * matDoc.data().quantity;
-    const totalSum = sumDoc.data().sumMaterials - totalMatSum;
+    const summaryTotal = summaryDoc.data().sumMaterials - totalMatSum;
+    const activityTotal = activityDoc.data().sumMaterials - totalMatSum;
 
     batch.update(matRef, { cost: totalMatCost });
-    batch.update(sumRef, { sumMaterials: totalSum });
+    batch.update(summaryRef, { sumMaterials: summaryTotal });
+    batch.update(activityRef, { sumMaterials: activityTotal });
     batch.delete(subMatRef);
 
     await batch.commit();

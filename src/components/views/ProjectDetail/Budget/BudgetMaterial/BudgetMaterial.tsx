@@ -19,6 +19,7 @@ import {
 } from '../../../../../services/BudgetMaterialsService';
 import { IBudgetMaterial } from '../../../../../types/budgetMaterial';
 import { IProjectBudget } from '../../../../../types/projectBudget';
+import { IBudgetActivity } from '../../../../../types/budgetActivity';
 import Form, { Input, Switch } from '../../../../common/Form';
 import { useAppSelector } from '../../../../../redux/hooks';
 import SearchSelect from '../../../../common/Form/Elements/SearchSelect';
@@ -35,6 +36,8 @@ interface IBudgetMaterialView {
   isBudgetOpen: boolean;
   getBudget: Function;
   budget: IProjectBudget;
+  getActivity: Function;
+  activity: IBudgetActivity;
 }
 
 interface IItem extends Omit<IBudgetMaterial, 'name'> {
@@ -59,6 +62,8 @@ const initialSelectedSubMaterialData = {
 };
 
 const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
+  const { projectId, isBudgetOpen, getBudget, budget, getActivity, activity } =
+    props;
   const [tableData, setTableData] = useState<IMaterialBreakdown[]>([]);
   const [selectedItem, setSelectedItem] = useState<IItem>(
     initialSelectedItemData,
@@ -72,7 +77,6 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubMaterialModalOpen, setIsSubMaterialModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const { projectId, isBudgetOpen, getBudget, budget } = props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
   const materials = useAppSelector(state => state.materials.materials);
 
@@ -114,6 +118,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
       setTableData(response);
     await getBudgetMaterials({
       projectId,
+      activityId: activity.id,
       appStrings,
       successCallback,
     });
@@ -146,6 +151,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
     };
     await getBudgetMaterialById({
       projectId,
+      activityId: activity.id,
       budgetMaterialId,
       appStrings,
       successCallback,
@@ -158,9 +164,11 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
       setSelectedItem(initialSelectedItemData);
       setIsAlertDialogOpen(false);
       getBudget();
+      getActivity(activity.id);
     };
     await deleteBudgetMaterial({
       projectId,
+      activityId: activity.id,
       budgetMaterialId: selectedItem.id,
       appStrings,
       successCallback,
@@ -187,6 +195,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
     };
     await deleteBudgetSubMaterial({
       projectId,
+      activityId: activity.id,
       budgetMaterialId: selectedMaterial,
       budgetSubMaterialId: selectedSubMaterial.id,
       appStrings,
@@ -239,6 +248,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
     const serviceCallParameters = {
       materialId: selectedMaterial,
       projectId,
+      activityId: activity.id,
       budgetSubMaterial: data,
       appStrings,
       successCallback: !data.id ? successAddCallback : successUpdateCallback,
@@ -302,9 +312,11 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
       };
       budgetMaterial.id ? updateItem(MatBreakdown) : addItem(MatBreakdown);
       getBudget();
+      getActivity(activity.id);
     };
     const serviceCallParameters = {
       projectId,
+      activityId: activity.id,
       budgetMaterial,
       appStrings,
       successCallback,
@@ -395,12 +407,15 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
           </Modal>
           <Modal
             isOpen={isSubMaterialModalOpen}
-            onClose={() => setIsSubMaterialModalOpen(false)}
+            onClose={() => {
+              setSelectedSubMaterial(initialSelectedSubMaterialData);
+              setIsSubMaterialModalOpen(false);
+            }}
           >
             <Heading as="h2" size="lg">
-              {selectedMaterial
+              {selectedSubMaterial.id
                 ? appStrings.editSubmaterial
-                : appStrings.createSubmaterial}
+                : appStrings.addSubmaterial}
             </Heading>
             <Form
               id="submaterial-form"
