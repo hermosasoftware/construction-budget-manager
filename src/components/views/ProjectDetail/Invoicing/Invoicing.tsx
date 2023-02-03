@@ -256,7 +256,6 @@ const Invoicing: React.FC<IInvoicing> = props => {
       appStrings,
       successCallback: !product.id ? successAddCallback : successUpdateCallback,
     };
-    debugger;
     !product.id
       ? await addInvoiceProduct(serviceCallParameters)
       : await updateInvoiceProduct(serviceCallParameters);
