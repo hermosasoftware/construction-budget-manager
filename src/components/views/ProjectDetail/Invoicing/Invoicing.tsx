@@ -136,16 +136,20 @@ const Invoicing: React.FC<IInvoicing> = props => {
   };
 
   const editButton = async (projectInvoiceDetailId: string) => {
-    const successCallback = (response: IInvoice) => {
-      setSelectedItem(response);
-      setIsModalOpen(true);
-    };
-    await getProjectInvoiceDetailById({
-      projectId,
-      projectInvoiceDetailId,
-      appStrings,
-      successCallback,
-    });
+    const invoice = tableData.find(e => e.id === projectInvoiceDetailId);
+    const order = orders.find(e => e.order === invoice?.order);
+    if (order) {
+      const { id, ...rest } = order;
+      const option = { value: order.id, label: String(order.order) };
+      setSelectedOrder({
+        ...selectedOrder,
+        ...rest,
+        option,
+      });
+      setSelectedItem({ ...invoice!, option });
+    }
+
+    setIsModalOpen(true);
   };
 
   const deleteButton = async () => {
