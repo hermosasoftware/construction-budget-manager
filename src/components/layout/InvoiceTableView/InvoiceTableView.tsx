@@ -18,6 +18,7 @@ import { DotsThreeOutlineVertical, Pencil, Plus, Trash } from 'phosphor-react';
 import { TObject } from '../../../types/global';
 import { colonFormat, dolarFormat } from '../../../utils/numbers';
 import styles from './InvoiceTableView.module.css';
+import { useAppSelector } from '../../../redux/hooks';
 
 export type TTableHeader<T = TObject> = {
   name: keyof TTableItem<T>;
@@ -67,6 +68,8 @@ const InvoiceTableView = <T extends TObject>(props: ITableProps<T>) => {
   const [rowChildVisible, setRowChildVisible] = useState<boolean>(false);
   const [selectedRow, setSelectedRow] = useState<string | number>('');
 
+  const appStrings = useAppSelector(state => state.settings.appStrings);
+
   const items = useMemo(() => {
     return !filter ? props.items : props.items?.filter(filter);
   }, [props.items, filter]);
@@ -108,6 +111,11 @@ const InvoiceTableView = <T extends TObject>(props: ITableProps<T>) => {
     return total;
   };
 
+  const calculateTaxes = (quantity: number, cost: number, tax: number) => {
+    const subTotal = quantity * cost;
+    return tax ? subTotal * (tax / 100) : 0;
+  };
+
   const renderColumnValue = (row: any, headerName: any) => {
     const isDollarColumn = headerName === 'dollarCost';
     const isImp = headerName === 'imp';
@@ -116,12 +124,18 @@ const InvoiceTableView = <T extends TObject>(props: ITableProps<T>) => {
     if (isDollarColumn && formatCurrency) {
       return dolarFormat(calculateDollars(row));
     } else if (isImp) {
-      return colonFormat(calculateColons(row) * Number(exchangeRate));
+      const allTaxes = row.products.reduce((a: any, b: any) => {
+        return a + calculateTaxes(b.quantity, b.cost, b.tax);
+      }, 0);
+      return colonFormat(allTaxes);
     } else if (isSubTotal) {
       return colonFormat(calculateColons(row));
     } else if (isTotal) {
       const subtotal = calculateColons(row);
-      return colonFormat(subtotal + subtotal * Number(exchangeRate));
+      const allTaxes = row.products.reduce((a: any, b: any) => {
+        return a + calculateTaxes(b.quantity, b.cost, b.tax);
+      }, 0);
+      return colonFormat(subtotal + allTaxes);
     }
     return row[headerName] || '-';
   };
@@ -137,14 +151,24 @@ const InvoiceTableView = <T extends TObject>(props: ITableProps<T>) => {
     } else if (isCostColumn && formatCurrency) {
       return colonFormat(Number(row?.cost));
     } else if (isImp) {
-      return colonFormat(
-        Number(row?.quantity) * Number(row?.cost) * Number(exchangeRate),
+      const imp = calculateTaxes(
+        Number(row?.quantity),
+        Number(row?.cost),
+        Number(row?.tax),
       );
+      return imp > 0
+        ? `${colonFormat(imp)} ${`(${row?.tax}%)`}`
+        : appStrings.taxExempt;
     } else if (isSubTotal) {
       return colonFormat(Number(row?.quantity) * Number(row?.cost));
     } else if (isTotal) {
       const subtotal = Number(row?.quantity) * Number(row?.cost);
-      return colonFormat(subtotal + subtotal * Number(exchangeRate));
+      const tax = calculateTaxes(
+        Number(row?.quantity),
+        Number(row?.cost),
+        Number(row?.tax),
+      );
+      return colonFormat(subtotal + tax);
     }
     return row[headerName] || '-';
   };
