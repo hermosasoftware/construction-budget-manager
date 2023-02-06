@@ -45,6 +45,10 @@ const styles: CSSClasses = {
     width: '100%',
   },
 
+  'w-80': {
+    width: '80%',
+  },
+
   'w-50': {
     width: '50%',
   },
@@ -154,13 +158,13 @@ const styles: CSSClasses = {
 
   page: {
     fontFamily: 'Segoe UI',
-    fontSize: '12pt',
+    fontSize: '11pt',
     color: '#555',
     padding: '40px 35px',
   },
 
   span: {
-    padding: '4px 12px 4px 0',
+    padding: '4px 0 4px 0',
   },
 
   logo: {

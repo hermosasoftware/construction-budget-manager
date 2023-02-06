@@ -54,6 +54,10 @@
   width: 100% !important;
 }
 
+.w-80 {
+  width: 80%;
+}
+
 .w-50 {
   width: 50%;
 }
@@ -291,7 +295,7 @@ h1 {
 .select {
   display: inline-block;
   width: 98%;
-  padding: 4px 12px 4px 0;
+  padding: 4px 0 4px 0;
   margin-bottom: 1px;
   border: 1px dotted transparent;
   transition: background 0.1s ease-in-out, border-color 0.2s ease-in-out;
@@ -316,6 +320,7 @@ h1 {
 
 .page-wrapper {
   position: relative;
+  text-align: left;
   background: #fff;
   padding: 40px 35px;
   box-shadow: 0 0 17px 0 rgba(16, 40, 73, 0.09);

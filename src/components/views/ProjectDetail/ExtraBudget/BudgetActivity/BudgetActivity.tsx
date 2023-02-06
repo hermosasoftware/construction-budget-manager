@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Flex, Heading } from '@chakra-ui/react';
 import * as yup from 'yup';
+import { useNavigate } from 'react-router-dom';
 import Button from '../../../../common/Button/Button';
 import Modal from '../../../../common/Modal/Modal';
 import SearchInput from '../../../../common/SearchInput/SearchInput';
@@ -49,6 +50,7 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
   const [searchTerm, setSearchTerm] = useState('');
   const { projectId, getExtraBudget, budget, setActivity } = props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
+  const navigate = useNavigate();
   const tableHeader: TTableHeader[] = [
     { name: 'activity', value: appStrings.name },
     { name: 'date', value: appStrings.date },
@@ -122,6 +124,12 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
       appStrings,
       successCallback,
     });
+  };
+
+  const exportPDFButton = (id: string) => {
+    const activity = tableData.find(e => e.id === id);
+    activity &&
+      navigate(`/project-detail/${projectId}/extra-pdf-preview/${activity.id}`);
   };
 
   const handleSearch = async (event: { target: { value: string } }) => {
@@ -227,6 +235,7 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
           setSelectedItem({ ...selectedItem, id: id });
           setIsAlertDialogOpen(true);
         }}
+        onClickExportPDF={id => exportPDFButton(id)}
       />
       {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
     </div>

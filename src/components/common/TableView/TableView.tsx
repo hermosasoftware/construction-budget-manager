@@ -14,7 +14,12 @@ import {
   Thead,
   Tr,
 } from '@chakra-ui/react';
-import { DotsThreeOutlineVertical, Pencil, Trash } from 'phosphor-react';
+import {
+  DotsThreeOutlineVertical,
+  FilePdf,
+  Pencil,
+  Trash,
+} from 'phosphor-react';
 import { TObject } from '../../../types/global';
 
 import styles from './TableView.module.css';
@@ -40,6 +45,7 @@ interface ITableProps<T> {
   handleRowClick?: (event: any) => void;
   onClickEdit?: (id: string) => void;
   onClickDelete?: (id: string) => void;
+  onClickExportPDF?: (id: string) => void;
   rowChild?: React.ReactElement;
   hideOptions?: boolean;
 }
@@ -51,6 +57,7 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
     boxStyle,
     onClickEdit,
     onClickDelete,
+    onClickExportPDF,
     handleRowClick,
     rowChild,
     hideOptions,
@@ -133,6 +140,13 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
                         >
                           Delete <Spacer></Spacer> <Trash />
                         </MenuItem>
+                        {onClickExportPDF && (
+                          <MenuItem
+                            onClick={() => onClickExportPDF(row.id.toString())}
+                          >
+                            Export to PDF <Spacer /> <FilePdf size={24} />
+                          </MenuItem>
+                        )}
                       </MenuList>
                     </Menu>
                   </Td>
