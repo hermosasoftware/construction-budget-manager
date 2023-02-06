@@ -14,17 +14,18 @@ import { toastSuccess, toastError } from '../utils/toast';
 
 export const getBudgetLabors = async ({
   projectId,
+  activityId,
   appStrings,
   successCallback,
   errorCallback,
-}: { projectId: string } & IService) => {
+}: { projectId: string; activityId?: string } & IService) => {
   try {
     const laborRef = collection(
       db,
       'projects',
       projectId,
       'projectBudget',
-      'summary',
+      activityId || 'summary',
       'budgetLabors',
     );
     const result = await getDocs(laborRef);
@@ -47,12 +48,14 @@ export const getBudgetLabors = async ({
 
 export const getBudgetLaborById = async ({
   projectId,
+  activityId,
   budgetLaborId,
   appStrings,
   successCallback,
   errorCallback,
 }: {
   projectId: string;
+  activityId: string;
   budgetLaborId: string;
 } & IService) => {
   try {
@@ -61,7 +64,7 @@ export const getBudgetLaborById = async ({
       'projects',
       projectId,
       'projectBudget',
-      'summary',
+      activityId,
       'budgetLabors',
       budgetLaborId,
     );
@@ -85,35 +88,35 @@ export const getBudgetLaborById = async ({
 
 export const createBudgetLabor = async ({
   projectId,
+  activityId,
   budgetLabor,
   appStrings,
   successCallback,
   errorCallback,
 }: {
   projectId: string;
+  activityId: string;
   budgetLabor: IBudgetLabor;
 } & IService) => {
   try {
     const data = await runTransaction(db, async transaction => {
       const { id, subtotal, ...rest } = budgetLabor;
-      const laborRef = doc(
-        collection(
-          db,
-          'projects',
-          projectId,
-          'projectBudget',
-          'summary',
-          'budgetLabors',
-        ),
-      );
-      const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
-      const sumDoc = await transaction.get(sumRef);
+      const budgetRef = collection(db, 'projects', projectId, 'projectBudget');
+      const laborRef = doc(collection(budgetRef, activityId, 'budgetLabors'));
+      const summaryRef = doc(budgetRef, 'summary');
+      const activityRef = doc(budgetRef, activityId);
+      const summaryDoc = await transaction.get(summaryRef);
+      const activityDoc = await transaction.get(activityRef);
 
-      if (!sumDoc.exists()) throw Error(appStrings.noRecords);
+      if (!summaryDoc.exists() || !activityDoc.exists()) {
+        throw Error(appStrings.noRecords);
+      }
 
-      const total = sumDoc.data().sumLabors + subtotal;
+      const summaryTotal = summaryDoc.data().sumLabors + subtotal;
+      const activityTotal = activityDoc.data().sumLabors + subtotal;
 
-      transaction.update(sumRef, { sumLabors: total });
+      transaction.update(summaryRef, { sumLabors: summaryTotal });
+      transaction.update(activityRef, { sumLabors: activityTotal });
       transaction.set(laborRef, rest);
 
       return {
@@ -137,38 +140,37 @@ export const createBudgetLabor = async ({
 
 export const updateBudgetLabor = async ({
   projectId,
+  activityId,
   budgetLabor,
   appStrings,
   successCallback,
   errorCallback,
 }: {
   projectId: string;
+  activityId: string;
   budgetLabor: IBudgetLabor;
 } & IService) => {
   try {
     await runTransaction(db, async transaction => {
       const { id, subtotal, ...rest } = budgetLabor;
-      const laborRef = doc(
-        db,
-        'projects',
-        projectId,
-        'projectBudget',
-        'summary',
-        'budgetLabors',
-        id,
-      );
-      const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
+      const budgetRef = collection(db, 'projects', projectId, 'projectBudget');
+      const laborRef = doc(budgetRef, activityId, 'budgetLabors', id);
+      const summaryRef = doc(budgetRef, 'summary');
+      const activityRef = doc(budgetRef, activityId);
       const laborDoc = await transaction.get(laborRef);
-      const sumDoc = await transaction.get(sumRef);
+      const summaryDoc = await transaction.get(summaryRef);
+      const activityDoc = await transaction.get(activityRef);
 
-      if (!laborDoc.exists() || !sumDoc.exists()) {
+      if (!laborDoc.exists() || !summaryDoc.exists() || !activityDoc.exists()) {
         throw Error(appStrings.noRecords);
       }
 
       const newSum = subtotal - laborDoc.data().cost * laborDoc.data().quantity;
-      const total = sumDoc.data().sumLabors + newSum;
+      const summaryTotal = summaryDoc.data().sumLabors + newSum;
+      const activityTotal = activityDoc.data().sumLabors + newSum;
 
-      transaction.update(sumRef, { sumLabors: total });
+      transaction.update(summaryRef, { sumLabors: summaryTotal });
+      transaction.update(activityRef, { sumLabors: activityTotal });
       transaction.set(laborRef, rest);
     });
 
@@ -187,37 +189,36 @@ export const updateBudgetLabor = async ({
 
 export const deleteBudgetLabor = async ({
   projectId,
+  activityId,
   budgetLaborId,
   appStrings,
   successCallback,
   errorCallback,
 }: {
   projectId: string;
+  activityId: string;
   budgetLaborId: string;
 } & IService) => {
   try {
-    const laborRef = doc(
-      db,
-      'projects',
-      projectId,
-      'projectBudget',
-      'summary',
-      'budgetLabors',
-      budgetLaborId,
-    );
-    const sumRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
+    const budgetRef = collection(db, 'projects', projectId, 'projectBudget');
+    const laborRef = doc(budgetRef, activityId, 'budgetLabors', budgetLaborId);
+    const summaryRef = doc(budgetRef, 'summary');
+    const activityRef = doc(budgetRef, activityId);
     const laborDoc = await getDoc(laborRef);
-    const sumDoc = await getDoc(sumRef);
+    const summaryDoc = await getDoc(summaryRef);
+    const activityDoc = await getDoc(activityRef);
 
-    if (!laborDoc.exists() || !sumDoc.exists()) {
+    if (!laborDoc.exists() || !summaryDoc.exists() || !activityDoc.exists()) {
       throw Error(appStrings.noRecords);
     }
 
     const batch = writeBatch(db);
     const newSum = laborDoc.data().cost * laborDoc.data().quantity;
-    const total = sumDoc.data().sumLabors - newSum;
+    const summaryTotal = summaryDoc.data().sumLabors - newSum;
+    const activityTotal = activityDoc.data().sumLabors - newSum;
 
-    batch.update(sumRef, { sumLabors: total });
+    batch.update(summaryRef, { sumLabors: summaryTotal });
+    batch.update(activityRef, { sumLabors: activityTotal });
     batch.delete(laborRef);
 
     await batch.commit();

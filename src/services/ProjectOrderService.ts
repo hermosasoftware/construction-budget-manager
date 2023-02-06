@@ -74,11 +74,20 @@ export const getProjectOrderById = async ({
       projectOrderId,
     );
     const result = await getDoc(orderRef);
-    const data = {
+    let data = {
       ...result.data(),
       id: result.id,
       date: result.data()?.date?.toDate(),
     } as IProjectOrder;
+
+    const productQ = collection(orderRef, 'products');
+    const productsDocs = await getDocs(productQ);
+    const products = productsDocs.docs.map(doc => ({
+      ...doc.data(),
+      id: doc.id,
+    })) as IOrderProduct[];
+
+    data = { ...data, products };
 
     successCallback && successCallback(data);
   } catch (error) {

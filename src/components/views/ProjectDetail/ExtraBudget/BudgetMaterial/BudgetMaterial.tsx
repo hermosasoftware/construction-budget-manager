@@ -19,6 +19,7 @@ import {
 } from '../../../../../services/ExtraBudgetMaterialsService';
 import { IBudgetMaterial } from '../../../../../types/budgetMaterial';
 import { IProjectBudget } from '../../../../../types/projectBudget';
+import { IBudgetActivity } from '../../../../../types/budgetActivity';
 import Form, { Input, Switch } from '../../../../common/Form';
 import SearchSelect from '../../../../common/Form/Elements/SearchSelect';
 import AlertDialog from '../../../../common/AlertDialog/AlertDialog';
@@ -34,6 +35,8 @@ interface IBudgetMaterialView {
   projectId: string;
   getExtraBudget: Function;
   budget: IProjectBudget;
+  getActivity: Function;
+  activity: IBudgetActivity;
 }
 
 interface IItem extends Omit<IBudgetMaterial, 'name'> {
@@ -44,6 +47,7 @@ const initialSelectedItemData = {
   id: '',
   name: { value: '', label: '' },
   unit: '',
+  hasSubMaterials: false,
   quantity: 1,
   cost: 0,
   subtotal: 0,
@@ -58,6 +62,7 @@ const initialSelectedSubMaterialData = {
 };
 
 const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
+  const { projectId, getExtraBudget, budget, getActivity, activity } = props;
   const [tableData, setTableData] = useState<IMaterialBreakdown[]>([]);
   const [selectedItem, setSelectedItem] = useState<IItem>(
     initialSelectedItemData,
@@ -71,7 +76,6 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubMaterialModalOpen, setIsSubMaterialModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const { projectId, getExtraBudget, budget } = props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
   const materials = useAppSelector(state => state.materials.materials);
 
@@ -89,6 +93,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
       setTableData(response);
     await getExtraBudgetMaterials({
       projectId,
+      activityId: activity.id,
       appStrings,
       successCallback,
     });
@@ -121,6 +126,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
     };
     await getExtraBudgetMaterialById({
       projectId,
+      activityId: activity.id,
       extraBudgetMaterialId,
       appStrings,
       successCallback,
@@ -133,9 +139,11 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
       setSelectedItem(initialSelectedItemData);
       setIsAlertDialogOpen(false);
       getExtraBudget();
+      getActivity(activity.id);
     };
     await deleteExtraBudgetMaterial({
       projectId,
+      activityId: activity.id,
       extraBudgetMaterialId: selectedItem.id,
       appStrings,
       successCallback,
@@ -197,6 +205,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
     const serviceCallParameters = {
       materialId: selectedMaterial,
       projectId,
+      activityId: activity.id,
       budgetSubMaterial: data,
       appStrings,
       successCallback: !data.id ? successAddCallback : successUpdateCallback,
@@ -250,6 +259,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
     };
     await deleteExtraBudgetSubMaterial({
       projectId,
+      activityId: activity.id,
       extraBudgetMaterialId: selectedMaterial,
       extraBudgetSubMaterialId: selectedSubMaterial.id,
       appStrings,
@@ -277,9 +287,11 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
       };
       extraBudgetMaterial.id ? updateItem(MatBreakdown) : addItem(MatBreakdown);
       getExtraBudget();
+      getActivity(activity.id);
     };
     const serviceCallParameters = {
       projectId,
+      activityId: activity.id,
       extraBudgetMaterial,
       appStrings,
       successCallback,
@@ -290,13 +302,20 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
   };
 
   const validationSchema = yup.object().shape({
-    name: yup.object().shape({
-      value: yup.string().required(appStrings?.requiredField),
-      label: yup.string().required(appStrings?.requiredField),
-    }),
+    name: yup
+      .object()
+      .shape({
+        value: yup.string().required(),
+        label: yup.string().required(),
+      })
+      .required(appStrings?.requiredField),
     unit: yup.string().required(appStrings?.requiredField),
-    quantity: yup.number().positive().required(appStrings?.requiredField),
-    cost: yup.number().positive().required(appStrings?.requiredField),
+    cost: yup.string().when('hasSubMaterials', (val, schema) => {
+      if (val) {
+        return yup.string().notRequired();
+      }
+      return yup.string().required();
+    }),
   });
 
   const subMaterialValSchema = yup.object().shape({
@@ -385,12 +404,15 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
           </Modal>
           <Modal
             isOpen={isSubMaterialModalOpen}
-            onClose={() => setIsSubMaterialModalOpen(false)}
+            onClose={() => {
+              setSelectedSubMaterial(initialSelectedSubMaterialData);
+              setIsSubMaterialModalOpen(false);
+            }}
           >
             <Heading as="h2" size="lg">
-              {selectedMaterial
+              {selectedSubMaterial.id
                 ? appStrings.editSubmaterial
-                : appStrings.createSubmaterial}
+                : appStrings.addSubmaterial}
             </Heading>
             <Form
               id="submaterial-form"

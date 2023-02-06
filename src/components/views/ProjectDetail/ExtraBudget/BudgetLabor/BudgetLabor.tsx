@@ -16,6 +16,7 @@ import {
 } from '../../../../../services/ExtraBudgetLaborsService';
 import { IBudgetLabor } from '../../../../../types/budgetLabor';
 import { IProjectBudget } from '../../../../../types/projectBudget';
+import { IBudgetActivity } from '../../../../../types/budgetActivity';
 import Form, { Input } from '../../../../common/Form';
 import AlertDialog from '../../../../common/AlertDialog/AlertDialog';
 import { useAppSelector } from '../../../../../redux/hooks';
@@ -27,6 +28,8 @@ interface IBudgetLaborView {
   projectId: string;
   getExtraBudget: Function;
   budget: IProjectBudget;
+  getActivity: Function;
+  activity: IBudgetActivity;
 }
 
 const initialSelectedItemData = {
@@ -39,6 +42,7 @@ const initialSelectedItemData = {
 };
 
 const BudgetLabor: React.FC<IBudgetLaborView> = props => {
+  const { projectId, getExtraBudget, budget, getActivity, activity } = props;
   const [tableData, setTableData] = useState<IBudgetLabor[]>([]);
   const [selectedItem, setSelectedItem] = useState<IBudgetLabor>(
     initialSelectedItemData,
@@ -46,7 +50,6 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const { projectId, getExtraBudget, budget } = props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
   const tableHeader: TTableHeader[] = [
@@ -71,6 +74,7 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
       setTableData(response);
     await getExtraBudgetLabors({
       projectId,
+      activityId: activity.id,
       appStrings,
       successCallback,
     });
@@ -99,6 +103,7 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
     };
     await getExtraBudgetLaborById({
       projectId,
+      activityId: activity.id,
       extraBudgetLaborId,
       appStrings,
       successCallback,
@@ -111,9 +116,11 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
       setSelectedItem(initialSelectedItemData);
       setIsAlertDialogOpen(false);
       getExtraBudget();
+      getActivity(activity.id);
     };
     await deleteExtraBudgetLabor({
       projectId,
+      activityId: activity.id,
       extraBudgetLaborId: selectedItem.id,
       appStrings,
       successCallback,
@@ -130,9 +137,11 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
       setIsModalOpen(false);
       extraBudgetLabor.id ? updateItem(item) : addItem(item);
       getExtraBudget();
+      getActivity(activity.id);
     };
     const serviceCallParameters = {
       projectId,
+      activityId: activity.id,
       extraBudgetLabor: {
         ...extraBudgetLabor,
         quantity: +extraBudgetLabor.quantity,

@@ -16,6 +16,7 @@ import {
 } from '../../../../../services/BudgetSubcontractsService';
 import { IBudgetSubcontract } from '../../../../../types/budgetSubcontract';
 import { IProjectBudget } from '../../../../../types/projectBudget';
+import { IBudgetActivity } from '../../../../../types/budgetActivity';
 import Form, { Input } from '../../../../common/Form';
 import AlertDialog from '../../../../common/AlertDialog/AlertDialog';
 import { useAppSelector } from '../../../../../redux/hooks';
@@ -28,6 +29,8 @@ interface IBudgetSubcontractView {
   isBudgetOpen: boolean;
   getBudget: Function;
   budget: IProjectBudget;
+  getActivity: Function;
+  activity: IBudgetActivity;
 }
 
 const initialSelectedItemData = {
@@ -39,6 +42,8 @@ const initialSelectedItemData = {
 };
 
 const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
+  const { projectId, isBudgetOpen, getBudget, budget, getActivity, activity } =
+    props;
   const [tableData, setTableData] = useState<IBudgetSubcontract[]>([]);
   const [selectedItem, setSelectedItem] = useState<IBudgetSubcontract>(
     initialSelectedItemData,
@@ -46,7 +51,6 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const { projectId, isBudgetOpen, getBudget, budget } = props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
   const tableHeader: TTableHeader[] = [
@@ -70,6 +74,7 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
       setTableData(response);
     await getBudgetSubcontracts({
       projectId,
+      activityId: activity.id,
       appStrings,
       successCallback,
     });
@@ -99,6 +104,7 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
     };
     await getBudgetSubcontractById({
       projectId,
+      activityId: activity.id,
       budgetSubcontractId,
       appStrings,
       successCallback,
@@ -111,9 +117,11 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
       setSelectedItem(initialSelectedItemData);
       setIsAlertDialogOpen(false);
       getBudget();
+      getActivity(activity.id);
     };
     await deleteBudgetSubcontract({
       projectId,
+      activityId: activity.id,
       budgetSubcontractId: selectedItem.id,
       appStrings,
       successCallback,
@@ -130,9 +138,11 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
       setIsModalOpen(false);
       budgetSubcontract.id ? updateItem(item) : addItem(item);
       getBudget();
+      getActivity(activity.id);
     };
     const serviceCallParameters = {
       projectId,
+      activityId: activity.id,
       budgetSubcontract: {
         ...budgetSubcontract,
         quantity: +budgetSubcontract.quantity,
