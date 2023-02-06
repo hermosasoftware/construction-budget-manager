@@ -9,6 +9,7 @@ export interface IProjectInvoiceDetail {
 export interface IInvoiceProduct {
   id: string;
   quantity: number;
+  tax: number;
   description: string;
   cost: number;
 }

@@ -11,7 +11,6 @@ import {
   createProjectInvoiceDetail,
   deleteInvoiceProduct,
   deleteProjectInvoiceDetail,
-  getProjectInvoiceDetailById,
   getProjectInvoicing,
   updateInvoiceProduct,
   updateProjectInvoiceDetail,
@@ -54,6 +53,7 @@ const initialSelectedProductData = {
   id: '',
   quantity: 1,
   description: '',
+  tax: 0,
   cost: 0,
 };
 
@@ -298,6 +298,10 @@ const Invoicing: React.FC<IInvoicing> = props => {
     description: yup.string().required(appStrings?.requiredField),
     quantity: yup.string().required(appStrings?.requiredField),
     cost: yup.string().required(appStrings?.requiredField),
+    tax: yup
+      .number()
+      .transform(value => (Number.isNaN(value) ? null : value))
+      .nullable(),
   });
 
   const handleSearchSelect = (v: any) => {
@@ -398,7 +402,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
                 : appStrings.addInvoiceDetail}
             </Heading>
             <Form
-              id="project-form"
+              id="invoice-form"
               initialFormData={selectedProduct}
               validationSchema={productValSchema}
               validateOnChange
@@ -412,6 +416,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
                 label={appStrings.quantity}
               />
               <Input name="cost" label={appStrings.cost} />
+              <Input name="tax" type="number" label={appStrings.taxAmount} />
               <br />
               <Button width="full" type="submit">
                 {appStrings.submit}
