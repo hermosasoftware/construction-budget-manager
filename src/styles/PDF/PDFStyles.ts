@@ -45,44 +45,48 @@ const styles: CSSClasses = {
     width: '100%',
   },
 
-  'w-50': {
-    width: '50%',
-  },
-
-  'w-55': {
-    width: '55%',
-  },
-
-  'w-45': {
-    width: '45%',
+  'w-80': {
+    width: '80%',
   },
 
   'w-60': {
     width: '60%',
   },
 
-  'w-40': {
-    width: '40%',
+  'w-55': {
+    width: '55%',
+  },
+
+  'w-50': {
+    width: '50%',
+  },
+
+  'w-45': {
+    width: '45%',
   },
 
   'w-48': {
     width: '48%',
   },
 
-  'w-15': {
-    width: '15%',
+  'w-40': {
+    width: '40%',
   },
 
-  'w-17': {
-    width: '17%',
+  'w-20': {
+    width: '20%',
   },
 
   'w-18': {
     width: '18%',
   },
 
-  'w-20': {
-    width: '20%',
+  'w-17': {
+    width: '17%',
+  },
+
+  'w-15': {
+    width: '15%',
   },
 
   row: {
@@ -154,13 +158,13 @@ const styles: CSSClasses = {
 
   page: {
     fontFamily: 'Segoe UI',
-    fontSize: '12pt',
+    fontSize: '11pt',
     color: '#555',
     padding: '40px 35px',
   },
 
   span: {
-    padding: '4px 12px 4px 0',
+    padding: '4px 0 4px 0',
   },
 
   logo: {
