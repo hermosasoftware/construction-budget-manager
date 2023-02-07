@@ -283,6 +283,7 @@
   "suppliers": "Suppliers",
   "taxes": "Taxes",
   "taxAmount": "Tax Amount",
+  "taxExempt": "Tax Exempt",
   "testUserJob": "General Manager",
   "testUserName": "Coto",
   "total": "Total",

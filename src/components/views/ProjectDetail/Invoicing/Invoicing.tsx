@@ -298,10 +298,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
     description: yup.string().required(appStrings?.requiredField),
     quantity: yup.string().required(appStrings?.requiredField),
     cost: yup.string().required(appStrings?.requiredField),
-    tax: yup
-      .number()
-      .transform(value => (Number.isNaN(value) ? null : value))
-      .nullable(),
+    tax: yup.number().min(0).max(100).required(appStrings.required),
   });
 
   const handleSearchSelect = (v: any) => {
@@ -465,7 +462,6 @@ const Invoicing: React.FC<IInvoicing> = props => {
         onClickDeleteProduct={(orderId, productId) =>
           delProduct(orderId, productId)
         }
-        exchangeRate={Number('0.13')} //Modify with the exchange of the project when is done
         formatCurrency
       />
       {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
