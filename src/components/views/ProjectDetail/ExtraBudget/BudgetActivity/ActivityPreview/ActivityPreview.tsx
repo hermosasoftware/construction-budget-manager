@@ -27,59 +27,60 @@ export default function ActivityPreview() {
 
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
+  const getProject = async () => {
+    const successCallback = (response: IProject) => setProject(response);
+    await getProjectById({
+      projectId,
+      appStrings,
+      successCallback,
+    });
+  };
+
+  const getActivity = async () => {
+    const successCallback = (response: IBudgetActivity) =>
+      setActivity(response);
+    await getExtraBudgetActivityById({
+      projectId,
+      extraBudgetActivityId: activityId,
+      appStrings,
+      successCallback,
+    });
+  };
+
+  const getMaterials = async () => {
+    const successCallback = (response: IMaterialBreakdown[]) =>
+      setMaterials(response);
+    await getExtraBudgetMaterials({
+      projectId,
+      activityId,
+      appStrings,
+      successCallback,
+    });
+  };
+
+  const getLabors = async () => {
+    const successCallback = (response: IBudgetLabor[]) => setLabors(response);
+    await getExtraBudgetLabors({
+      projectId,
+      activityId,
+      appStrings,
+      successCallback,
+    });
+  };
+
+  const getSubcontracts = async () => {
+    const successCallback = (response: IBudgetSubcontract[]) =>
+      setSubcontracts(response);
+    await getExtraBudgetSubcontracts({
+      projectId,
+      activityId,
+      appStrings,
+      successCallback,
+    });
+  };
+
   useEffect(() => {
     let abortController = new AbortController();
-
-    const getProject = async () => {
-      const successCallback = (response: IProject) => setProject(response);
-      await getProjectById({
-        projectId,
-        appStrings,
-        successCallback,
-      });
-    };
-    const getActivity = async () => {
-      const successCallback = (response: IBudgetActivity) =>
-        setActivity(response);
-      await getExtraBudgetActivityById({
-        projectId,
-        extraBudgetActivityId: activityId,
-        appStrings,
-        successCallback,
-      });
-    };
-
-    const getMaterials = async () => {
-      const successCallback = (response: IMaterialBreakdown[]) =>
-        setMaterials(response);
-      await getExtraBudgetMaterials({
-        projectId,
-        activityId,
-        appStrings,
-        successCallback,
-      });
-    };
-
-    const getLabors = async () => {
-      const successCallback = (response: IBudgetLabor[]) => setLabors(response);
-      await getExtraBudgetLabors({
-        projectId,
-        activityId,
-        appStrings,
-        successCallback,
-      });
-    };
-
-    const getSubcontracts = async () => {
-      const successCallback = (response: IBudgetSubcontract[]) =>
-        setSubcontracts(response);
-      await getExtraBudgetSubcontracts({
-        projectId,
-        activityId,
-        appStrings,
-        successCallback,
-      });
-    };
 
     getProject();
     getActivity();
