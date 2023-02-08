@@ -34,7 +34,10 @@ export const getProjectExtraBudget = async ({
       'summary',
     );
     const result = await getDoc(userRef);
-    const data = result.data() as IProjectBudget;
+    const data = {
+      ...result.data(),
+      creationDate: result.data()?.creationDate.toDate(),
+    } as IProjectBudget;
 
     successCallback && successCallback(data);
   } catch (error) {
