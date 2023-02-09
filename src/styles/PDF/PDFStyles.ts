@@ -89,8 +89,16 @@ const styles: CSSClasses = {
     width: '15%',
   },
 
+  'w-10': {
+    width: '10%',
+  },
+
   row: {
     borderBottom: `1px solid ${colorGray}`,
+  },
+
+  'mt-100': {
+    marginTop: '100px',
   },
 
   'mt-40': {

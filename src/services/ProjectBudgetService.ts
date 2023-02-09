@@ -14,7 +14,10 @@ export const getProjectBudget = async ({
   try {
     const userRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
     const result = await getDoc(userRef);
-    const data = result.data() as IProjectBudget;
+    const data = {
+      ...result.data(),
+      creationDate: result.data()?.creationDate.toDate(),
+    } as IProjectBudget;
 
     successCallback && successCallback(data);
   } catch (error) {

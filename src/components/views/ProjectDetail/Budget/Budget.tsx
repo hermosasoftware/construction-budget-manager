@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Divider, Heading, Text } from '@chakra-ui/react';
-import { CaretLeft } from 'phosphor-react';
+import { CaretLeft, FilePdf } from 'phosphor-react';
 import * as yup from 'yup';
+import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../../../redux/hooks';
 import TabGroup from '../../../common/TabGroup/TabGroup';
 import BudgetActivity from './BudgetActivity/BudgetActivity';
@@ -34,13 +35,14 @@ interface IBudgetView {
 
 const Budget: React.FC<IBudgetView> = props => {
   const { projectId, project, setProject } = props;
+  const [budget, setBudget] = useState<IProjectBudget>();
+  const [activity, setActivity] = useState<IBudgetActivity>();
   const [selectedTab, setSelectedTab] = useState('summary');
   const [editExchange, setEditExchange] = useState(false);
   const [isBudgetOpen, setIsBudgetOpen] = useState(project?.budgetOpen);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const appStrings = useAppSelector(state => state.settings.appStrings);
-  const [budget, setBudget] = useState<IProjectBudget>();
-  const [activity, setActivity] = useState<IBudgetActivity>();
+  const navigate = useNavigate();
 
   const getBudget = async () => {
     const successCallback = (response: IProjectBudget) => setBudget(response);
@@ -215,6 +217,16 @@ const Budget: React.FC<IBudgetView> = props => {
               isDisabled={!isBudgetOpen}
             />
           </Form>
+          {
+            <Button
+              onClick={() => {
+                navigate(`/project-detail/${projectId}/budget-pdf-preview`);
+              }}
+              className={styles.close_budget}
+            >
+              <FilePdf size={24} />
+            </Button>
+          }
           <Button
             onClick={() => {
               setIsModalOpen(true);
