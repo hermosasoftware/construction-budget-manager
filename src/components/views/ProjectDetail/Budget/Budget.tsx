@@ -15,6 +15,7 @@ import Form from '../../../common/Form/Form';
 import ExchangeInput from '../../../common/ExchangeInput/ExchangeInput';
 import {
   getProjectBudget,
+  updateProjectBudgetAdminFee,
   updateProjectBudgetExchange,
 } from '../../../../services/ProjectBudgetService';
 import { getBudgetActivityById } from '../../../../services/BudgetActivityService';
@@ -26,6 +27,7 @@ import { IProject } from '../../../../types/project';
 import { updateProject } from '../../../../services/ProjectService';
 
 import styles from './Budget.module.css';
+import AdminFeeInput from '../../../common/AdminFeeInput';
 
 interface IBudgetView {
   projectId: string;
@@ -38,6 +40,7 @@ const Budget: React.FC<IBudgetView> = props => {
   const [budget, setBudget] = useState<IProjectBudget>();
   const [activity, setActivity] = useState<IBudgetActivity>();
   const [selectedTab, setSelectedTab] = useState('summary');
+  const [editAdminFee, setEditAdminFee] = useState(false);
   const [editExchange, setEditExchange] = useState(false);
   const [isBudgetOpen, setIsBudgetOpen] = useState(project?.budgetOpen);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -60,7 +63,21 @@ const Budget: React.FC<IBudgetView> = props => {
     });
   };
 
-  const handleOnSubmit = async (projectBudget: IProjectBudget) => {
+  const handleOnSubmitAdminFee = async (projectBudget: IProjectBudget) => {
+    const successCallback = () => {
+      setEditAdminFee(false);
+      getBudget();
+    };
+    const serviceCallParameters = {
+      projectId,
+      adminFee: +projectBudget.adminFee,
+      appStrings,
+      successCallback,
+    };
+    await updateProjectBudgetAdminFee(serviceCallParameters);
+  };
+
+  const handleOnSubmitExchange = async (projectBudget: IProjectBudget) => {
     const successCallback = () => {
       setEditExchange(false);
       getBudget();
@@ -90,7 +107,11 @@ const Budget: React.FC<IBudgetView> = props => {
     updateProject(serviceCallParams);
   };
 
-  const validationSchema = yup.object().shape({
+  const validationSchemaAdminFee = yup.object().shape({
+    adminFee: yup.number().min(0).max(100).required(appStrings?.requiredField),
+  });
+
+  const validationSchemaExchange = yup.object().shape({
     exchange: yup.number().positive().required(appStrings?.requiredField),
   });
 
@@ -204,12 +225,27 @@ const Budget: React.FC<IBudgetView> = props => {
           )}
 
           <Form
-            id="exchange-form"
+            id="adminfee-form"
             initialFormData={budget}
-            validationSchema={validationSchema}
+            validationSchema={validationSchemaAdminFee}
             validateOnBlur
             style={{ alignItems: 'end', flex: 1 }}
-            onSubmit={handleOnSubmit}
+            onSubmit={handleOnSubmitAdminFee}
+          >
+            <AdminFeeInput
+              editAdminFee={editAdminFee}
+              onClick={() => setEditAdminFee(true)}
+              isDisabled={!isBudgetOpen}
+            />
+          </Form>
+
+          <Form
+            id="exchange-form"
+            initialFormData={budget}
+            validationSchema={validationSchemaExchange}
+            validateOnBlur
+            style={{ alignItems: 'end', marginLeft: '10px' }}
+            onSubmit={handleOnSubmitExchange}
           >
             <ExchangeInput
               editExchange={editExchange}

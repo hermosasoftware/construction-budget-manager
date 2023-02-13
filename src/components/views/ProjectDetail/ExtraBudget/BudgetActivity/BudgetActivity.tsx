@@ -34,6 +34,7 @@ interface IBudgetActivityView {
 const initialSelectedItemData = {
   id: '',
   activity: '',
+  adminFee: 12,
   sumLabors: 0,
   sumMaterials: 0,
   sumSubcontracts: 0,
@@ -54,6 +55,7 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
   const tableHeader: TTableHeader[] = [
     { name: 'activity', value: appStrings.name },
     { name: 'date', value: appStrings.date },
+    { name: 'adminFee', value: appStrings.adminFee },
     { name: 'sumMaterials', value: appStrings.materials, isGreen: true },
     { name: 'sumLabors', value: appStrings.labors, isGreen: true },
     {
@@ -67,6 +69,7 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
     tableData.map(data => ({
       ...data,
       date: data.date.toDateString(),
+      adminFee: `${data.adminFee}%`,
       sumMaterials: colonFormat(data.sumMaterials),
       sumLabors: colonFormat(data.sumLabors),
       sumSubcontracts: colonFormat(data.sumSubcontracts),
@@ -152,7 +155,10 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
     };
     const serviceCallParameters = {
       projectId,
-      extraBudgetActivity,
+      extraBudgetActivity: {
+        ...extraBudgetActivity,
+        adminFee: Number(extraBudgetActivity.adminFee),
+      },
       appStrings,
       successCallback,
     };
@@ -163,6 +169,7 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
 
   const validationSchema = yup.object().shape({
     activity: yup.string().required(appStrings?.requiredField),
+    adminFee: yup.number().min(0).max(100).required(appStrings?.requiredField),
     date: yup.date().required(appStrings?.requiredField),
   });
 
@@ -204,6 +211,11 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
               onSubmit={handleOnSubmit}
             >
               <Input name="activity" label={appStrings.name} />
+              <Input
+                name="adminFee"
+                type="number"
+                label={appStrings.adminFee}
+              />
               <DatePicker name="date" label={appStrings.date}></DatePicker>
               <br />
               <Button width="full" type="submit">

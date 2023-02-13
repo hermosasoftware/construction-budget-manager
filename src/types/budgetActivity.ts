@@ -5,6 +5,7 @@ import { IMaterialBreakdown } from './collections';
 export interface IBudgetActivity {
   id: string;
   activity: string;
+  adminFee?: number;
   sumLabors: number;
   sumMaterials: number;
   sumSubcontracts: number;

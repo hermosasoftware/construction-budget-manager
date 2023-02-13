@@ -56,3 +56,30 @@ export const updateProjectBudgetExchange = async ({
     errorCallback && errorCallback();
   }
 };
+
+export const updateProjectBudgetAdminFee = async ({
+  projectId,
+  adminFee,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: {
+  projectId: string;
+  adminFee: number;
+} & IService) => {
+  try {
+    const userRef = doc(db, 'projects', projectId, 'projectBudget', 'summary');
+    await updateDoc(userRef, { adminFee });
+
+    toastSuccess(appStrings.success, appStrings.saveSuccess);
+
+    successCallback && successCallback();
+  } catch (error) {
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.saveError, errorMessage);
+
+    errorCallback && errorCallback();
+  }
+};

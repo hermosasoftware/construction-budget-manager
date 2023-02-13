@@ -33,14 +33,14 @@ const ActivitySummary: React.FC<IActivitySummaryView> = props => {
     sumMaterials,
   }: IBudgetActivity) => {
     const totalDirectCost = sumLabors + sumSubcontracts + sumMaterials;
-    const adminFee = totalDirectCost * 0.12;
+    const adminFee = totalDirectCost * (budget.adminFee / 100);
     const grandTotal = totalDirectCost + adminFee;
     return { totalDirectCost, adminFee, grandTotal };
   };
 
   useEffect(() => {
     setBudgetTotals({ ...activity, ...calcTotals(activity) });
-  }, [activity]);
+  }, [activity, budget]);
 
   return budgetTotals ? (
     <>
@@ -106,7 +106,7 @@ const ActivitySummary: React.FC<IActivitySummaryView> = props => {
           )}`}
         />
         <Stat
-          title={appStrings.adminFee}
+          title={`${appStrings.adminFee} ${budget.adminFee}%`}
           content={`${colonFormat(budgetTotals.adminFee)}\n${dolarFormat(
             budgetTotals.adminFee / budget.exchange,
           )}`}

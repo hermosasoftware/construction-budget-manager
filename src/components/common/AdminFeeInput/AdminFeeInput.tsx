@@ -6,37 +6,37 @@ import { IStyledComponent } from '../../../types/global';
 import Button from '../Button/Button';
 import Input from '../Form/Elements/Input';
 
-import styles from './ExhangeInput.module.css';
+import styles from './AdminFeeInput.module.css';
 
 interface IStat extends IStyledComponent {
-  editExchange: boolean;
+  editAdminFee: boolean;
 }
 
 const Stat: React.FC<IStat & ButtonProps> = props => {
-  const { className, style, editExchange, isDisabled, ...rest } = props;
+  const { className, style, editAdminFee, isDisabled, ...rest } = props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
   return (
     <div className={`${styles.stat__container} ${className}`} style={style}>
       <VStack align="start">
         <Text as="sup" style={{ fontStyle: 'italic', fontWeight: 'bold' }}>
-          {appStrings.currencyExchange}
+          {appStrings.adminFee}
         </Text>
         <Flex>
           <Input
-            isDisabled={!editExchange}
-            icon={'₡'}
+            isDisabled={!editAdminFee}
+            icon={'%'}
             type="number"
-            name="exchange"
+            name="adminFee"
             containerStyle={{ width: '100px' }}
           />
 
-          {editExchange && (
+          {editAdminFee && (
             <Button type="submit" style={{ height: 40 }}>
               <Check size={20} />
             </Button>
           )}
-          {!editExchange && (
+          {!editAdminFee && (
             <Button {...rest} style={{ height: 40 }} isDisabled={isDisabled}>
               <Pencil size={20} />
             </Button>

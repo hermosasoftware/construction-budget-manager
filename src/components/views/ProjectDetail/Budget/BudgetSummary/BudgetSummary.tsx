@@ -31,7 +31,7 @@ const BudgetSummary: React.FC<IBudgetSummaryView> = props => {
     sumMaterials,
   }: IProjectBudget) => {
     const totalDirectCost = sumLabors + sumSubcontracts + sumMaterials;
-    const adminFee = totalDirectCost * 0.12;
+    const adminFee = totalDirectCost * (budget.adminFee / 100);
     const grandTotal = totalDirectCost + adminFee;
     return { totalDirectCost, adminFee, grandTotal };
   };
@@ -104,7 +104,7 @@ const BudgetSummary: React.FC<IBudgetSummaryView> = props => {
           )}`}
         />
         <Stat
-          title={appStrings.adminFee}
+          title={`${appStrings.adminFee} ${budget.adminFee}%`}
           content={`${colonFormat(budgetTotals.adminFee)}\n${dolarFormat(
             budgetTotals.adminFee / budgetTotals.exchange,
           )}`}
