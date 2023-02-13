@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import Button from '../../../common/Button/Button';
 import Modal from '../../../common/Modal/Modal';
 import SearchInput from '../../../common/SearchInput/SearchInput';
-import Form, { DatePicker, Input } from '../../../common/Form';
+import Form, { DatePicker, Input, Select } from '../../../common/Form';
 import AlertDialog from '../../../common/AlertDialog/AlertDialog';
 import {
   addOrderProduct,
@@ -26,7 +26,9 @@ import { getExtraBudgetMaterials } from '../../../../services/ExtraBudgetMateria
 import { IMaterialBreakdown } from '../../../../types/collections';
 import { getBudgetMaterials } from '../../../../services/BudgetMaterialsService';
 import SearchSelect from '../../../common/Form/Elements/SearchSelect';
-
+import { formatDate } from '../../../../utils/dates';
+import { getProjectActivities } from '../../../../services/ProjectService';
+import TabGroup from '../../../common/TabGroup/TabGroup';
 import styles from './Orders.module.css';
 
 interface IOrdersView {
@@ -37,11 +39,24 @@ interface IProduct extends Omit<IOrderProduct, 'description'> {
   description: { value: string; label: string };
 }
 
+interface IOrder extends Omit<IProjectOrder, 'activity'> {
+  activity: { value: string; label: string };
+}
+
+interface IActivity {
+  activity: string;
+  id: string;
+  isExtra?: boolean;
+}
+
 const initialSelectedOrderData = {
   id: '',
   order: 1,
   proforma: '',
+  activity: { value: '', label: '' },
   date: new Date(),
+  deliverDate: new Date(),
+  sentStatus: false,
   cost: 0,
   products: [],
 };
@@ -50,7 +65,6 @@ const initialSelectedProductData = {
   id: '',
   quantity: 1,
   description: { value: '', label: '' },
-  activity: 'Piscina', // TODO (the activity need to be auto-populate from materials)
   cost: 0,
   materialRef: '',
 };
@@ -69,12 +83,14 @@ const Orders: React.FC<IOrdersView> = props => {
   const [extraMaterials, setExtraMaterials] = useState<IMaterialBreakdown[]>(
     [],
   );
-  const [selectedOrder, setSelectedOrder] = useState<IProjectOrder>(
+  const [selectedOrder, setSelectedOrder] = useState<IOrder>(
     initialSelectedOrderData,
   );
   const [selectedProduct, setSelectedProduct] = useState<IProduct>(
     initialSelectedProductData,
   );
+  const [selectedTab, setSelectedTab] = useState('draft');
+  const [allActivities, setAllActivities] = useState<IActivity[]>([]);
   const [materialRef, setMaterialRef] = useState(initialMaterialRefData);
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
   const [isProductAlertDialogOpen, setIsProductAlertDialogOpen] =
@@ -88,9 +104,11 @@ const Orders: React.FC<IOrdersView> = props => {
   const tableHeader: TTableHeader[] = [
     { name: 'order', value: appStrings.order },
     { name: 'proforma', value: appStrings.proforma },
-    { name: 'date', value: appStrings.date },
-    { name: 'description', value: appStrings.description },
+    { name: 'date', value: 'Creation Date' },
+    { name: 'deliverDate', value: 'Deliver Date' },
     { name: 'activity', value: appStrings.activity },
+    // { name: 'status', value: 'Status' },
+    { name: 'description', value: appStrings.description },
     { name: 'quantity', value: appStrings.quantity },
     { name: 'cost', value: appStrings.cost },
     { name: 'subtotal', value: appStrings.subtotal, isGreen: true },
@@ -98,11 +116,35 @@ const Orders: React.FC<IOrdersView> = props => {
     { name: 'total', value: appStrings.total, isGreen: true },
   ];
 
-  const formatTableData = () =>
-    tableData.map(data => ({
-      ...data,
-      date: data.date.toDateString(),
-    }));
+  const orderStatus: Array<{ id: string; name: string }> = [
+    { id: 'pending', name: appStrings?.pending },
+    { id: 'sent', name: appStrings?.sent },
+  ];
+
+  const formatTableData = () => {
+    const showOnlySent = selectedTab === 'sent';
+    return tableData
+      .filter(e => (showOnlySent ? e.sentStatus : !e.sentStatus))
+      .map(data => {
+        const a = getActivityById(data.activity);
+        return {
+          ...data,
+          date: formatDate(data.date, 'MM/DD/YYYY'),
+          deliverDate: formatDate(data.deliverDate, 'MM/DD/YYYY'),
+          activity: a?.isExtra
+            ? `${a?.activity} (${appStrings.extra})`
+            : a?.activity,
+        };
+      });
+  };
+
+  const getActivityById = (id?: string): IActivity =>
+    allActivities.find(e => e.id === id)!;
+
+  const getFormattedActivity = (id?: string) => {
+    const activity = getActivityById(id);
+    return { value: activity?.id, label: activity?.activity };
+  };
 
   const getOrders = async () => {
     const successCallback = (response: IProjectOrder[]) => {
@@ -113,6 +155,11 @@ const Orders: React.FC<IOrdersView> = props => {
       appStrings,
       successCallback,
     });
+  };
+
+  const getActivities = async () => {
+    const successCallback = (data: IActivity[]) => setAllActivities(data);
+    await getProjectActivities({ projectId, appStrings, successCallback });
   };
 
   const getMaterials = async () => {
@@ -204,9 +251,17 @@ const Orders: React.FC<IOrdersView> = props => {
     }
   };
 
+  const handleOnChangeActivity = (e: any) => {
+    setSelectedOrder({ ...selectedOrder, activity: e.value });
+  };
+
   const editButton = async (projectOrderId: string) => {
     const successCallback = (response: IProjectOrder) => {
-      setSelectedOrder(response);
+      const parsedOrder = {
+        ...response,
+        activity: getFormattedActivity(response?.activity),
+      };
+      setSelectedOrder(parsedOrder);
       setIsModalOpen(true);
     };
     await getProjectOrderById({
@@ -238,7 +293,12 @@ const Orders: React.FC<IOrdersView> = props => {
   };
 
   const addProduct = async (productId: string) => {
-    setSelectedOrder(tableData.find(m => m.id === productId)!);
+    const order = tableData.find(m => m.id === productId)!;
+    const parsedOrder = {
+      ...order!,
+      activity: getFormattedActivity(order?.activity),
+    };
+    setSelectedOrder(parsedOrder);
     setIsProductModalOpen(true);
   };
 
@@ -248,7 +308,11 @@ const Orders: React.FC<IOrdersView> = props => {
       ?.products?.find(s => s.id === productId);
     if (product) {
       const order = tableData.find(m => m.id === orderId);
-      setSelectedOrder(order!);
+      const parsedOrder = {
+        ...order!,
+        activity: getFormattedActivity(order?.activity),
+      };
+      setSelectedOrder(parsedOrder);
       setSelectedProduct({
         ...product,
         description: { value: product.id, label: product.description },
@@ -291,7 +355,10 @@ const Orders: React.FC<IOrdersView> = props => {
     });
   };
 
-  const handleOnSubmit = async (projectOrder: IProjectOrder) => {
+  const handleOnSubmit = async (projectOrder: IOrder) => {
+    const { activity, sentStatus, ...rest } = projectOrder;
+    const isSent = sentStatus === 'sent';
+    debugger;
     const successCallback = (item: IProjectOrder) => {
       setSelectedOrder(initialSelectedOrderData);
       setIsModalOpen(false);
@@ -299,7 +366,7 @@ const Orders: React.FC<IOrdersView> = props => {
     };
     const serviceCallParameters = {
       projectId,
-      projectOrder,
+      projectOrder: { ...rest, activity: activity.value, sentStatus: isSent },
       appStrings,
       successCallback,
     };
@@ -363,6 +430,10 @@ const Orders: React.FC<IOrdersView> = props => {
   const validationSchema = yup.object().shape({
     order: yup.number().positive().required(appStrings?.requiredField),
     proforma: yup.string().required(appStrings?.requiredField),
+    activity: yup.object().shape({
+      value: yup.string().required(appStrings?.requiredField),
+      label: yup.string().required(appStrings?.requiredField),
+    }),
     date: yup.date().required(appStrings?.requiredField),
   });
 
@@ -371,18 +442,9 @@ const Orders: React.FC<IOrdersView> = props => {
       value: yup.string().required(appStrings?.requiredField),
       label: yup.string().required(appStrings?.requiredField),
     }),
-    activity: yup.string().required(appStrings?.requiredField),
     quantity: yup.string().required(appStrings?.requiredField),
     cost: yup.string().required(appStrings?.requiredField),
   });
-
-  useEffect(() => {
-    let abortController = new AbortController();
-    getOrders();
-    getMaterials();
-    getExtraMaterials();
-    return () => abortController.abort();
-  }, []);
 
   const options = () => {
     let optionsList: { value: string; label: string }[] = [];
@@ -419,6 +481,26 @@ const Orders: React.FC<IOrdersView> = props => {
     return optionsList;
   };
 
+  const formatActOptions = () => {
+    const isActivityUsed = (activityId: string) =>
+      !tableData.some(e => e.activity === activityId);
+    return allActivities
+      .filter(e => isActivityUsed(e.id))
+      .map(e => ({
+        label: !e.isExtra ? e.activity : `${e.activity} (${appStrings.extra})`,
+        value: e.id,
+      }));
+  };
+
+  useEffect(() => {
+    let abortController = new AbortController();
+    getOrders();
+    getMaterials();
+    getExtraMaterials();
+    getActivities();
+    return () => abortController.abort();
+  }, []);
+
   return (
     <div className={`${styles.operations_container}`}>
       <Flex marginBottom="5px">
@@ -430,13 +512,13 @@ const Orders: React.FC<IOrdersView> = props => {
         <div style={{ textAlign: 'end' }}>
           <Button
             onClick={() => {
-              setIsModalOpen(true);
               tableData.length
                 ? setSelectedOrder({
                     ...initialSelectedOrderData,
                     order: tableData[0].order + 1,
                   })
                 : setSelectedOrder(initialSelectedOrderData);
+              setIsModalOpen(true);
             }}
           >
             +
@@ -465,12 +547,30 @@ const Orders: React.FC<IOrdersView> = props => {
                 label={appStrings.order}
                 isDisabled
               />
+              <SearchSelect
+                name="activity"
+                label={appStrings.activity}
+                placeholder={appStrings.activity}
+                isDisabled={!!selectedOrder.id}
+                options={formatActOptions()}
+                value={selectedOrder.activity}
+                onChange={item => handleOnChangeActivity(item)}
+              />
               <Input
                 name="proforma"
                 type="number"
                 label={appStrings.proforma}
               />
               <DatePicker name="date" label={appStrings.date}></DatePicker>
+              <DatePicker
+                name="deliverDate"
+                label={appStrings.deliverDate}
+              ></DatePicker>
+              <Select
+                name="sentStatus"
+                options={orderStatus}
+                label={appStrings.status}
+              />
               <br />
               <Button width="full" type="submit">
                 {appStrings.submit}
@@ -481,6 +581,7 @@ const Orders: React.FC<IOrdersView> = props => {
             isOpen={isProductModalOpen}
             onClose={() => {
               setSelectedOrder(initialSelectedOrderData);
+              setSelectedProduct(initialSelectedProductData);
               setIsProductModalOpen(false);
             }}
           >
@@ -505,12 +606,6 @@ const Orders: React.FC<IOrdersView> = props => {
                 options={options()}
                 value={selectedProduct.description}
                 onChange={item => handleSearchSelect(item?.value?.value)}
-              />
-              <Input
-                name="activity"
-                label={appStrings.activity}
-                innerStyle={{ width: '200px', marginRight: '5px' }}
-                isDisabled
               />
               <Input
                 name="quantity"
@@ -552,6 +647,18 @@ const Orders: React.FC<IOrdersView> = props => {
         }}
         onSubmit={() => deleteProduct()}
       />
+      <div className={styles.tabsContainer}>
+        <TabGroup
+          className={styles.tabs}
+          tabs={[
+            { id: 'pending', name: appStrings.pending, selected: true },
+            { id: 'sent', name: appStrings.sent },
+          ]}
+          variant="rounded"
+          onSelectedTabChange={activeTabs => setSelectedTab(activeTabs[0])}
+        />
+      </div>
+
       <OrdersTableView
         headers={tableHeader}
         items={formatTableData()}
