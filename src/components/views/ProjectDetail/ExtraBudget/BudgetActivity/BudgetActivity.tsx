@@ -12,7 +12,6 @@ import {
   createExtraBudgetActivity,
   deleteExtraBudgetActivity,
   getExtraBudgetActivityById,
-  getExtraBudgetActivity,
   updateExtraBudgetActivity,
 } from '../../../../../services/ExtraBudgetActivityService';
 import { IBudgetActivity } from '../../../../../types/budgetActivity';
@@ -28,6 +27,7 @@ interface IBudgetActivityView {
   projectId: string;
   getExtraBudget: Function;
   budget: IProjectBudget;
+  activityList: IBudgetActivity[];
   setActivity: Function;
 }
 
@@ -50,7 +50,8 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const { projectId, getExtraBudget, budget, setActivity } = props;
+  const { projectId, getExtraBudget, budget, activityList, setActivity } =
+    props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
   const navigate = useNavigate();
   const tableHeader: TTableHeader[] = [
@@ -77,16 +78,6 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
       sumLabors: colonFormat(data.sumLabors),
       sumSubcontracts: colonFormat(data.sumSubcontracts),
     }));
-
-  const getActivities = async () => {
-    const successCallback = (response: IBudgetActivity[]) =>
-      setTableData(response);
-    await getExtraBudgetActivity({
-      projectId,
-      appStrings,
-      successCallback,
-    });
-  };
 
   const addItem = (item: IBudgetActivity) => setTableData([item, ...tableData]);
 
@@ -180,7 +171,7 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
 
   useEffect(() => {
     let abortController = new AbortController();
-    getActivities();
+    setTableData(activityList);
     return () => abortController.abort();
   }, []);
 

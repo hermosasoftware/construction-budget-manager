@@ -18,6 +18,7 @@ import {
 import { IProjectBudget } from '../../../../types/projectBudget';
 import { IBudgetActivity } from '../../../../types/budgetActivity';
 import {
+  getExtraBudgetActivity,
   getExtraBudgetActivityById,
   updateExtraBudgetActivityAdminFee,
   updateExtraBudgetActivityExchange,
@@ -40,6 +41,7 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
   const [editExchange, setEditExchange] = useState(false);
   const [editAdminFee, setEditAdminFee] = useState(false);
   const [budget, setBudget] = useState<IProjectBudget>();
+  const [activityList, setActivityList] = useState<IBudgetActivity[]>([]);
   const [activity, setActivity] = useState<IBudgetActivity>();
   const [budgetFlag, setbudgetFlag] = useState(false);
 
@@ -55,9 +57,24 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
     });
   };
 
+  const getActivities = async () => {
+    const successCallback = (response: IBudgetActivity[]) =>
+      setActivityList(response);
+    await getExtraBudgetActivity({
+      projectId,
+      appStrings,
+      successCallback,
+    });
+  };
+
   const getActivity = async (extraBudgetActivityId: string) => {
-    const successCallback = (response: IBudgetActivity) =>
+    const successCallback = (response: IBudgetActivity) => {
       setActivity(response);
+      const index = activityList.findIndex(e => e.id === response.id);
+      const data = [...activityList];
+      data.splice(index, 1, response);
+      setActivityList(data);
+    };
     await getExtraBudgetActivityById({
       projectId,
       extraBudgetActivityId,
@@ -123,6 +140,7 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
   useEffect(() => {
     let abortController = new AbortController();
     getExtraBudget();
+    getActivities();
     return () => abortController.abort();
   }, []);
 
@@ -165,12 +183,19 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
           ),
         }
       : {
-          summary: <BudgetSummary budget={budget!} projectId={projectId} />,
+          summary: (
+            <BudgetSummary
+              budget={budget!}
+              activityList={activityList}
+              projectId={projectId}
+            />
+          ),
           activity: (
             <BudgetActivity
               projectId={projectId}
               getExtraBudget={getExtraBudget}
               budget={budget!}
+              activityList={activityList}
               setActivity={setActivity}
             />
           ),
