@@ -50,39 +50,6 @@ export const getProjectExtraBudget = async ({
   }
 };
 
-export const updateProjectExtraBudgetExchange = async ({
-  projectId,
-  exchange,
-  appStrings,
-  successCallback,
-  errorCallback,
-}: {
-  projectId: string;
-  exchange: number;
-} & IService) => {
-  try {
-    const extraBudgetRef = doc(
-      db,
-      'projects',
-      projectId,
-      'projectExtraBudget',
-      'summary',
-    );
-    await updateDoc(extraBudgetRef, { exchange });
-
-    toastSuccess(appStrings.success, appStrings.saveSuccess);
-
-    successCallback && successCallback();
-  } catch (error) {
-    let errorMessage = appStrings.genericError;
-    if (error instanceof FirebaseError) errorMessage = error.message;
-
-    toastError(appStrings.saveError, errorMessage);
-
-    errorCallback && errorCallback();
-  }
-};
-
 export const copyBudgetToExtraBudget = async ({
   projectId,
   appStrings,

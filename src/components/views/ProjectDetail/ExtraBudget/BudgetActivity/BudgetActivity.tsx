@@ -34,6 +34,7 @@ interface IBudgetActivityView {
 const initialSelectedItemData = {
   id: '',
   activity: '',
+  exchange: 1,
   adminFee: 12,
   sumLabors: 0,
   sumMaterials: 0,
@@ -55,6 +56,7 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
   const tableHeader: TTableHeader[] = [
     { name: 'activity', value: appStrings.name },
     { name: 'date', value: appStrings.date },
+    { name: 'exchange', value: appStrings.exchange },
     { name: 'adminFee', value: appStrings.adminFee },
     { name: 'sumMaterials', value: appStrings.materials, isGreen: true },
     { name: 'sumLabors', value: appStrings.labors, isGreen: true },
@@ -69,6 +71,7 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
     tableData.map(data => ({
       ...data,
       date: data.date.toDateString(),
+      exchange: colonFormat(Number(data.exchange)),
       adminFee: `${data.adminFee}%`,
       sumMaterials: colonFormat(data.sumMaterials),
       sumLabors: colonFormat(data.sumLabors),
@@ -157,6 +160,7 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
       projectId,
       extraBudgetActivity: {
         ...extraBudgetActivity,
+        exchange: Number(extraBudgetActivity.exchange),
         adminFee: Number(extraBudgetActivity.adminFee),
       },
       appStrings,
@@ -169,6 +173,7 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
 
   const validationSchema = yup.object().shape({
     activity: yup.string().required(appStrings?.requiredField),
+    exchange: yup.number().positive().required(appStrings?.requiredField),
     adminFee: yup.number().min(0).max(100).required(appStrings?.requiredField),
     date: yup.date().required(appStrings?.requiredField),
   });
@@ -211,6 +216,11 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
               onSubmit={handleOnSubmit}
             >
               <Input name="activity" label={appStrings.name} />
+              <Input
+                name="exchange"
+                type="number"
+                label={appStrings.currencyExchange}
+              />
               <Input
                 name="adminFee"
                 type="number"

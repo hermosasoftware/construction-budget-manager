@@ -10,6 +10,7 @@ import {
   where,
   documentId,
   increment,
+  updateDoc,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
@@ -133,6 +134,76 @@ export const updateExtraBudgetActivity = async ({
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
     successCallback && successCallback(extraBudgetActivity);
+  } catch (error) {
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.saveError, errorMessage);
+
+    errorCallback && errorCallback();
+  }
+};
+
+export const updateExtraBudgetActivityExchange = async ({
+  projectId,
+  extraBudgetActivityId,
+  exchange,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: {
+  projectId: string;
+  extraBudgetActivityId: string;
+  exchange: number;
+} & IService) => {
+  try {
+    const extraBudgetRef = doc(
+      db,
+      'projects',
+      projectId,
+      'projectExtraBudget',
+      extraBudgetActivityId,
+    );
+    await updateDoc(extraBudgetRef, { exchange });
+
+    toastSuccess(appStrings.success, appStrings.saveSuccess);
+
+    successCallback && successCallback();
+  } catch (error) {
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.saveError, errorMessage);
+
+    errorCallback && errorCallback();
+  }
+};
+
+export const updateExtraBudgetActivityAdminFee = async ({
+  projectId,
+  extraBudgetActivityId,
+  adminFee,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: {
+  projectId: string;
+  extraBudgetActivityId: string;
+  adminFee: number;
+} & IService) => {
+  try {
+    const extraBudgetRef = doc(
+      db,
+      'projects',
+      projectId,
+      'projectExtraBudget',
+      extraBudgetActivityId,
+    );
+    await updateDoc(extraBudgetRef, { adminFee });
+
+    toastSuccess(appStrings.success, appStrings.saveSuccess);
+
+    successCallback && successCallback();
   } catch (error) {
     let errorMessage = appStrings.genericError;
     if (error instanceof FirebaseError) errorMessage = error.message;
