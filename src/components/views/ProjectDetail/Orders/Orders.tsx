@@ -358,7 +358,6 @@ const Orders: React.FC<IOrdersView> = props => {
   const handleOnSubmit = async (projectOrder: IOrder) => {
     const { activity, sentStatus, ...rest } = projectOrder;
     const isSent = sentStatus === 'sent';
-    debugger;
     const successCallback = (item: IProjectOrder) => {
       setSelectedOrder(initialSelectedOrderData);
       setIsModalOpen(false);
