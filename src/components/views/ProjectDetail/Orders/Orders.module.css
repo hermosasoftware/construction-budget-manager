@@ -1,6 +1,5 @@
 .operations_container {
   margin: 20px;
-  padding-top: 10px;
 }
 
 .tabs {
@@ -14,4 +13,8 @@
   gap: 10px;
   margin-top: 5px;
   margin-bottom: 5px;
+}
+
+.p_10 {
+  padding-top: 10px;
 }
