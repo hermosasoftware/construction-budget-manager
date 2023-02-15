@@ -124,18 +124,18 @@ const InvoiceTableView = <T extends TObject>(props: ITableProps<T>) => {
     if (isDollarColumn && formatCurrency) {
       return dolarFormat(calculateDollars(row));
     } else if (isImp) {
-      const allTaxes = row.products.reduce((a: any, b: any) => {
+      const allTaxes = row.products?.reduce((a: any, b: any) => {
         return a + calculateTaxes(b.quantity, b.cost, b.tax);
       }, 0);
-      return colonFormat(allTaxes);
+      return colonFormat(Number(allTaxes));
     } else if (isSubTotal) {
       return colonFormat(calculateColons(row));
     } else if (isTotal) {
       const subtotal = calculateColons(row);
-      const allTaxes = row.products.reduce((a: any, b: any) => {
+      const allTaxes = row.products?.reduce((a: any, b: any) => {
         return a + calculateTaxes(b.quantity, b.cost, b.tax);
       }, 0);
-      return colonFormat(subtotal + allTaxes);
+      return colonFormat(subtotal + Number(allTaxes));
     }
     return row[headerName] || '-';
   };

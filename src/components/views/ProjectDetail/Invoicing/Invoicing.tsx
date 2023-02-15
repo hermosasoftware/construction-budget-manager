@@ -170,7 +170,11 @@ const Invoicing: React.FC<IInvoicing> = props => {
     const successCallback = (item: IInvoice) => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
-      projectInvoiceDetail.id ? updateItem(item) : addItem(item);
+      const itemToAdd = {
+        ...item,
+        products: item.products ? item.products : [],
+      };
+      projectInvoiceDetail.id ? updateItem(itemToAdd) : addItem(itemToAdd);
     };
     const { option, ...rest } = projectInvoiceDetail;
     const serviceCallParameters = {
