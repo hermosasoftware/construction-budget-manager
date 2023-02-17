@@ -28,6 +28,7 @@ export const getProjectOrders = async ({
       ...doc.data(),
       id: doc.id,
       date: doc.data()?.date?.toDate(),
+      deliverDate: doc.data()?.deliverDate?.toDate(),
     })) as IProjectOrder[];
 
     let allOrders: IProjectOrder[] = [];
@@ -78,6 +79,7 @@ export const getProjectOrderById = async ({
       ...result.data(),
       id: result.id,
       date: result.data()?.date?.toDate(),
+      deliverDate: result.data()?.deliverDate?.toDate(),
     } as IProjectOrder;
 
     const productQ = collection(orderRef, 'products');

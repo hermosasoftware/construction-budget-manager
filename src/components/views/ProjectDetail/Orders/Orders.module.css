@@ -1,4 +1,20 @@
 .operations_container {
   margin: 20px;
+}
+
+.tabs {
+  flex-wrap: wrap;
+  min-width: 250px;
+}
+
+.tabsContainer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.p_10 {
   padding-top: 10px;
 }

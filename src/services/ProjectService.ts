@@ -11,6 +11,7 @@ import {
   setDoc,
   runTransaction,
   deleteDoc,
+  documentId,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
@@ -237,5 +238,46 @@ const deleteMaterialAndSubmaterials = async (budgetRef: string) => {
         'subMaterials',
       ]);
     }
+  }
+};
+
+export const getProjectActivities = async ({
+  projectId,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: {
+  projectId: string;
+} & IService) => {
+  try {
+    const budgetRef = query(
+      collection(db, 'projects', projectId, 'projectBudget'),
+      where(documentId(), '!=', 'summary'),
+    );
+    const extraBudgetRef = query(
+      collection(db, 'projects', projectId, 'projectExtraBudget'),
+      where(documentId(), '!=', 'summary'),
+    );
+    const budget = await getDocs(budgetRef);
+    const extraBudget = await getDocs(extraBudgetRef);
+    const budgetActivities = budget.docs.map(doc => ({
+      id: doc.id,
+      activity: doc.data().activity,
+    }));
+    const extraBudgetActivities = extraBudget.docs.map(doc => ({
+      id: doc.id,
+      activity: doc.data().activity,
+      isExtra: true,
+    }));
+
+    successCallback &&
+      successCallback([...budgetActivities, ...extraBudgetActivities]);
+  } catch (error) {
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.getInformationError, errorMessage);
+
+    errorCallback && errorCallback();
   }
 };
