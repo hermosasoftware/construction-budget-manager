@@ -5,7 +5,12 @@ import { useNavigate } from 'react-router-dom';
 import Button from '../../../common/Button/Button';
 import Modal from '../../../common/Modal/Modal';
 import SearchInput from '../../../common/SearchInput/SearchInput';
-import Form, { DatePicker, Input, Select } from '../../../common/Form';
+import Form, {
+  AutoComplete,
+  DatePicker,
+  Input,
+  Select,
+} from '../../../common/Form';
 import AlertDialog from '../../../common/AlertDialog/AlertDialog';
 import {
   addOrderProduct,
@@ -22,9 +27,6 @@ import { useAppSelector } from '../../../../redux/hooks';
 import OrdersTableView, {
   TTableHeader,
 } from '../../../layout/OrdersTableView/OrdersTableView';
-import { getExtraBudgetMaterials } from '../../../../services/ExtraBudgetMaterialsService';
-import { IMaterialBreakdown } from '../../../../types/collections';
-import { getBudgetMaterials } from '../../../../services/BudgetMaterialsService';
 import SearchSelect from '../../../common/Form/Elements/SearchSelect';
 import { formatDate } from '../../../../utils/dates';
 import { getProjectActivities } from '../../../../services/ProjectService';
@@ -132,6 +134,15 @@ const Orders: React.FC<IOrdersView> = props => {
             : a?.activity,
         };
       });
+  };
+
+  const getSuggestions = () => {
+    let products: any[] = [];
+    tableData.forEach(d => {
+      const p = d.products?.map(p => ({ value: p.description }));
+      products = [...products, ...p];
+    });
+    return products;
   };
 
   const getActivityById = (id?: string): IActivity =>
@@ -496,9 +507,10 @@ const Orders: React.FC<IOrdersView> = props => {
                 validateOnBlur
                 onSubmit={onSubmitProduct}
               >
-                <Input
+                <AutoComplete
                   name="description"
                   label={appStrings.material}
+                  suggestions={getSuggestions()}
                   isDisabled={!!selectedProduct.id}
                 />
                 <Input
