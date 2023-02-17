@@ -28,6 +28,10 @@ export const ButtonStyles = {
     ghost: () => ({
       color: 'black',
     }),
+    ghost_outlined: () => ({
+      color: 'black',
+      border: '1px solid var(--chakra-colors-divider_disable)',
+    }),
     outline: () => ({ color: 'black' }),
     link: () => ({ color: 'black' }),
   },

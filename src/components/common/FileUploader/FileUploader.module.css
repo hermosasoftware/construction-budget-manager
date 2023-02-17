@@ -1,5 +1,19 @@
 button.button {
+  min-width: 100%;
   width: var(--input-width-md);
   height: var(--input-height-md);
   font-size: var(--font-size-sm);
+  color: var(--chakra-colors-placeholder_color);
+  font-weight: 600;
+
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+button.button.isUploaded {
+  border-width: 2px;
+  color: var(--chakra-colors-success);
+  border-color: var(--chakra-colors-success);
 }

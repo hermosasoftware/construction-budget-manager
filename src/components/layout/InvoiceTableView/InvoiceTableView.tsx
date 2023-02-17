@@ -14,7 +14,13 @@ import {
   Thead,
   Tr,
 } from '@chakra-ui/react';
-import { DotsThreeOutlineVertical, Pencil, Plus, Trash } from 'phosphor-react';
+import {
+  DotsThreeOutlineVertical,
+  FilePdf,
+  Pencil,
+  Plus,
+  Trash,
+} from 'phosphor-react';
 import { TObject } from '../../../types/global';
 import { colonFormat, dolarFormat } from '../../../utils/numbers';
 import styles from './InvoiceTableView.module.css';
@@ -271,6 +277,11 @@ const InvoiceTableView = <T extends TObject>(props: ITableProps<T>) => {
                           >
                             Delete <Spacer /> <Trash />
                           </MenuItem>
+                          {row.pdfURL && (
+                            <MenuItem onClick={() => window.open(row.pdfURL)}>
+                              Open PDF <Spacer /> <FilePdf size={24} />
+                            </MenuItem>
+                          )}
                         </MenuList>
                       </Menu>
                     </Td>

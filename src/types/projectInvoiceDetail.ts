@@ -4,6 +4,9 @@ export interface IProjectInvoiceDetail {
   date: Date;
   activity: string;
   invoice: string;
+  pdfURL?: string;
+  pdfFile?: File;
+  products: IInvoiceProduct[];
 }
 
 export interface IInvoiceProduct {

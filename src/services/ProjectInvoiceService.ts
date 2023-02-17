@@ -7,9 +7,17 @@ import {
   getDoc,
   deleteDoc,
   query,
+  updateDoc,
+  orderBy,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
-import { db } from '../config/firebaseConfig';
+import {
+  deleteObject,
+  getDownloadURL,
+  ref,
+  uploadBytes,
+} from 'firebase/storage';
+import { db, storage } from '../config/firebaseConfig';
 import {
   IInvoiceProduct,
   IProjectInvoiceDetail,
@@ -25,7 +33,7 @@ export const getProjectInvoicing = async ({
 }: { projectId: string } & IService) => {
   try {
     const invRef = collection(db, 'projects', projectId, 'projectInvoicing');
-    const result = await getDocs(invRef);
+    const result = await getDocs(query(invRef, orderBy('order', 'desc')));
     const invoices = result.docs.map(doc => ({
       ...doc.data(),
       id: doc.id,
@@ -76,11 +84,20 @@ export const getProjectInvoiceDetailById = async ({
       projectInvoiceDetailId,
     );
     const result = await getDoc(invRef);
-    const data = {
+    let data = {
       ...result.data(),
       id: result.id,
       date: result.data()?.date.toDate(),
     } as IProjectInvoiceDetail;
+
+    const productQ = collection(invRef, 'products');
+    const productsDocs = await getDocs(productQ);
+    const products = productsDocs.docs.map(doc => ({
+      ...doc.data(),
+      id: doc.id,
+    })) as IInvoiceProduct[];
+
+    data = { ...data, products };
 
     successCallback && successCallback(data);
   } catch (error) {
@@ -104,13 +121,21 @@ export const createProjectInvoiceDetail = async ({
   projectInvoiceDetail: IProjectInvoiceDetail;
 } & IService) => {
   try {
-    const { id, ...rest } = projectInvoiceDetail;
+    const { id, pdfURL, pdfFile, products, ...rest } = projectInvoiceDetail;
     const invRef = collection(db, 'projects', projectId, 'projectInvoicing');
+
     const result = await addDoc(invRef, rest);
-    const data = {
+    let data = {
       ...projectInvoiceDetail,
       id: result.id,
     } as IProjectInvoiceDetail;
+
+    if (pdfFile) {
+      const storageRef = ref(storage, `invoices-pdf/${result.id}`);
+      await uploadBytes(storageRef, pdfFile);
+      data.pdfURL = await getDownloadURL(storageRef);
+      await updateDoc(doc(invRef, data.id), { pdfURL: data.pdfURL });
+    }
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
@@ -136,9 +161,18 @@ export const updateProjectInvoiceDetail = async ({
   projectInvoiceDetail: IProjectInvoiceDetail;
 } & IService) => {
   try {
-    const { id, ...rest } = projectInvoiceDetail;
+    const { id, pdfFile, products, ...rest } = projectInvoiceDetail;
     const invRef = doc(db, 'projects', projectId, 'projectInvoicing', id);
-    await setDoc(invRef, rest);
+
+    if (pdfFile) {
+      const storageRef = ref(storage, `invoices-pdf/${id}`);
+      await uploadBytes(storageRef, pdfFile);
+      const pdfURL = await getDownloadURL(storageRef);
+      projectInvoiceDetail.pdfURL = pdfURL;
+      await setDoc(invRef, { ...rest, pdfURL });
+    } else {
+      await setDoc(invRef, rest);
+    }
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
@@ -171,6 +205,13 @@ export const deleteProjectInvoiceDetail = async ({
       'projectInvoicing',
       projectInvoiceDetailId,
     );
+    const result = await getDoc(invRef);
+
+    if (result.data()?.pdfURL) {
+      const storageRef = ref(storage, `invoices-pdf/${result.id}`);
+      await deleteObject(storageRef);
+    }
+
     await deleteDoc(invRef);
 
     toastSuccess(appStrings.success, appStrings.deleteSuccess);
