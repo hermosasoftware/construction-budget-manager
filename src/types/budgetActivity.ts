@@ -10,6 +10,7 @@ export interface IBudgetActivity {
   sumLabors: number;
   sumMaterials: number;
   sumSubcontracts: number;
+  sumOthers: number;
   date: Date;
   materials?: IMaterialBreakdown[];
   labors?: IBudgetLabor[];

@@ -8,85 +8,80 @@ import TableView, {
   TTableHeader,
 } from '../../../../common/TableView/TableView';
 import {
-  createBudgetActivity,
-  deleteBudgetActivity,
-  getBudgetActivityById,
-  getBudgetActivity,
-  updateBudgetActivity,
-} from '../../../../../services/BudgetActivityService';
-import { IBudgetActivity } from '../../../../../types/budgetActivity';
+  createExtraBudgetOther,
+  deleteExtraBudgetOther,
+  getExtraBudgetOtherById,
+  getExtraBudgetOthers,
+  updateExtraBudgetOther,
+} from '../../../../../services/ExtraBudgetOthersService';
+import { IBudgetOther } from '../../../../../types/budgetOther';
 import { IProjectBudget } from '../../../../../types/projectBudget';
-import Form, { DatePicker, Input } from '../../../../common/Form';
+import { IBudgetActivity } from '../../../../../types/budgetActivity';
+import Form, { Input } from '../../../../common/Form';
 import AlertDialog from '../../../../common/AlertDialog/AlertDialog';
 import { useAppSelector } from '../../../../../redux/hooks';
-import { colonFormat } from '../../../../../utils/numbers';
+import { colonFormat, dolarFormat } from '../../../../../utils/numbers';
 
-import styles from './BudgetActivity.module.css';
+import styles from './BudgetOther.module.css';
 
-interface IBudgetActivityView {
+interface IBudgetOtherView {
   projectId: string;
-  isBudgetOpen: boolean;
-  getBudget: Function;
+  getExtraBudget: Function;
   budget: IProjectBudget;
-  setActivity: Function;
+  getActivity: Function;
+  activity: IBudgetActivity;
 }
 
 const initialSelectedItemData = {
   id: '',
-  activity: '',
-  sumLabors: 0,
-  sumMaterials: 0,
-  sumSubcontracts: 0,
-  sumOthers: 0,
-  date: new Date(),
+  name: '',
+  quantity: 1,
+  cost: 0,
+  subtotal: 0,
 };
 
-const BudgetActivity: React.FC<IBudgetActivityView> = props => {
-  const [tableData, setTableData] = useState<IBudgetActivity[]>([]);
-  const [selectedItem, setSelectedItem] = useState<IBudgetActivity>(
+const BudgetOther: React.FC<IBudgetOtherView> = props => {
+  const { projectId, getExtraBudget, budget, getActivity, activity } = props;
+  const [tableData, setTableData] = useState<IBudgetOther[]>([]);
+  const [selectedItem, setSelectedItem] = useState<IBudgetOther>(
     initialSelectedItemData,
   );
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const { projectId, isBudgetOpen, getBudget, budget, setActivity } = props;
+
   const appStrings = useAppSelector(state => state.settings.appStrings);
+
   const tableHeader: TTableHeader[] = [
-    { name: 'activity', value: appStrings.name },
-    { name: 'date', value: appStrings.date },
-    { name: 'sumMaterials', value: appStrings.materials, isGreen: true },
-    { name: 'sumLabors', value: appStrings.labors, isGreen: true },
-    {
-      name: 'sumSubcontracts',
-      value: appStrings.subcontracts,
-      isGreen: true,
-    },
-    { name: 'sumOthers', value: appStrings.others, isGreen: true },
+    { name: 'name', value: appStrings.name },
+    { name: 'quantity', value: appStrings.quantity },
+    { name: 'cost', value: appStrings.cost, isGreen: true },
+    { name: 'subtotal', value: appStrings.subtotal, isGreen: true },
+    { name: 'dollars', value: appStrings.dollars, isGreen: true },
   ];
 
   const formatTableData = () =>
     tableData.map(data => ({
       ...data,
-      date: data.date.toDateString(),
-      sumMaterials: colonFormat(data.sumMaterials),
-      sumLabors: colonFormat(data.sumLabors),
-      sumSubcontracts: colonFormat(data.sumSubcontracts),
-      sumOthers: colonFormat(data.sumOthers),
+      cost: colonFormat(data.cost),
+      subtotal: colonFormat(data.subtotal),
+      dollars: dolarFormat(data.subtotal / budget.exchange),
     }));
 
-  const getActivities = async () => {
-    const successCallback = (response: IBudgetActivity[]) =>
+  const getOthers = async () => {
+    const successCallback = (response: IBudgetOther[]) =>
       setTableData(response);
-    await getBudgetActivity({
+    await getExtraBudgetOthers({
       projectId,
+      activityId: activity.id,
       appStrings,
       successCallback,
     });
   };
 
-  const addItem = (item: IBudgetActivity) => setTableData([item, ...tableData]);
+  const addItem = (item: IBudgetOther) => setTableData([item, ...tableData]);
 
-  const updateItem = (item: IBudgetActivity) => {
+  const updateItem = (item: IBudgetOther) => {
     const index = tableData.findIndex(e => e.id === item.id);
     const data = [...tableData];
     data.splice(index, 1, item);
@@ -100,14 +95,15 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
     setTableData(data);
   };
 
-  const editButton = async (budgetActivityId: string) => {
-    const successCallback = (response: IBudgetActivity) => {
+  const editButton = async (extraBudgetOtherId: string) => {
+    const successCallback = (response: IBudgetOther) => {
       setSelectedItem(response);
       setIsModalOpen(true);
     };
-    await getBudgetActivityById({
+    await getExtraBudgetOtherById({
       projectId,
-      budgetActivityId,
+      activityId: activity.id,
+      extraBudgetOtherId,
       appStrings,
       successCallback,
     });
@@ -118,11 +114,13 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
       removeItem(selectedItem.id);
       setSelectedItem(initialSelectedItemData);
       setIsAlertDialogOpen(false);
-      getBudget();
+      getExtraBudget();
+      getActivity(activity.id);
     };
-    await deleteBudgetActivity({
+    await deleteExtraBudgetOther({
       projectId,
-      budgetActivityId: selectedItem.id,
+      activityId: activity.id,
+      extraBudgetOtherId: selectedItem.id,
       appStrings,
       successCallback,
     });
@@ -132,39 +130,40 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
     setSearchTerm(event.target.value.toUpperCase());
   };
 
-  const handleRowClick = (event: MouseEvent) => {
-    const row = event.target as HTMLInputElement;
-    const projectId = row.id;
-    const activity = tableData.find(row => row.id === projectId);
-    setActivity(activity);
-  };
-
-  const handleOnSubmit = async (budgetActivity: IBudgetActivity) => {
-    const successCallback = (item: IBudgetActivity) => {
+  const handleOnSubmit = async (extraBudgetOther: IBudgetOther) => {
+    const successCallback = (item: IBudgetOther) => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
-      budgetActivity.id ? updateItem(item) : addItem(item);
-      getBudget();
+      extraBudgetOther.id ? updateItem(item) : addItem(item);
+      getExtraBudget();
+      getActivity(activity.id);
     };
     const serviceCallParameters = {
       projectId,
-      budgetActivity,
+      activityId: activity.id,
+      extraBudgetOther: {
+        ...extraBudgetOther,
+        quantity: +extraBudgetOther.quantity,
+        cost: +extraBudgetOther.cost,
+        subtotal: extraBudgetOther.cost * extraBudgetOther.quantity,
+      },
       appStrings,
       successCallback,
     };
-    budgetActivity.id
-      ? await updateBudgetActivity(serviceCallParameters)
-      : await createBudgetActivity(serviceCallParameters);
+    extraBudgetOther.id
+      ? await updateExtraBudgetOther(serviceCallParameters)
+      : await createExtraBudgetOther(serviceCallParameters);
   };
 
   const validationSchema = yup.object().shape({
-    activity: yup.string().required(appStrings?.requiredField),
-    date: yup.date().required(appStrings?.requiredField),
+    name: yup.string().required(appStrings?.requiredField),
+    quantity: yup.number().positive().required(appStrings?.requiredField),
+    cost: yup.number().positive().required(appStrings?.requiredField),
   });
 
   useEffect(() => {
     let abortController = new AbortController();
-    getActivities();
+    getOthers();
     return () => abortController.abort();
   }, []);
 
@@ -177,9 +176,7 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
           onChange={handleSearch}
         />
         <div className={styles.form_container}>
-          {isBudgetOpen && (
-            <Button onClick={() => setIsModalOpen(true)}>+</Button>
-          )}
+          <Button onClick={() => setIsModalOpen(true)}>+</Button>
           <Modal
             isOpen={isModalOpen}
             onClose={() => {
@@ -188,20 +185,23 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
             }}
           >
             <Heading as="h2" size="lg">
-              {selectedItem.id
-                ? appStrings.editActivity
-                : appStrings.addActivity}
+              {selectedItem.id ? appStrings.editOther : appStrings.addOther}
             </Heading>
             <Form
-              id="project-form"
+              id="other-form"
               initialFormData={selectedItem}
               validationSchema={validationSchema}
               validateOnChange
               validateOnBlur
               onSubmit={handleOnSubmit}
             >
-              <Input name="activity" label={appStrings.name} />
-              <DatePicker name="date" label={appStrings.date}></DatePicker>
+              <Input name="name" label={appStrings.name} />
+              <Input
+                name="quantity"
+                type="number"
+                label={appStrings.quantity}
+              />
+              <Input name="cost" type="number" label={appStrings.cost} />
               <br />
               <Button width="full" type="submit">
                 {appStrings.submit}
@@ -211,7 +211,7 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
         </div>
       </Flex>
       <AlertDialog
-        title={appStrings.deleteActivity}
+        title={appStrings.deleteOther}
         content={appStrings.deleteWarning}
         isOpen={isAlertDialogOpen}
         onClose={() => {
@@ -224,19 +224,17 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
         headers={tableHeader}
         items={formatTableData()}
         filter={value =>
-          searchTerm === '' || value.activity.toUpperCase().includes(searchTerm)
+          searchTerm === '' || value.name.toUpperCase().includes(searchTerm)
         }
-        handleRowClick={handleRowClick}
         onClickEdit={id => editButton(id)}
         onClickDelete={id => {
           setSelectedItem({ ...selectedItem, id: id });
           setIsAlertDialogOpen(true);
         }}
-        hideOptions={!isBudgetOpen}
       />
       {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
     </div>
   );
 };
 
-export default BudgetActivity;
+export default BudgetOther;

@@ -7,6 +7,7 @@ import TabGroup from '../../../common/TabGroup/TabGroup';
 import BudgetMaterial from './BudgetMaterial/BudgetMaterial';
 import BudgetLabor from './BudgetLabor/BudgetLabor';
 import BudgetSubcontract from './BudgetSubcontract/BudgetSubcontract';
+import BudgetOther from './BudgetOther/BudgetOther';
 import BudgetSummary from './BudgetSummary/BudgetSummary';
 import Form from '../../../common/Form/Form';
 import ExchangeInput from '../../../common/ExchangeInput/ExchangeInput';
@@ -181,6 +182,15 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
               activity={activity}
             />
           ),
+          others: (
+            <BudgetOther
+              projectId={projectId}
+              getExtraBudget={getExtraBudget}
+              budget={budget!}
+              getActivity={getActivity}
+              activity={activity}
+            />
+          ),
         }
       : {
           summary: (
@@ -232,6 +242,7 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
                         { id: 'materials', name: appStrings.materials },
                         { id: 'labors', name: appStrings.labors },
                         { id: 'subcontracts', name: appStrings.subcontracts },
+                        { id: 'others', name: appStrings.others },
                       ]}
                       variant="rounded"
                       onSelectedTabChange={activeTabs =>

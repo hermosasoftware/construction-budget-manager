@@ -9,6 +9,7 @@ import BudgetActivity from './BudgetActivity/BudgetActivity';
 import BudgetMaterial from './BudgetMaterial/BudgetMaterial';
 import BudgetLabor from './BudgetLabor/BudgetLabor';
 import BudgetSubcontract from './BudgetSubcontract/BudgetSubcontract';
+import BudgetOther from './BudgetOther/BudgetOther';
 import BudgetSummary from './BudgetSummary/BudgetSummary';
 import ActivitySummary from './BudgetActivity/ActivitySummary/ActivitySummary';
 import Form from '../../../common/Form/Form';
@@ -167,6 +168,16 @@ const Budget: React.FC<IBudgetView> = props => {
               activity={activity}
             />
           ),
+          others: (
+            <BudgetOther
+              projectId={projectId}
+              isBudgetOpen={isBudgetOpen}
+              getBudget={getBudget}
+              budget={budget!}
+              getActivity={getActivity}
+              activity={activity}
+            />
+          ),
         }
       : {
           summary: <BudgetSummary budget={budget!} projectId={projectId} />,
@@ -205,6 +216,7 @@ const Budget: React.FC<IBudgetView> = props => {
                   { id: 'materials', name: appStrings.materials },
                   { id: 'labors', name: appStrings.labors },
                   { id: 'subcontracts', name: appStrings.subcontracts },
+                  { id: 'others', name: appStrings.others },
                 ]}
                 variant="rounded"
                 onSelectedTabChange={activeTabs =>
