@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   Box,
   Input as ChakraInput,
@@ -32,6 +32,7 @@ export interface IInput extends IFormControl, IFormElementProps {
 const AutoComplete: React.FC<IInput> = props => {
   const formControlProps: IFormControl = props;
   const [selectedOption, setSelectedOption] = useState(null);
+  const [isFirstCharge, setIsFirstCharge] = useState(true);
   const {
     name,
     icon,
@@ -107,6 +108,12 @@ const AutoComplete: React.FC<IInput> = props => {
     switch (changes.type) {
       case Downshift.stateChangeTypes.mouseUp:
         return { ...changes, inputValue: state.inputValue };
+      case Downshift.stateChangeTypes.blurInput:
+        if (isFirstCharge) {
+          setIsFirstCharge(false);
+          return { ...changes, inputValue: currentValue };
+        }
+        return changes;
       default:
         return changes;
     }
@@ -140,6 +147,7 @@ const AutoComplete: React.FC<IInput> = props => {
           highlightedIndex,
           selectedItem,
           getRootProps,
+          setState,
         }) => {
           return (
             <>
@@ -151,7 +159,9 @@ const AutoComplete: React.FC<IInput> = props => {
                   <ChakraInput
                     {...finalInputProps}
                     {...getInputProps()}
-                    value={currentValue}
+                    onClick={() => {
+                      if (!inputValue) setState({ isOpen: true });
+                    }}
                   />
                 </InputGroup>
               </div>

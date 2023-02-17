@@ -511,7 +511,6 @@ const Orders: React.FC<IOrdersView> = props => {
                   name="description"
                   label={appStrings.material}
                   suggestions={getSuggestions()}
-                  isDisabled={!!selectedProduct.id}
                 />
                 <Input
                   name="quantity"
