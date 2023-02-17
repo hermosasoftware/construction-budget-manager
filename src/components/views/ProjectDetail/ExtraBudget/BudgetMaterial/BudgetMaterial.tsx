@@ -491,7 +491,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
         onClickDeleteSubMaterial={(materialId, submaterialId) => {
           delSubMaterial(materialId, submaterialId);
         }}
-        exchangeRate={budget.exchange}
+        exchangeRate={activity.exchange}
         formatCurrency
       />
       {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}

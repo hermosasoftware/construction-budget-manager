@@ -15,15 +15,17 @@ import Form from '../../../common/Form/Form';
 import ExchangeInput from '../../../common/ExchangeInput/ExchangeInput';
 import {
   getProjectBudget,
+  updateProjectBudgetAdminFee,
   updateProjectBudgetExchange,
 } from '../../../../services/ProjectBudgetService';
 import { getBudgetActivityById } from '../../../../services/BudgetActivityService';
+import { updateProject } from '../../../../services/ProjectService';
 import { IProjectBudget } from '../../../../types/projectBudget';
 import { IBudgetActivity } from '../../../../types/budgetActivity';
+import { IProject } from '../../../../types/project';
 import Button from '../../../common/Button/Button';
 import Modal from '../../../common/Modal/Modal';
-import { IProject } from '../../../../types/project';
-import { updateProject } from '../../../../services/ProjectService';
+import AdminFeeInput from '../../../common/AdminFeeInput';
 
 import styles from './Budget.module.css';
 
@@ -39,6 +41,7 @@ const Budget: React.FC<IBudgetView> = props => {
   const [activity, setActivity] = useState<IBudgetActivity>();
   const [selectedTab, setSelectedTab] = useState('summary');
   const [editExchange, setEditExchange] = useState(false);
+  const [editAdminFee, setEditAdminFee] = useState(false);
   const [isBudgetOpen, setIsBudgetOpen] = useState(project?.budgetOpen);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const appStrings = useAppSelector(state => state.settings.appStrings);
@@ -60,7 +63,7 @@ const Budget: React.FC<IBudgetView> = props => {
     });
   };
 
-  const handleOnSubmit = async (projectBudget: IProjectBudget) => {
+  const handleOnSubmitExchange = async (projectBudget: IProjectBudget) => {
     const successCallback = () => {
       setEditExchange(false);
       getBudget();
@@ -72,6 +75,20 @@ const Budget: React.FC<IBudgetView> = props => {
       successCallback,
     };
     await updateProjectBudgetExchange(serviceCallParameters);
+  };
+
+  const handleOnSubmitAdminFee = async (projectBudget: IProjectBudget) => {
+    const successCallback = () => {
+      setEditAdminFee(false);
+      getBudget();
+    };
+    const serviceCallParameters = {
+      projectId,
+      adminFee: +projectBudget.adminFee,
+      appStrings,
+      successCallback,
+    };
+    await updateProjectBudgetAdminFee(serviceCallParameters);
   };
 
   const handleCloseBudget = () => {
@@ -90,8 +107,12 @@ const Budget: React.FC<IBudgetView> = props => {
     updateProject(serviceCallParams);
   };
 
-  const validationSchema = yup.object().shape({
+  const validationSchemaExchange = yup.object().shape({
     exchange: yup.number().positive().required(appStrings?.requiredField),
+  });
+
+  const validationSchemaAdminFee = yup.object().shape({
+    adminFee: yup.number().min(0).max(100).required(appStrings?.requiredField),
   });
 
   useEffect(() => {
@@ -202,18 +223,31 @@ const Budget: React.FC<IBudgetView> = props => {
               onSelectedTabChange={activeTabs => setSelectedTab(activeTabs[0])}
             />
           )}
-
           <Form
             id="exchange-form"
             initialFormData={budget}
-            validationSchema={validationSchema}
+            validationSchema={validationSchemaExchange}
             validateOnBlur
             style={{ alignItems: 'end', flex: 1 }}
-            onSubmit={handleOnSubmit}
+            onSubmit={handleOnSubmitExchange}
           >
             <ExchangeInput
               editExchange={editExchange}
               onClick={() => setEditExchange(true)}
+              isDisabled={!isBudgetOpen}
+            />
+          </Form>
+          <Form
+            id="adminfee-form"
+            initialFormData={budget}
+            validationSchema={validationSchemaAdminFee}
+            validateOnBlur
+            style={{ alignItems: 'end', marginLeft: '10px' }}
+            onSubmit={handleOnSubmitAdminFee}
+          >
+            <AdminFeeInput
+              editAdminFee={editAdminFee}
+              onClick={() => setEditAdminFee(true)}
               isDisabled={!isBudgetOpen}
             />
           </Form>

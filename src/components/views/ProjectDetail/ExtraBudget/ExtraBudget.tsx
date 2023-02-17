@@ -14,16 +14,21 @@ import BigButton from '../../../common/BigButton/BigButton';
 import {
   copyBudgetToExtraBudget,
   getProjectExtraBudget,
-  updateProjectExtraBudgetExchange,
 } from '../../../../services/ProjectExtraBudgetService';
 import { IProjectBudget } from '../../../../types/projectBudget';
-
-import styles from './ExtraBudget.module.css';
 import { IBudgetActivity } from '../../../../types/budgetActivity';
-import { getExtraBudgetActivityById } from '../../../../services/ExtraBudgetActivityService';
+import {
+  getExtraBudgetActivity,
+  getExtraBudgetActivityById,
+  updateExtraBudgetActivityAdminFee,
+  updateExtraBudgetActivityExchange,
+} from '../../../../services/ExtraBudgetActivityService';
 import BudgetActivity from './BudgetActivity/BudgetActivity';
 import ActivitySummary from './BudgetActivity/ActivitySummary/ActivitySummary';
 import Button from '../../../common/Button/Button';
+import AdminFeeInput from '../../../common/AdminFeeInput';
+
+import styles from './ExtraBudget.module.css';
 
 interface IExtraBudgetView {
   projectId: string;
@@ -34,7 +39,9 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
   const appStrings = useAppSelector(state => state.settings.appStrings);
   const [selectedTab, setSelectedTab] = useState('summary');
   const [editExchange, setEditExchange] = useState(false);
+  const [editAdminFee, setEditAdminFee] = useState(false);
   const [budget, setBudget] = useState<IProjectBudget>();
+  const [activityList, setActivityList] = useState<IBudgetActivity[]>([]);
   const [activity, setActivity] = useState<IBudgetActivity>();
   const [budgetFlag, setbudgetFlag] = useState(false);
 
@@ -50,9 +57,24 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
     });
   };
 
+  const getActivities = async () => {
+    const successCallback = (response: IBudgetActivity[]) =>
+      setActivityList(response);
+    await getExtraBudgetActivity({
+      projectId,
+      appStrings,
+      successCallback,
+    });
+  };
+
   const getActivity = async (extraBudgetActivityId: string) => {
-    const successCallback = (response: IBudgetActivity) =>
+    const successCallback = (response: IBudgetActivity) => {
       setActivity(response);
+      const index = activityList.findIndex(e => e.id === response.id);
+      const data = [...activityList];
+      data.splice(index, 1, response);
+      setActivityList(data);
+    };
     await getExtraBudgetActivityById({
       projectId,
       extraBudgetActivityId,
@@ -61,15 +83,35 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
     });
   };
 
-  const handleOnSubmit = async (projectBudget: IProjectBudget) => {
+  const handleOnSubmitExchange = async (
+    extraBudgetActivity: IBudgetActivity,
+  ) => {
     const successCallback = () => {
       setEditExchange(false);
-      getExtraBudget();
+      getActivity(extraBudgetActivity.id);
     };
 
-    await updateProjectExtraBudgetExchange({
+    await updateExtraBudgetActivityExchange({
       projectId,
-      exchange: +projectBudget.exchange,
+      extraBudgetActivityId: extraBudgetActivity.id,
+      exchange: Number(extraBudgetActivity.exchange),
+      appStrings,
+      successCallback,
+    });
+  };
+
+  const handleOnSubmitAdminFee = async (
+    extraBudgetActivity: IBudgetActivity,
+  ) => {
+    const successCallback = () => {
+      setEditAdminFee(false);
+      getActivity(extraBudgetActivity.id);
+    };
+
+    await updateExtraBudgetActivityAdminFee({
+      projectId,
+      extraBudgetActivityId: extraBudgetActivity.id,
+      adminFee: Number(extraBudgetActivity.adminFee),
       appStrings,
       successCallback,
     });
@@ -87,13 +129,18 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
     });
   };
 
-  const validationSchema = yup.object().shape({
+  const validationSchemaExchange = yup.object().shape({
     exchange: yup.number().positive().required(appStrings?.requiredField),
+  });
+
+  const validationSchemaAdminFee = yup.object().shape({
+    adminFee: yup.number().min(0).max(100).required(appStrings?.requiredField),
   });
 
   useEffect(() => {
     let abortController = new AbortController();
     getExtraBudget();
+    getActivities();
     return () => abortController.abort();
   }, []);
 
@@ -136,12 +183,19 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
           ),
         }
       : {
-          summary: <BudgetSummary budget={budget!} projectId={projectId} />,
+          summary: (
+            <BudgetSummary
+              budget={budget!}
+              activityList={activityList}
+              projectId={projectId}
+            />
+          ),
           activity: (
             <BudgetActivity
               projectId={projectId}
               getExtraBudget={getExtraBudget}
               budget={budget!}
+              activityList={activityList}
               setActivity={setActivity}
             />
           ),
@@ -156,34 +210,62 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
           <>
             <div className={styles.toolBar__container}>
               {activity ? (
-                <div className={styles.tab__container}>
-                  <Button
-                    onClick={() => {
-                      setActivity(undefined);
-                    }}
-                    variant={'ghost'}
+                <>
+                  <div className={styles.tab__container}>
+                    <Button
+                      onClick={() => {
+                        setActivity(undefined);
+                      }}
+                      variant={'ghost'}
+                    >
+                      <CaretLeft size={24} /> <Text>{activity.activity}</Text>
+                    </Button>
+                    <Divider orientation="vertical" />
+                    <TabGroup
+                      className={styles.tabs}
+                      tabs={[
+                        {
+                          id: 'summary',
+                          name: appStrings.summary,
+                          selected: true,
+                        },
+                        { id: 'materials', name: appStrings.materials },
+                        { id: 'labors', name: appStrings.labors },
+                        { id: 'subcontracts', name: appStrings.subcontracts },
+                      ]}
+                      variant="rounded"
+                      onSelectedTabChange={activeTabs =>
+                        setSelectedTab(activeTabs[0])
+                      }
+                    />
+                  </div>
+                  <Form
+                    id="exchange-form"
+                    initialFormData={activity}
+                    validationSchema={validationSchemaExchange}
+                    validateOnBlur
+                    style={{ alignItems: 'end', flex: 1 }}
+                    onSubmit={handleOnSubmitExchange}
                   >
-                    <CaretLeft size={24} /> <Text>{activity.activity}</Text>
-                  </Button>
-                  <Divider orientation="vertical" />
-                  <TabGroup
-                    className={styles.tabs}
-                    tabs={[
-                      {
-                        id: 'summary',
-                        name: appStrings.summary,
-                        selected: true,
-                      },
-                      { id: 'materials', name: appStrings.materials },
-                      { id: 'labors', name: appStrings.labors },
-                      { id: 'subcontracts', name: appStrings.subcontracts },
-                    ]}
-                    variant="rounded"
-                    onSelectedTabChange={activeTabs =>
-                      setSelectedTab(activeTabs[0])
-                    }
-                  />
-                </div>
+                    <ExchangeInput
+                      editExchange={editExchange}
+                      onClick={() => setEditExchange(true)}
+                    />
+                  </Form>
+                  <Form
+                    id="adminfee-form"
+                    initialFormData={activity}
+                    validationSchema={validationSchemaAdminFee}
+                    validateOnBlur
+                    style={{ alignItems: 'end', marginLeft: '10px' }}
+                    onSubmit={handleOnSubmitAdminFee}
+                  >
+                    <AdminFeeInput
+                      editAdminFee={editAdminFee}
+                      onClick={() => setEditAdminFee(true)}
+                    />
+                  </Form>
+                </>
               ) : (
                 <TabGroup
                   className={styles.tabs}
@@ -197,19 +279,6 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
                   }
                 />
               )}
-              <Form
-                id="exchange-form"
-                initialFormData={budget}
-                validationSchema={validationSchema}
-                validateOnBlur
-                style={{ alignItems: 'end', flex: 1 }}
-                onSubmit={handleOnSubmit}
-              >
-                <ExchangeInput
-                  editExchange={editExchange}
-                  onClick={() => setEditExchange(true)}
-                />
-              </Form>
             </div>
             {contentToDisplay(selectedTab)}
           </>

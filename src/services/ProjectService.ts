@@ -137,6 +137,7 @@ export const createProject = async ({
         sumMaterials: 0,
         sumSubcontracts: 0,
         exchange: 1,
+        adminFee: 12,
         creationDate: new Date(),
       };
       const { id, ...rest } = project;

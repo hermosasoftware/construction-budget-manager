@@ -3,5 +3,6 @@ export interface IProjectBudget {
   sumMaterials: number;
   sumSubcontracts: number;
   exchange: number;
+  adminFee: number;
   creationDate: Date;
 }

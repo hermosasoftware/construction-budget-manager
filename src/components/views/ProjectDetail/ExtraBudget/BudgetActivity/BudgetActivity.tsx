@@ -12,7 +12,6 @@ import {
   createExtraBudgetActivity,
   deleteExtraBudgetActivity,
   getExtraBudgetActivityById,
-  getExtraBudgetActivity,
   updateExtraBudgetActivity,
 } from '../../../../../services/ExtraBudgetActivityService';
 import { IBudgetActivity } from '../../../../../types/budgetActivity';
@@ -28,12 +27,15 @@ interface IBudgetActivityView {
   projectId: string;
   getExtraBudget: Function;
   budget: IProjectBudget;
+  activityList: IBudgetActivity[];
   setActivity: Function;
 }
 
 const initialSelectedItemData = {
   id: '',
   activity: '',
+  exchange: 1,
+  adminFee: 12,
   sumLabors: 0,
   sumMaterials: 0,
   sumSubcontracts: 0,
@@ -48,12 +50,15 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const { projectId, getExtraBudget, budget, setActivity } = props;
+  const { projectId, getExtraBudget, budget, activityList, setActivity } =
+    props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
   const navigate = useNavigate();
   const tableHeader: TTableHeader[] = [
     { name: 'activity', value: appStrings.name },
     { name: 'date', value: appStrings.date },
+    { name: 'exchange', value: appStrings.exchange },
+    { name: 'adminFee', value: appStrings.adminFee },
     { name: 'sumMaterials', value: appStrings.materials, isGreen: true },
     { name: 'sumLabors', value: appStrings.labors, isGreen: true },
     {
@@ -67,20 +72,12 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
     tableData.map(data => ({
       ...data,
       date: data.date.toDateString(),
+      exchange: colonFormat(Number(data.exchange)),
+      adminFee: `${data.adminFee}%`,
       sumMaterials: colonFormat(data.sumMaterials),
       sumLabors: colonFormat(data.sumLabors),
       sumSubcontracts: colonFormat(data.sumSubcontracts),
     }));
-
-  const getActivities = async () => {
-    const successCallback = (response: IBudgetActivity[]) =>
-      setTableData(response);
-    await getExtraBudgetActivity({
-      projectId,
-      appStrings,
-      successCallback,
-    });
-  };
 
   const addItem = (item: IBudgetActivity) => setTableData([item, ...tableData]);
 
@@ -152,7 +149,11 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
     };
     const serviceCallParameters = {
       projectId,
-      extraBudgetActivity,
+      extraBudgetActivity: {
+        ...extraBudgetActivity,
+        exchange: Number(extraBudgetActivity.exchange),
+        adminFee: Number(extraBudgetActivity.adminFee),
+      },
       appStrings,
       successCallback,
     };
@@ -163,12 +164,14 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
 
   const validationSchema = yup.object().shape({
     activity: yup.string().required(appStrings?.requiredField),
+    exchange: yup.number().positive().required(appStrings?.requiredField),
+    adminFee: yup.number().min(0).max(100).required(appStrings?.requiredField),
     date: yup.date().required(appStrings?.requiredField),
   });
 
   useEffect(() => {
     let abortController = new AbortController();
-    getActivities();
+    setTableData(activityList);
     return () => abortController.abort();
   }, []);
 
@@ -204,6 +207,16 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
               onSubmit={handleOnSubmit}
             >
               <Input name="activity" label={appStrings.name} />
+              <Input
+                name="exchange"
+                type="number"
+                label={appStrings.currencyExchange}
+              />
+              <Input
+                name="adminFee"
+                type="number"
+                label={appStrings.adminFee}
+              />
               <DatePicker name="date" label={appStrings.date}></DatePicker>
               <br />
               <Button width="full" type="submit">

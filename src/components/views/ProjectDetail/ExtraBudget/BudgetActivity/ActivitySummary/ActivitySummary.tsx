@@ -33,7 +33,7 @@ const ActivitySummary: React.FC<IActivitySummaryView> = props => {
     sumMaterials,
   }: IBudgetActivity) => {
     const totalDirectCost = sumLabors + sumSubcontracts + sumMaterials;
-    const adminFee = totalDirectCost * 0.12;
+    const adminFee = (totalDirectCost * Number(activity.adminFee)) / 100;
     const grandTotal = totalDirectCost + adminFee;
     return { totalDirectCost, adminFee, grandTotal };
   };
@@ -50,7 +50,7 @@ const ActivitySummary: React.FC<IActivitySummaryView> = props => {
           description={`${appStrings.total}: ${colonFormat(
             budgetTotals.sumMaterials,
           )}\n${appStrings.dollars}: ${dolarFormat(
-            budgetTotals.sumMaterials / budget.exchange,
+            budgetTotals.sumMaterials / Number(activity.exchange),
           )}`}
           illustration={<Wall color="var(--chakra-colors-red-300)" size={25} />}
         />
@@ -59,7 +59,7 @@ const ActivitySummary: React.FC<IActivitySummaryView> = props => {
           description={`${appStrings.total}: ${colonFormat(
             budgetTotals.sumLabors,
           )}\n${appStrings.dollars}: ${dolarFormat(
-            budgetTotals.sumLabors / budget.exchange,
+            budgetTotals.sumLabors / Number(activity.exchange),
           )}`}
           illustration={
             <BagSimple
@@ -74,7 +74,7 @@ const ActivitySummary: React.FC<IActivitySummaryView> = props => {
           description={`${appStrings.total}: ${colonFormat(
             budgetTotals.sumSubcontracts,
           )}\n${appStrings.dollars}: ${dolarFormat(
-            budgetTotals.sumSubcontracts / budget.exchange,
+            budgetTotals.sumSubcontracts / Number(activity.exchange),
           )}`}
           illustration={
             <Handshake
@@ -102,19 +102,19 @@ const ActivitySummary: React.FC<IActivitySummaryView> = props => {
         <Stat
           title={appStrings.totalDirectCost}
           content={`${colonFormat(budgetTotals.totalDirectCost)}\n${dolarFormat(
-            budgetTotals.totalDirectCost / budget.exchange,
+            budgetTotals.totalDirectCost / Number(activity.exchange),
           )}`}
         />
         <Stat
-          title={appStrings.adminFee}
+          title={`${appStrings.adminFee} ${activity.adminFee}%`}
           content={`${colonFormat(budgetTotals.adminFee)}\n${dolarFormat(
-            budgetTotals.adminFee / budget.exchange,
+            budgetTotals.adminFee / Number(activity.exchange),
           )}`}
         />
         <Stat
           title={appStrings.grandTotal}
           content={`${colonFormat(budgetTotals.grandTotal)}\n${dolarFormat(
-            budgetTotals.grandTotal / budget.exchange,
+            budgetTotals.grandTotal / Number(activity.exchange),
           )}`}
         />
       </div>

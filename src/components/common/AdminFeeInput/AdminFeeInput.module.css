@@ -1,0 +1,7 @@
+.stat__container {
+  display: 'flex';
+}
+
+.msg_wrapper {
+  white-space: pre-wrap;
+}
