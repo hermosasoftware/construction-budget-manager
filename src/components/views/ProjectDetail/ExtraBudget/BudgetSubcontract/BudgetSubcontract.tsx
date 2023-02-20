@@ -65,7 +65,7 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
       ...data,
       cost: colonFormat(data.cost),
       subtotal: colonFormat(data.subtotal),
-      dollars: dolarFormat(data.subtotal / budget.exchange),
+      dollars: dolarFormat(data.subtotal / Number(activity.exchange)),
     }));
 
   const getSubcontracts = async () => {

@@ -6,6 +6,7 @@
   margin-bottom: 5px;
   flex-wrap: wrap;
   display: flex;
+  align-items: end;
 }
 
 .tab__container {

@@ -4,6 +4,7 @@ import { Divider } from '@chakra-ui/react';
 import BigButton from '../../../../common/BigButton/BigButton';
 import { useAppSelector } from '../../../../../redux/hooks';
 import { IProjectBudget } from '../../../../../types/projectBudget';
+import { IBudgetActivity } from '../../../../../types/budgetActivity';
 import Stat from '../../../../common/Stat/Stat';
 import { colonFormat, dolarFormat } from '../../../../../utils/numbers';
 
@@ -12,16 +13,24 @@ import styles from './BudgetSummary.module.css';
 interface IBudgetSummaryView {
   projectId: string;
   budget: IProjectBudget;
+  activityList: IBudgetActivity[];
 }
 
 interface IBudgetTotals extends IProjectBudget {
   totalDirectCost: number;
   adminFee: number;
   grandTotal: number;
+  sumMaterialsDolars: number;
+  sumLaborsDolars: number;
+  sumSubcontractsDolars: number;
+  sumOthersDolars: number;
+  totalDirectCostDolars: number;
+  adminFeeDolars: number;
+  grandTotalDolars: number;
 }
 
 const BudgetSummary: React.FC<IBudgetSummaryView> = props => {
-  const { budget } = props;
+  const { budget, activityList } = props;
   const [budgetTotals, setBudgetTotals] = useState<IBudgetTotals>();
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
@@ -29,16 +38,63 @@ const BudgetSummary: React.FC<IBudgetSummaryView> = props => {
     sumLabors,
     sumSubcontracts,
     sumMaterials,
+    sumOthers,
   }: IProjectBudget) => {
-    const totalDirectCost = sumLabors + sumSubcontracts + sumMaterials;
-    const adminFee = totalDirectCost * 0.12;
+    let adminFee = 0;
+    let exchange = 0;
+    let sumMaterialsDolars = 0;
+    let sumLaborsDolars = 0;
+    let sumSubcontractsDolars = 0;
+    let sumOthersDolars = 0;
+    let adminFeeDolars = 0;
+    activityList.forEach(activity => {
+      exchange = Number(activity.exchange);
+      sumMaterialsDolars += activity.sumMaterials / exchange;
+      sumLaborsDolars += activity.sumLabors / exchange;
+      sumSubcontractsDolars += activity.sumSubcontracts / exchange;
+      sumOthersDolars += activity.sumOthers / exchange;
+      adminFeeDolars +=
+        ((activity.sumMaterials / exchange +
+          activity.sumLabors / exchange +
+          activity.sumSubcontracts / exchange +
+          activity.sumOthers / exchange) *
+          Number(activity.adminFee)) /
+        100;
+      adminFee +=
+        ((activity.sumLabors +
+          activity.sumSubcontracts +
+          activity.sumMaterials +
+          activity.sumOthers) *
+          Number(activity.adminFee)) /
+        100;
+    });
+    const totalDirectCost =
+      sumLabors + sumSubcontracts + sumMaterials + sumOthers;
+    const totalDirectCostDolars =
+      sumLaborsDolars +
+      sumSubcontractsDolars +
+      sumMaterialsDolars +
+      sumOthersDolars;
     const grandTotal = totalDirectCost + adminFee;
-    return { totalDirectCost, adminFee, grandTotal };
+    const grandTotalDolars = totalDirectCostDolars + adminFeeDolars;
+
+    return {
+      totalDirectCost,
+      adminFee,
+      grandTotal,
+      sumMaterialsDolars,
+      sumLaborsDolars,
+      sumSubcontractsDolars,
+      sumOthersDolars,
+      totalDirectCostDolars,
+      adminFeeDolars,
+      grandTotalDolars,
+    };
   };
 
   useEffect(() => {
     setBudgetTotals({ ...budget, ...calcTotals(budget) });
-  }, [budget]);
+  }, [budget, activityList]);
 
   return budgetTotals ? (
     <>
@@ -48,7 +104,7 @@ const BudgetSummary: React.FC<IBudgetSummaryView> = props => {
           description={`${appStrings.total}: ${colonFormat(
             budgetTotals.sumMaterials,
           )}\n${appStrings.dollars}: ${dolarFormat(
-            budgetTotals.sumMaterials / budgetTotals.exchange,
+            budgetTotals.sumMaterialsDolars,
           )}`}
           illustration={<Wall color="var(--chakra-colors-red-300)" size={25} />}
         />
@@ -57,7 +113,7 @@ const BudgetSummary: React.FC<IBudgetSummaryView> = props => {
           description={`${appStrings.total}: ${colonFormat(
             budgetTotals.sumLabors,
           )}\n${appStrings.dollars}: ${dolarFormat(
-            budgetTotals.sumLabors / budgetTotals.exchange,
+            budgetTotals.sumLaborsDolars,
           )}`}
           illustration={
             <BagSimple
@@ -72,7 +128,7 @@ const BudgetSummary: React.FC<IBudgetSummaryView> = props => {
           description={`${appStrings.total}: ${colonFormat(
             budgetTotals.sumSubcontracts,
           )}\n${appStrings.dollars}: ${dolarFormat(
-            budgetTotals.sumSubcontracts / budgetTotals.exchange,
+            budgetTotals.sumSubcontractsDolars,
           )}`}
           illustration={
             <Handshake
@@ -82,10 +138,13 @@ const BudgetSummary: React.FC<IBudgetSummaryView> = props => {
             />
           }
         />
-        {/* TODO */}
         <BigButton
-          title={`${appStrings.others} (IN PROGRESS)`}
-          description={`${appStrings.total}: ₡ 0.00\n${appStrings.dollars}: $ 0.00`}
+          title={appStrings.others}
+          description={`${appStrings.total}: ${colonFormat(
+            budgetTotals.sumOthers,
+          )}\n${appStrings.dollars}: ${dolarFormat(
+            budgetTotals.sumOthersDolars,
+          )}`}
           illustration={
             <DotsThreeOutline
               color="var(--chakra-colors-purple-500)"
@@ -100,19 +159,19 @@ const BudgetSummary: React.FC<IBudgetSummaryView> = props => {
         <Stat
           title={appStrings.totalDirectCost}
           content={`${colonFormat(budgetTotals.totalDirectCost)}\n${dolarFormat(
-            budgetTotals.totalDirectCost / budgetTotals.exchange,
+            budgetTotals.totalDirectCostDolars,
           )}`}
         />
         <Stat
           title={appStrings.adminFee}
           content={`${colonFormat(budgetTotals.adminFee)}\n${dolarFormat(
-            budgetTotals.adminFee / budgetTotals.exchange,
+            budgetTotals.adminFeeDolars,
           )}`}
         />
         <Stat
           title={appStrings.grandTotal}
           content={`${colonFormat(budgetTotals.grandTotal)}\n${dolarFormat(
-            budgetTotals.grandTotal / budgetTotals.exchange,
+            budgetTotals.grandTotalDolars,
           )}`}
         />
       </div>

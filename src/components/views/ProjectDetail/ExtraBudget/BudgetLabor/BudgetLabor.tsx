@@ -66,7 +66,7 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
       ...data,
       cost: colonFormat(data.cost),
       subtotal: colonFormat(data.subtotal),
-      dollars: dolarFormat(data.subtotal / budget.exchange),
+      dollars: dolarFormat(data.subtotal / Number(activity.exchange)),
     }));
 
   const getLabors = async () => {

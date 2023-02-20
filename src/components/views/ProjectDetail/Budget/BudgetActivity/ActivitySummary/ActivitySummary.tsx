@@ -31,16 +31,18 @@ const ActivitySummary: React.FC<IActivitySummaryView> = props => {
     sumLabors,
     sumSubcontracts,
     sumMaterials,
+    sumOthers,
   }: IBudgetActivity) => {
-    const totalDirectCost = sumLabors + sumSubcontracts + sumMaterials;
-    const adminFee = totalDirectCost * 0.12;
+    const totalDirectCost =
+      sumLabors + sumSubcontracts + sumMaterials + sumOthers;
+    const adminFee = totalDirectCost * (budget.adminFee / 100);
     const grandTotal = totalDirectCost + adminFee;
     return { totalDirectCost, adminFee, grandTotal };
   };
 
   useEffect(() => {
     setBudgetTotals({ ...activity, ...calcTotals(activity) });
-  }, [activity]);
+  }, [activity, budget]);
 
   return budgetTotals ? (
     <>
@@ -84,10 +86,13 @@ const ActivitySummary: React.FC<IActivitySummaryView> = props => {
             />
           }
         />
-        {/* TODO */}
         <BigButton
-          title={`${appStrings.others} (IN PROGRESS)`}
-          description={`${appStrings.total}: ₡ 0.00\n${appStrings.dollars}: $ 0.00`}
+          title={appStrings.others}
+          description={`${appStrings.total}: ${colonFormat(
+            budgetTotals.sumOthers,
+          )}\n${appStrings.dollars}: ${dolarFormat(
+            budgetTotals.sumOthers / budget.exchange,
+          )}`}
           illustration={
             <DotsThreeOutline
               color="var(--chakra-colors-purple-500)"
@@ -106,7 +111,7 @@ const ActivitySummary: React.FC<IActivitySummaryView> = props => {
           )}`}
         />
         <Stat
-          title={appStrings.adminFee}
+          title={`${appStrings.adminFee} ${budget.adminFee}%`}
           content={`${colonFormat(budgetTotals.adminFee)}\n${dolarFormat(
             budgetTotals.adminFee / budget.exchange,
           )}`}
