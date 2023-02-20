@@ -224,25 +224,13 @@ export const addOrderProduct = async ({
       orderId,
       'products',
     );
-    const matRef = doc(
-      db,
-      'projects',
-      projectId,
-      materialRef?.isExtraMaterial ? 'projectExtraBudget' : 'projectBudget',
-      'summary',
-      'budgetMaterials',
-      materialRef?.isSubMaterial
-        ? `${materialRef.materialId}/submaterials/${materialRef.subMaterialId}`
-        : materialRef.materialId,
-    );
+
     const docRef = await addDoc(productRef, {
       ...rest,
-      materialRef: matRef.path,
     });
     const data = {
       ...rest,
       id: docRef.id,
-      materialRef: matRef.path,
     };
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
