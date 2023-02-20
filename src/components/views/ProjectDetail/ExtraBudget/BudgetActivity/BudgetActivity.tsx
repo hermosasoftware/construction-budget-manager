@@ -39,6 +39,7 @@ const initialSelectedItemData = {
   sumLabors: 0,
   sumMaterials: 0,
   sumSubcontracts: 0,
+  sumOthers: 0,
   date: new Date(),
 };
 
@@ -66,6 +67,7 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
       value: appStrings.subcontracts,
       isGreen: true,
     },
+    { name: 'sumOthers', value: appStrings.others, isGreen: true },
   ];
 
   const formatTableData = () =>
@@ -77,6 +79,7 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
       sumMaterials: colonFormat(data.sumMaterials),
       sumLabors: colonFormat(data.sumLabors),
       sumSubcontracts: colonFormat(data.sumSubcontracts),
+      sumOthers: colonFormat(data.sumOthers),
     }));
 
   const addItem = (item: IBudgetActivity) => setTableData([item, ...tableData]);

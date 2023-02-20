@@ -23,6 +23,7 @@ interface IBudgetTotals extends IProjectBudget {
   sumMaterialsDolars: number;
   sumLaborsDolars: number;
   sumSubcontractsDolars: number;
+  sumOthersDolars: number;
   totalDirectCostDolars: number;
   adminFeeDolars: number;
   grandTotalDolars: number;
@@ -37,29 +38,43 @@ const BudgetSummary: React.FC<IBudgetSummaryView> = props => {
     sumLabors,
     sumSubcontracts,
     sumMaterials,
+    sumOthers,
   }: IProjectBudget) => {
     let adminFee = 0;
+    let exchange = 0;
     let sumMaterialsDolars = 0;
     let sumLaborsDolars = 0;
     let sumSubcontractsDolars = 0;
+    let sumOthersDolars = 0;
     let adminFeeDolars = 0;
     activityList.forEach(activity => {
-      sumMaterialsDolars += activity.sumMaterials / Number(activity.exchange);
-      sumLaborsDolars += activity.sumLabors / Number(activity.exchange);
-      sumSubcontractsDolars +=
-        activity.sumSubcontracts / Number(activity.exchange);
+      exchange = Number(activity.exchange);
+      sumMaterialsDolars += activity.sumMaterials / exchange;
+      sumLaborsDolars += activity.sumLabors / exchange;
+      sumSubcontractsDolars += activity.sumSubcontracts / exchange;
+      sumOthersDolars += activity.sumOthers / exchange;
       adminFeeDolars +=
-        ((sumMaterialsDolars + sumLaborsDolars + sumSubcontractsDolars) *
+        ((activity.sumMaterials / exchange +
+          activity.sumLabors / exchange +
+          activity.sumSubcontracts / exchange +
+          activity.sumOthers / exchange) *
           Number(activity.adminFee)) /
         100;
       adminFee +=
-        ((sumLabors + sumSubcontracts + sumMaterials) *
+        ((activity.sumLabors +
+          activity.sumSubcontracts +
+          activity.sumMaterials +
+          activity.sumOthers) *
           Number(activity.adminFee)) /
         100;
     });
-    const totalDirectCost = sumLabors + sumSubcontracts + sumMaterials;
+    const totalDirectCost =
+      sumLabors + sumSubcontracts + sumMaterials + sumOthers;
     const totalDirectCostDolars =
-      sumLaborsDolars + sumSubcontractsDolars + sumMaterialsDolars;
+      sumLaborsDolars +
+      sumSubcontractsDolars +
+      sumMaterialsDolars +
+      sumOthersDolars;
     const grandTotal = totalDirectCost + adminFee;
     const grandTotalDolars = totalDirectCostDolars + adminFeeDolars;
 
@@ -70,6 +85,7 @@ const BudgetSummary: React.FC<IBudgetSummaryView> = props => {
       sumMaterialsDolars,
       sumLaborsDolars,
       sumSubcontractsDolars,
+      sumOthersDolars,
       totalDirectCostDolars,
       adminFeeDolars,
       grandTotalDolars,
@@ -122,10 +138,13 @@ const BudgetSummary: React.FC<IBudgetSummaryView> = props => {
             />
           }
         />
-        {/* TODO */}
         <BigButton
-          title={`${appStrings.others} (IN PROGRESS)`}
-          description={`${appStrings.total}: ₡ 0.00\n${appStrings.dollars}: $ 0.00`}
+          title={appStrings.others}
+          description={`${appStrings.total}: ${colonFormat(
+            budgetTotals.sumOthers,
+          )}\n${appStrings.dollars}: ${dolarFormat(
+            budgetTotals.sumOthersDolars,
+          )}`}
           illustration={
             <DotsThreeOutline
               color="var(--chakra-colors-purple-500)"

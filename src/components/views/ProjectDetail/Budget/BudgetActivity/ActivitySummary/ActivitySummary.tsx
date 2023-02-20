@@ -31,8 +31,10 @@ const ActivitySummary: React.FC<IActivitySummaryView> = props => {
     sumLabors,
     sumSubcontracts,
     sumMaterials,
+    sumOthers,
   }: IBudgetActivity) => {
-    const totalDirectCost = sumLabors + sumSubcontracts + sumMaterials;
+    const totalDirectCost =
+      sumLabors + sumSubcontracts + sumMaterials + sumOthers;
     const adminFee = totalDirectCost * (budget.adminFee / 100);
     const grandTotal = totalDirectCost + adminFee;
     return { totalDirectCost, adminFee, grandTotal };
@@ -84,10 +86,13 @@ const ActivitySummary: React.FC<IActivitySummaryView> = props => {
             />
           }
         />
-        {/* TODO */}
         <BigButton
-          title={`${appStrings.others} (IN PROGRESS)`}
-          description={`${appStrings.total}: ₡ 0.00\n${appStrings.dollars}: $ 0.00`}
+          title={appStrings.others}
+          description={`${appStrings.total}: ${colonFormat(
+            budgetTotals.sumOthers,
+          )}\n${appStrings.dollars}: ${dolarFormat(
+            budgetTotals.sumOthers / budget.exchange,
+          )}`}
           illustration={
             <DotsThreeOutline
               color="var(--chakra-colors-purple-500)"
