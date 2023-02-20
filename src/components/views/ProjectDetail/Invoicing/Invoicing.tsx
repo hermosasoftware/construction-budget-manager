@@ -1,6 +1,7 @@
-import { Flex, Heading } from '@chakra-ui/react';
+import { Flex, FormLabel, Heading } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import * as yup from 'yup';
+import { FilePdf } from 'phosphor-react';
 import Button from '../../../common/Button/Button';
 import Modal from '../../../common/Modal/Modal';
 import SearchInput from '../../../common/SearchInput/SearchInput';
@@ -20,13 +21,17 @@ import {
   IProjectInvoiceDetail,
 } from '../../../../types/projectInvoiceDetail';
 import { useAppSelector } from '../../../../redux/hooks';
-import styles from './Invoicing.module.css';
 import SearchSelect from '../../../common/Form/Elements/SearchSelect';
 import { formatDate } from '../../../../utils/dates';
 import { IProjectOrder } from '../../../../types/projectOrder';
 import { getProjectOrders } from '../../../../services/ProjectOrderService';
 import InvoiceTableView from '../../../layout/InvoiceTableView';
 import { TTableHeader } from '../../../layout/InvoiceTableView/InvoiceTableView';
+import FileUploader, {
+  EFileTypes,
+} from '../../../common/FileUploader/FileUploader';
+
+import styles from './Invoicing.module.css';
 interface IInvoicing {
   projectId: string;
 }
@@ -37,8 +42,12 @@ const initialSelectedItemData = {
   activity: '',
   invoice: '',
   date: new Date(),
+  products: [],
   option: { value: '', label: '' },
+  pdfURL: '',
+  pdfFile: undefined,
 };
+
 const initialSelectedOrderData = {
   id: '',
   order: 1,
@@ -65,7 +74,6 @@ interface IInvoiceOrderDetail extends IProjectOrder {
 }
 
 interface IInvoice extends IProjectInvoiceDetail {
-  products?: any[];
   option: { value: string; label: string };
 }
 
@@ -358,7 +366,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
               {selectedItem.id ? appStrings.editInvoice : appStrings.addInvoice}
             </Heading>
             <Form
-              id="project-form"
+              id="invoice-form"
               initialFormData={selectedItem}
               validationSchema={validationSchema}
               validateOnChange
@@ -382,6 +390,29 @@ const Invoicing: React.FC<IInvoicing> = props => {
               <Input name="invoice" type="number" label={appStrings.invoice} />
               <Input name="activity" label={appStrings.activity} />
               <DatePicker name="date" label={appStrings.date}></DatePicker>
+              <div className={styles.fileUpload_container}>
+                <FileUploader
+                  name="pdfFile"
+                  label={appStrings.uploadPDF}
+                  buttonLabel={appStrings.selectFile}
+                  acceptedFiles={[EFileTypes.pdf]}
+                ></FileUploader>
+                {selectedItem.pdfURL && (
+                  <div style={{ width: '40%' }}>
+                    <FormLabel>{appStrings.CurrentPDF}</FormLabel>
+                    <Button
+                      onClick={() => {
+                        window.open(selectedItem.pdfURL);
+                      }}
+                      style={{ height: '40px', width: '100%' }}
+                      rightIcon={<FilePdf size={24} />}
+                    >
+                      {appStrings.open}
+                    </Button>
+                  </div>
+                )}
+              </div>
+
               <br />
               <Button width="full" type="submit">
                 {appStrings.submit}
@@ -402,7 +433,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
                 : appStrings.addInvoiceDetail}
             </Heading>
             <Form
-              id="invoice-form"
+              id="product-form"
               initialFormData={selectedProduct}
               validationSchema={productValSchema}
               validateOnChange
