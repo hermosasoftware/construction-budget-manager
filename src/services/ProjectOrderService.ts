@@ -14,6 +14,7 @@ import { db } from '../config/firebaseConfig';
 import { IOrderProduct, IProjectOrder } from '../types/projectOrder';
 import { IService } from '../types/service';
 import { toastSuccess, toastError } from '../utils/toast';
+import { deleteCollect } from './herperService';
 
 export const getProjectOrders = async ({
   projectId,
@@ -180,6 +181,7 @@ export const deleteProjectOrder = async ({
       'projectOrders',
       projectOrderId,
     );
+    await deleteCollect(`${orderRef.path}/products`);
     await deleteDoc(orderRef);
 
     toastSuccess(appStrings.success, appStrings.deleteSuccess);

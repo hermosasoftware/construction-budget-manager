@@ -24,6 +24,7 @@ import {
 } from '../types/projectInvoiceDetail';
 import { IService } from '../types/service';
 import { toastSuccess, toastError } from '../utils/toast';
+import { deleteCollect } from './herperService';
 
 export const getProjectInvoicing = async ({
   projectId,
@@ -212,6 +213,7 @@ export const deleteProjectInvoiceDetail = async ({
       await deleteObject(storageRef);
     }
 
+    await deleteCollect(`${invRef.path}/products`);
     await deleteDoc(invRef);
 
     toastSuccess(appStrings.success, appStrings.deleteSuccess);
