@@ -17,7 +17,7 @@ const Download: FC<Props> = ({ fileName, children }) => {
     }, 500);
 
     return () => clearTimeout(timeout);
-  }, [fileName]);
+  }, [fileName, children]);
 
   return (
     <div
