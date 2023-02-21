@@ -1,8 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { IMaterial } from '../../types/collections';
+import { IMaterial, IMaterialBreakdown } from '../../types/collections';
 
 interface materialsState {
-  materials: IMaterial[] | [];
+  materials: IMaterialBreakdown[] | [];
 }
 
 const initialState: materialsState = {
@@ -13,7 +13,10 @@ export const materialsSlice = createSlice({
   name: 'materials',
   initialState,
   reducers: {
-    changeMaterials: (state, { payload }: PayloadAction<IMaterial[]>) => {
+    changeMaterials: (
+      state,
+      { payload }: PayloadAction<IMaterialBreakdown[]>,
+    ) => {
       state.materials = payload;
     },
   },

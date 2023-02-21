@@ -1,3 +1,5 @@
+import { ISubMaterial } from './collections';
+
 export interface IBudgetMaterial {
   id: string;
   name: string;
@@ -5,5 +7,6 @@ export interface IBudgetMaterial {
   hasSubMaterials?: boolean;
   quantity: number;
   cost: number;
+  subMaterials?: ISubMaterial[];
   subtotal: number;
 }
