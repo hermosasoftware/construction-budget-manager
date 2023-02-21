@@ -269,9 +269,9 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
 
   const handleOnSubmit = async (data: IItem) => {
     const { name, ...rest } = data;
-    const subMaterials = materials.find(
-      e => e.id === data.name?.value,
-    )?.subMaterials;
+    const subMaterials = !data.id
+      ? materials.find(e => e.id === data.name?.value)?.subMaterials
+      : tableData.find(e => e.id === data.id)?.subMaterials;
     const extraBudgetMaterial = {
       ...rest,
       quantity: +rest.quantity,
