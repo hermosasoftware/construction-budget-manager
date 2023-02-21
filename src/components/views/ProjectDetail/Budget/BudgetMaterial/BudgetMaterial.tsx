@@ -129,7 +129,6 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
 
   const updateItem = (item: IMaterialBreakdown) => {
     const index = tableData.findIndex(e => e.id === item.id);
-    debugger;
     const data = [...tableData];
     data.splice(index, 1, item);
     setTableData(data);
