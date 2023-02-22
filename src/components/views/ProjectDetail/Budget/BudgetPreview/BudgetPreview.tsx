@@ -9,12 +9,14 @@ import { getBudgetActivity } from '../../../../../services/BudgetActivityService
 import { getBudgetSubcontracts } from '../../../../../services/BudgetSubcontractsService';
 import { getBudgetLabors } from '../../../../../services/BudgetLaborsService';
 import { getBudgetMaterials } from '../../../../../services/BudgetMaterialsService';
+import { getBudgetOthers } from '../../../../../services/BudgetOthersService';
 import { IProject } from '../../../../../types/project';
 import { IProjectBudget } from '../../../../../types/projectBudget';
 import { IBudgetActivity } from '../../../../../types/budgetActivity';
 import { IBudgetSubcontract } from '../../../../../types/budgetSubcontract';
 import { IBudgetLabor } from '../../../../../types/budgetLabor';
 import { IMaterialBreakdown } from '../../../../../types/collections';
+import { IBudgetOther } from '../../../../../types/budgetOther';
 import DownloadPDF from '../../../../common/PDF/DownloadPDF';
 
 import styles from './BudgetPreview.module.css';
@@ -24,6 +26,7 @@ export default function ActivityPreview() {
   const [project, setProject] = useState<IProject>();
   const [budget, setBudget] = useState<IProjectBudget>();
   const [activity, setActivity] = useState<IBudgetActivity[]>([]);
+  const [noteValue, setNoteValue] = useState('');
 
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
@@ -51,7 +54,8 @@ export default function ActivityPreview() {
         const materials = await getMaterials(element.id);
         const labors = await getLabors(element.id);
         const subcontracts = await getSubcontracts(element.id);
-        return { ...element, materials, labors, subcontracts };
+        const others = await getOthers(element.id);
+        return { ...element, materials, labors, subcontracts, others };
       });
       Promise.all(list).then(a => setActivity(a));
     };
@@ -102,6 +106,18 @@ export default function ActivityPreview() {
     return list;
   };
 
+  const getOthers = async (activityId: string) => {
+    let list: IBudgetOther[] = [];
+    const successCallback = (response: IBudgetOther[]) => (list = response);
+    await getBudgetOthers({
+      projectId,
+      activityId,
+      appStrings,
+      successCallback,
+    });
+    return list;
+  };
+
   useEffect(() => {
     let abortController = new AbortController();
     getProject();
@@ -119,6 +135,8 @@ export default function ActivityPreview() {
             project={project}
             budget={budget}
             activity={activity}
+            noteValue={noteValue}
+            setNoteValue={setNoteValue}
             pdfMode={false}
           />
           <DownloadPDF fileName={`Budget-${project.name}`}>
@@ -126,6 +144,8 @@ export default function ActivityPreview() {
               project={project}
               budget={budget}
               activity={activity}
+              noteValue={noteValue}
+              setNoteValue={setNoteValue}
               pdfMode={true}
             />
           </DownloadPDF>

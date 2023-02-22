@@ -5,12 +5,14 @@ import Document from '../../common/PDF/Document';
 import Text from '../../common/PDF/Text';
 import View from '../../common/PDF/View';
 import Page from '../../common/PDF/Page';
+import EditableTextarea from '../../common/PDF/EditableTextarea';
 import { IProject } from '../../../types/project';
 import { IBudgetActivity } from '../../../types/budgetActivity';
 import { IMaterialBreakdown } from '../../../types/collections';
 import { IBudgetMaterial } from '../../../types/budgetMaterial';
 import { IBudgetLabor } from '../../../types/budgetLabor';
 import { IBudgetSubcontract } from '../../../types/budgetSubcontract';
+import { IBudgetOther } from '../../../types/budgetOther';
 import { colonFormat, dolarFormat } from '../../../utils/numbers';
 
 import styles from './ExtraReport.module.css';
@@ -20,7 +22,10 @@ interface Props {
   activity: IBudgetActivity;
   materials: IMaterialBreakdown[];
   labors: IBudgetLabor[];
-  subcontracts?: IBudgetSubcontract[];
+  subcontracts: IBudgetSubcontract[];
+  others: IBudgetOther[];
+  noteValue: string;
+  setNoteValue: Function;
   detailed?: boolean;
   pdfMode: boolean;
 }
@@ -32,6 +37,9 @@ const ExtraReport: FC<Props> = props => {
     materials,
     labors,
     subcontracts,
+    others,
+    noteValue,
+    setNoteValue,
     detailed = false,
     pdfMode,
   } = props;
@@ -39,15 +47,22 @@ const ExtraReport: FC<Props> = props => {
   const [adminFee, setAdminFee] = useState<number>(0);
   const [saleTax, setSaleTax] = useState<number>(0);
 
+  const handleInputChange = (value: string) => setNoteValue(value);
+
   useEffect(() => {
     setSubtotal(
-      (activity.sumMaterials + activity.sumLabors + activity.sumSubcontracts) /
-        600,
+      (activity.sumMaterials +
+        activity.sumLabors +
+        activity.sumSubcontracts +
+        activity.sumOthers) /
+        Number(activity.exchange),
     );
   }, [activity]);
 
   useEffect(() => {
-    const adminFee = subtotal ? subtotal * 0.13 : 0;
+    const adminFee = subtotal
+      ? (subtotal * Number(activity.adminFee)) / 100
+      : 0;
     const saleTax = subtotal ? subtotal * 0.04 : 0;
 
     setAdminFee(adminFee);
@@ -132,13 +147,15 @@ const ExtraReport: FC<Props> = props => {
                 </Text>
               </View>
               <View className="w-60" pdfMode={pdfMode}>
-                <Text pdfMode={pdfMode}>{colonFormat(600)}</Text>
+                <Text pdfMode={pdfMode}>
+                  {colonFormat(Number(activity.exchange))}
+                </Text>
               </View>
             </View>
           </View>
         </View>
 
-        {materials.length && (
+        {materials.length > 0 && (
           <>
             <View className="mt-30" pdfMode={pdfMode}>
               <Text className="fs-20 left bold" pdfMode={pdfMode}>
@@ -214,7 +231,7 @@ const ExtraReport: FC<Props> = props => {
                       <Text className="dark" pdfMode={pdfMode}>
                         {dolarFormat(
                           (material.quantity * calculateMaterialCost(row)) /
-                            600,
+                            Number(activity.exchange),
                         )}
                       </Text>
                     </View>
@@ -254,7 +271,7 @@ const ExtraReport: FC<Props> = props => {
                             {dolarFormat(
                               (Number(subMaterial.quantity) *
                                 subMaterial.cost) /
-                                600,
+                                Number(activity.exchange),
                             )}
                           </Text>
                         </View>
@@ -283,14 +300,16 @@ const ExtraReport: FC<Props> = props => {
               </View>
               <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
                 <Text className="dark" pdfMode={pdfMode}>
-                  {dolarFormat(activity.sumMaterials / 600)}
+                  {dolarFormat(
+                    activity.sumMaterials / Number(activity.exchange),
+                  )}
                 </Text>
               </View>
             </View>
           </>
         )}
 
-        {labors.length && (
+        {labors.length > 0 && (
           <>
             <View className="mt-30" pdfMode={pdfMode}>
               <Text className="fs-20 left bold" pdfMode={pdfMode}>
@@ -359,7 +378,10 @@ const ExtraReport: FC<Props> = props => {
                   </View>
                   <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
                     <Text className="dark" pdfMode={pdfMode}>
-                      {dolarFormat((labor.quantity * labor.cost) / 600)}
+                      {dolarFormat(
+                        (labor.quantity * labor.cost) /
+                          Number(activity.exchange),
+                      )}
                     </Text>
                   </View>
                 </View>
@@ -385,14 +407,14 @@ const ExtraReport: FC<Props> = props => {
               </View>
               <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
                 <Text className="dark" pdfMode={pdfMode}>
-                  {dolarFormat(activity.sumLabors / 600)}
+                  {dolarFormat(activity.sumLabors / Number(activity.exchange))}
                 </Text>
               </View>
             </View>
           </>
         )}
 
-        {subcontracts?.length && (
+        {subcontracts?.length > 0 && (
           <>
             <View className="mt-30" pdfMode={pdfMode}>
               <Text className="fs-20 left bold" pdfMode={pdfMode}>
@@ -451,7 +473,10 @@ const ExtraReport: FC<Props> = props => {
                   </View>
                   <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
                     <Text className="dark" pdfMode={pdfMode}>
-                      {dolarFormat((labor.quantity * labor.cost) / 600)}
+                      {dolarFormat(
+                        (labor.quantity * labor.cost) /
+                          Number(activity.exchange),
+                      )}
                     </Text>
                   </View>
                 </View>
@@ -476,7 +501,103 @@ const ExtraReport: FC<Props> = props => {
               </View>
               <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
                 <Text className="dark" pdfMode={pdfMode}>
-                  {dolarFormat(activity.sumSubcontracts / 600)}
+                  {dolarFormat(
+                    activity.sumSubcontracts / Number(activity.exchange),
+                  )}
+                </Text>
+              </View>
+            </View>
+          </>
+        )}
+
+        {others?.length > 0 && (
+          <>
+            <View className="mt-30" pdfMode={pdfMode}>
+              <Text className="fs-20 left bold" pdfMode={pdfMode}>
+                {`Others Expenses`}
+              </Text>
+              <View className="bg-dark flex left" pdfMode={pdfMode}>
+                <View className="w-48 p-4-8" pdfMode={pdfMode}>
+                  <Text className="white bold" pdfMode={pdfMode}>
+                    {`Description`}
+                  </Text>
+                </View>
+                <View className="w-15 p-4-8" pdfMode={pdfMode}>
+                  <Text className="white bold" pdfMode={pdfMode}>
+                    {`Qty.`}
+                  </Text>
+                </View>
+                <View className="w-20 p-4-8" pdfMode={pdfMode}>
+                  <Text className="white bold" pdfMode={pdfMode}>
+                    {` Unit Cost`}
+                  </Text>
+                </View>
+                <View className="w-20 p-4-8" pdfMode={pdfMode}>
+                  <Text className="white bold" pdfMode={pdfMode}>
+                    {`Subtotal`}
+                  </Text>
+                </View>
+                <View className="w-15 p-4-8" pdfMode={pdfMode}>
+                  <Text className="white bold" pdfMode={pdfMode}>
+                    {`Dolars`}
+                  </Text>
+                </View>
+              </View>
+            </View>
+            {others.map((other, i) => {
+              return (
+                <View key={i} className="row flex left" pdfMode={pdfMode}>
+                  <View className="w-48 p-4-8 pb-10" pdfMode={pdfMode}>
+                    <Text className="dark" pdfMode={pdfMode}>
+                      {other.name}
+                    </Text>
+                  </View>
+                  <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
+                    <Text className="dark" pdfMode={pdfMode}>
+                      {`${other.quantity}`}
+                    </Text>
+                  </View>
+                  <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
+                    <Text className="dark" pdfMode={pdfMode}>
+                      {colonFormat(other.cost)}
+                    </Text>
+                  </View>
+                  <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
+                    <Text className="dark" pdfMode={pdfMode}>
+                      {colonFormat(other.quantity * other.cost)}
+                    </Text>
+                  </View>
+                  <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
+                    <Text className="dark" pdfMode={pdfMode}>
+                      {dolarFormat(
+                        (other.quantity * other.cost) /
+                          Number(activity.exchange),
+                      )}
+                    </Text>
+                  </View>
+                </View>
+              );
+            })}
+            <View className="flex left bg-gray p-5" pdfMode={pdfMode}>
+              <View className="w-48 p-4-8 pb-10" pdfMode={pdfMode}>
+                <Text className="bold" pdfMode={pdfMode}>
+                  {`TOTAL`}
+                </Text>
+              </View>
+              <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}></View>
+              <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
+                <Text className="dark" pdfMode={pdfMode}>
+                  {colonFormat(calculateTotalCost(others))}
+                </Text>
+              </View>
+              <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
+                <Text className="dark" pdfMode={pdfMode}>
+                  {colonFormat(activity.sumOthers)}
+                </Text>
+              </View>
+              <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
+                <Text className="dark" pdfMode={pdfMode}>
+                  {dolarFormat(activity.sumOthers / Number(activity.exchange))}
                 </Text>
               </View>
             </View>
@@ -501,7 +622,7 @@ const ExtraReport: FC<Props> = props => {
           </View>
         </View>
 
-        {materials?.length && (
+        {materials?.length > 0 && (
           <View className="row flex center" pdfMode={pdfMode}>
             <View className="w-50 p-4-8 pb-10" pdfMode={pdfMode}>
               <Text className="dark" pdfMode={pdfMode}>
@@ -510,12 +631,12 @@ const ExtraReport: FC<Props> = props => {
             </View>
             <View className="w-50 p-4-8 pb-10" pdfMode={pdfMode}>
               <Text className="dark" pdfMode={pdfMode}>
-                {dolarFormat(activity.sumMaterials / 600)}
+                {dolarFormat(activity.sumMaterials / Number(activity.exchange))}
               </Text>
             </View>
           </View>
         )}
-        {labors?.length && (
+        {labors?.length > 0 && (
           <View className="row flex center" pdfMode={pdfMode}>
             <View className="w-50 p-4-8 pb-10" pdfMode={pdfMode}>
               <Text className="dark" pdfMode={pdfMode}>
@@ -524,12 +645,12 @@ const ExtraReport: FC<Props> = props => {
             </View>
             <View className="w-50 p-4-8 pb-10" pdfMode={pdfMode}>
               <Text className="dark" pdfMode={pdfMode}>
-                {dolarFormat(activity.sumLabors / 600)}
+                {dolarFormat(activity.sumLabors / Number(activity.exchange))}
               </Text>
             </View>
           </View>
         )}
-        {subcontracts?.length && (
+        {subcontracts?.length > 0 && (
           <View className="row flex center" pdfMode={pdfMode}>
             <View className="w-50 p-4-8 pb-10" pdfMode={pdfMode}>
               <Text className="dark" pdfMode={pdfMode}>
@@ -538,7 +659,23 @@ const ExtraReport: FC<Props> = props => {
             </View>
             <View className="w-50 p-4-8 pb-10" pdfMode={pdfMode}>
               <Text className="dark" pdfMode={pdfMode}>
-                {dolarFormat(activity.sumSubcontracts / 600)}
+                {dolarFormat(
+                  activity.sumSubcontracts / Number(activity.exchange),
+                )}
+              </Text>
+            </View>
+          </View>
+        )}
+        {others?.length > 0 && (
+          <View className="row flex center" pdfMode={pdfMode}>
+            <View className="w-50 p-4-8 pb-10" pdfMode={pdfMode}>
+              <Text className="dark" pdfMode={pdfMode}>
+                {`Others Expenses`}
+              </Text>
+            </View>
+            <View className="w-50 p-4-8 pb-10" pdfMode={pdfMode}>
+              <Text className="dark" pdfMode={pdfMode}>
+                {dolarFormat(activity.sumOthers / Number(activity.exchange))}
               </Text>
             </View>
           </View>
@@ -549,9 +686,12 @@ const ExtraReport: FC<Props> = props => {
             <Text className="left fs-20 w-100" pdfMode={pdfMode}>
               {`Notes:`}
             </Text>
-            <Text className="left w-100" pdfMode={pdfMode}>
-              ...
-            </Text>
+            <EditableTextarea
+              className="w-100"
+              value={noteValue}
+              onChange={value => handleInputChange(value)}
+              pdfMode={pdfMode}
+            />
           </View>
           <View className="w-50 mt-20" pdfMode={pdfMode}>
             <View className="flex" pdfMode={pdfMode}>
@@ -566,7 +706,9 @@ const ExtraReport: FC<Props> = props => {
             </View>
             <View className="flex" pdfMode={pdfMode}>
               <View className="w-50 p-5" pdfMode={pdfMode}>
-                <Text pdfMode={pdfMode}>{`Admin Fee (12%)`}</Text>
+                <Text
+                  pdfMode={pdfMode}
+                >{`Admin Fee (${activity.adminFee}%)`}</Text>
               </View>
               <View className="w-50 p-5" pdfMode={pdfMode}>
                 <Text className="right bold dark" pdfMode={pdfMode}>

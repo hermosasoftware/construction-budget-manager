@@ -7,11 +7,13 @@ import { getExtraBudgetActivityById } from '../../../../../../services/ExtraBudg
 import { getExtraBudgetSubcontracts } from '../../../../../../services/ExtraBudgetSubcontractsService';
 import { getExtraBudgetLabors } from '../../../../../../services/ExtraBudgetLaborsService';
 import { getExtraBudgetMaterials } from '../../../../../../services/ExtraBudgetMaterialsService';
+import { getExtraBudgetOthers } from '../../../../../../services/ExtraBudgetOthersService';
 import { IProject } from '../../../../../../types/project';
 import { IBudgetActivity } from '../../../../../../types/budgetActivity';
 import { IBudgetSubcontract } from '../../../../../../types/budgetSubcontract';
 import { IBudgetLabor } from '../../../../../../types/budgetLabor';
 import { IMaterialBreakdown } from '../../../../../../types/collections';
+import { IBudgetOther } from '../../../../../../types/budgetOther';
 import DownloadPDF from '../../../../../common/PDF/DownloadPDF';
 
 import styles from './ActivityPreview.module.css';
@@ -24,6 +26,8 @@ export default function ActivityPreview() {
   const [materials, setMaterials] = useState<IMaterialBreakdown[]>([]);
   const [labors, setLabors] = useState<IBudgetLabor[]>([]);
   const [subcontracts, setSubcontracts] = useState<IBudgetSubcontract[]>([]);
+  const [others, setOthers] = useState<IBudgetOther[]>([]);
+  const [noteValue, setNoteValue] = useState('');
 
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
@@ -79,6 +83,16 @@ export default function ActivityPreview() {
     });
   };
 
+  const getOthers = async () => {
+    const successCallback = (response: IBudgetOther[]) => setOthers(response);
+    await getExtraBudgetOthers({
+      projectId,
+      activityId,
+      appStrings,
+      successCallback,
+    });
+  };
+
   useEffect(() => {
     let abortController = new AbortController();
 
@@ -87,6 +101,7 @@ export default function ActivityPreview() {
     getMaterials();
     getLabors();
     getSubcontracts();
+    getOthers();
 
     return () => abortController.abort();
   }, []);
@@ -101,6 +116,9 @@ export default function ActivityPreview() {
             materials={materials}
             labors={labors}
             subcontracts={subcontracts}
+            others={others}
+            noteValue={noteValue}
+            setNoteValue={setNoteValue}
             pdfMode={false}
           ></ExtraReport>
           <DownloadPDF fileName={`Extra-${activity.activity}-${project.name}`}>
@@ -110,6 +128,9 @@ export default function ActivityPreview() {
               materials={materials}
               labors={labors}
               subcontracts={subcontracts}
+              others={others}
+              noteValue={noteValue}
+              setNoteValue={setNoteValue}
               pdfMode={true}
             ></ExtraReport>
           </DownloadPDF>

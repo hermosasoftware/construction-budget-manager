@@ -15,4 +15,5 @@ export interface IBudgetActivity {
   materials?: IMaterialBreakdown[];
   labors?: IBudgetLabor[];
   subcontracts?: IBudgetSubcontract[];
+  others?: IBudgetSubcontract[];
 }
