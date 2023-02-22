@@ -155,9 +155,10 @@ export const createExtraBudgetMaterial = async ({
 
       const batch = writeBatch(db);
       if (subMaterials) {
-        subMaterials.forEach(e =>
-          batch.set(doc(collection(matRef, 'subMaterials')), e),
-        );
+        subMaterials.forEach(e => {
+          const { id, ...rest } = e;
+          batch.set(doc(collection(matRef, 'subMaterials')), rest);
+        });
       }
       await batch.commit();
 
