@@ -171,7 +171,7 @@ export const handleAuthChange = (dispatch: Function, appStrings: any) => {
         }),
       );
       const successCallback = (response: IMaterialBreakdown[]) =>
-        dispatch(changeMaterials(response.map(m => m.material)));
+        dispatch(changeMaterials(response));
       await getMaterials({ appStrings, successCallback });
     } else {
       dispatch(logout());

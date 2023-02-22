@@ -129,7 +129,7 @@ export const createExtraBudgetMaterial = async ({
 } & IService) => {
   try {
     const data = await runTransaction(db, async transaction => {
-      const { id, subtotal, ...rest } = extraBudgetMaterial;
+      const { id, subtotal, subMaterials, ...rest } = extraBudgetMaterial;
       const budgetRef = collection(
         db,
         'projects',
@@ -153,8 +153,18 @@ export const createExtraBudgetMaterial = async ({
       transaction.update(activityRef, { sumMaterials: activityTotal });
       transaction.set(matRef, rest);
 
+      const batch = writeBatch(db);
+      if (subMaterials) {
+        subMaterials.forEach(e => {
+          const { id, ...rest } = e;
+          batch.set(doc(collection(matRef, 'subMaterials')), rest);
+        });
+      }
+      await batch.commit();
+
       return {
         ...extraBudgetMaterial,
+        subMaterials,
         id: matRef.id,
       } as IBudgetMaterial;
     });
@@ -186,7 +196,7 @@ export const updateExtraBudgetMaterial = async ({
 } & IService) => {
   try {
     await runTransaction(db, async transaction => {
-      const { id, subtotal, ...rest } = extraBudgetMaterial;
+      const { id, subtotal, subMaterials, ...rest } = extraBudgetMaterial;
       const budgetRef = collection(
         db,
         'projects',

@@ -62,7 +62,7 @@ const initialSelectedSubMaterialData = {
 };
 
 const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
-  const { projectId, getExtraBudget, budget, getActivity, activity } = props;
+  const { projectId, getExtraBudget, getActivity, activity } = props;
   const [tableData, setTableData] = useState<IMaterialBreakdown[]>([]);
   const [selectedItem, setSelectedItem] = useState<IItem>(
     initialSelectedItemData,
@@ -155,13 +155,13 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
   };
 
   const handleSearchSelect = async (id: string) => {
-    const material = materials.find(material => id === material.id);
-    if (material) {
-      const { id, ...rest } = material;
+    const m = materials.find(material => id === material.id);
+    if (m) {
+      const { id, ...rest } = m.material;
       setSelectedItem({
         ...selectedItem,
         ...rest,
-        name: { value: material.id, label: material.name },
+        name: { value: m.id, label: m.material.name },
       });
     }
   };
@@ -269,21 +269,24 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
 
   const handleOnSubmit = async (data: IItem) => {
     const { name, ...rest } = data;
+    const subMaterials = !data.id
+      ? materials.find(e => e.id === data.name?.value)?.subMaterials
+      : tableData.find(e => e.id === data.id)?.subMaterials;
     const extraBudgetMaterial = {
       ...rest,
       quantity: +rest.quantity,
       cost: +rest.cost,
       subtotal: rest.cost * rest.quantity,
       name: name.label,
+      subMaterials,
     };
     const successCallback = (item: IBudgetMaterial) => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
-      const material = tableData.find(e => e.id === item.id);
       const MatBreakdown = {
         id: item.id,
         material: item,
-        subMaterials: material?.subMaterials || [],
+        subMaterials: item?.subMaterials || [],
       };
       extraBudgetMaterial.id ? updateItem(MatBreakdown) : addItem(MatBreakdown);
       getExtraBudget();
@@ -368,7 +371,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
                 isDisabled={!!selectedItem.id}
                 options={materials.map(material => ({
                   value: material.id,
-                  label: material.name,
+                  label: material.material.name,
                 }))}
                 value={selectedItem.name}
                 onChange={item => {
