@@ -422,6 +422,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
           <Modal
             isOpen={isDetailModalOpen}
             onClose={() => {
+              setSelectedItem(initialSelectedItemData);
               setSelectedOrder(initialSelectedOrderData);
               setSelectedProduct(initialSelectedProductData);
               setIsDetailModalOpen(false);

@@ -198,6 +198,7 @@ const Orders: React.FC<IOrdersView> = props => {
       const parsedOrder = {
         ...response,
         activity: getFormattedActivity(response?.activity),
+        sentStatus: response?.sentStatus ? 'sent' : 'pending',
       };
       setSelectedOrder(parsedOrder);
       setIsModalOpen(true);
@@ -377,16 +378,11 @@ const Orders: React.FC<IOrdersView> = props => {
     cost: yup.string().required(appStrings?.requiredField),
   });
 
-  const formatActOptions = () => {
-    const isActivityUsed = (activityId: string) =>
-      !tableData.some(e => e.activity === activityId);
-    return allActivities
-      .filter(e => isActivityUsed(e.id))
-      .map(e => ({
-        label: !e.isExtra ? e.activity : `${e.activity} (${appStrings.extra})`,
-        value: e.id,
-      }));
-  };
+  const formatActOptions = () =>
+    allActivities.map(e => ({
+      label: !e.isExtra ? e.activity : `${e.activity} (${appStrings.extra})`,
+      value: e.id,
+    }));
 
   useEffect(() => {
     let abortController = new AbortController();
