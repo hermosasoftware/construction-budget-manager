@@ -5,6 +5,7 @@ import Document from '../../../components/common/PDF/Document';
 import Text from '../../../components/common/PDF/Text';
 import View from '../../../components/common/PDF/View';
 import Page from '../../../components/common/PDF/Page';
+import EditableTextarea from '../../common/PDF/EditableTextarea';
 import { IProjectOrder } from '../../../types/projectOrder';
 import { IProject } from '../../../types/project';
 import { colonFormat } from '../../../utils/numbers';
@@ -14,13 +15,25 @@ import styles from './OrderReport.module.css';
 interface Props {
   order: IProjectOrder;
   project: IProject;
+  noteValue: string;
+  setNoteValue: Function;
   pdfMode: boolean;
 }
 
 const OrderReport: FC<Props> = props => {
-  const { project, order, pdfMode } = props;
+  const { project, order, noteValue, setNoteValue, pdfMode } = props;
   const [subTotal, setSubTotal] = useState<number>(0);
   const [saleTax, setSaleTax] = useState<number>(0);
+
+  const handleInputChange = (value: string) => setNoteValue(value);
+
+  const calSaleTax = () => {
+    let tax = 0;
+    order.products.forEach(e => {
+      tax += ((e.cost * e.quantity) / 100) * e.tax;
+    });
+    setSaleTax(tax);
+  };
 
   useEffect(() => {
     let subTotal = 0;
@@ -37,11 +50,7 @@ const OrderReport: FC<Props> = props => {
     setSubTotal(subTotal);
   }, [order.products]);
 
-  useEffect(() => {
-    const saleTax = subTotal ? (subTotal * 13) / 100 : 0;
-
-    setSaleTax(saleTax);
-  }, [subTotal]);
+  useEffect(() => calSaleTax(), [subTotal]);
 
   return (
     <Document pdfMode={pdfMode}>
@@ -100,7 +109,7 @@ const OrderReport: FC<Props> = props => {
                 </Text>
               </View>
               <View className="w-60" pdfMode={pdfMode}>
-                <Text pdfMode={pdfMode}>Piscina</Text>
+                <Text pdfMode={pdfMode}>{order.activity}</Text>
               </View>
             </View>
           </View>
@@ -122,7 +131,9 @@ const OrderReport: FC<Props> = props => {
                 </Text>
               </View>
               <View className="w-60" pdfMode={pdfMode}>
-                <Text pdfMode={pdfMode}>{order.date.toLocaleDateString()}</Text>
+                <Text pdfMode={pdfMode}>
+                  {order.deliverDate.toLocaleDateString()}
+                </Text>
               </View>
             </View>
           </View>
@@ -178,7 +189,7 @@ const OrderReport: FC<Props> = props => {
               </View>
               <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
                 <Text className="dark" pdfMode={pdfMode}>
-                  {`${product.quantity}%`}
+                  {`${product.tax}%`}
                 </Text>
               </View>
               <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
@@ -195,9 +206,12 @@ const OrderReport: FC<Props> = props => {
             <Text className="left fs-20 w-100" pdfMode={pdfMode}>
               Notas:
             </Text>
-            <Text className="left w-100" pdfMode={pdfMode}>
-              ...
-            </Text>
+            <EditableTextarea
+              className="w-100"
+              value={noteValue}
+              onChange={value => handleInputChange(value)}
+              pdfMode={pdfMode}
+            />
           </View>
           <View className="w-50 mt-20" pdfMode={pdfMode}>
             <View className="flex" pdfMode={pdfMode}>

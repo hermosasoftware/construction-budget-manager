@@ -68,6 +68,7 @@ const initialSelectedProductData = {
   quantity: 1,
   description: '',
   cost: 0,
+  tax: 0,
   materialRef: '',
 };
 
@@ -213,8 +214,13 @@ const Orders: React.FC<IOrdersView> = props => {
 
   const exportPDFButton = (id: string) => {
     const order = tableData.find(e => e.id === id);
+    const activity = getActivityById(order?.activity);
     order &&
-      navigate(`/project-detail/${projectId}/order-pdf-preview/${order.id}`);
+      navigate(
+        `/project-detail/${projectId}/order-pdf-preview/${order.id}/${
+          activity.activity
+        }${activity.isExtra ? ' (Extra)' : ''}`,
+      );
   };
 
   const deleteButton = async () => {
@@ -317,6 +323,7 @@ const Orders: React.FC<IOrdersView> = props => {
       description,
       quantity: +rest.quantity,
       cost: +rest.cost,
+      tax: +rest.tax,
     };
     const successAddCallback = (orderId: string, item: IOrderProduct) => {
       setTableData(
@@ -376,6 +383,7 @@ const Orders: React.FC<IOrdersView> = props => {
     description: yup.string().required(appStrings?.requiredField),
     quantity: yup.string().required(appStrings?.requiredField),
     cost: yup.string().required(appStrings?.requiredField),
+    tax: yup.number().min(0).max(100).required(appStrings.required),
   });
 
   const formatActOptions = () =>
@@ -508,17 +516,9 @@ const Orders: React.FC<IOrdersView> = props => {
                   label={appStrings.material}
                   suggestions={getSuggestions()}
                 />
-                <Input
-                  name="quantity"
-                  label={appStrings.quantity}
-                  innerStyle={{ width: '200px', marginRight: '5px' }}
-                />
-                <Input
-                  name="cost"
-                  type={'number'}
-                  label={appStrings.cost}
-                  innerStyle={{ width: '200px', marginRight: '5px' }}
-                />
+                <Input name="quantity" label={appStrings.quantity} />
+                <Input name="cost" type={'number'} label={appStrings.cost} />
+                <Input name="tax" type="number" label={appStrings.taxAmount} />
                 <br />
                 <Button width="full" type="submit">
                   {appStrings.submit}
@@ -569,7 +569,6 @@ const Orders: React.FC<IOrdersView> = props => {
           onClickDeleteProduct={(orderId, productId) =>
             delProduct(orderId, productId)
           }
-          exchangeRate={Number('0.13')} //Modify with the exchange of the project when is done
           formatCurrency
         />
         {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
