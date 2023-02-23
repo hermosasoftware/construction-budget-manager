@@ -46,7 +46,7 @@ function App() {
             element={<AuthRoute component={ProjectDetail} />}
           />
           <Route
-            path="/project-detail/:projectId/order-pdf-preview/:orderId"
+            path="/project-detail/:projectId/order-pdf-preview/:orderId/:activity"
             element={<AuthRoute component={OrderPreview} />}
           />
           <Route

@@ -15,5 +15,6 @@ export interface IOrderProduct {
   quantity: number;
   description: string;
   cost: number;
+  tax: number;
   materialRef: string;
 }
