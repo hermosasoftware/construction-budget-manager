@@ -20,9 +20,8 @@ import {
 import { IBudgetMaterial } from '../../../../../types/budgetMaterial';
 import { IProjectBudget } from '../../../../../types/projectBudget';
 import { IBudgetActivity } from '../../../../../types/budgetActivity';
-import Form, { Input, Switch } from '../../../../common/Form';
+import Form, { AutoComplete, Input, Switch } from '../../../../common/Form';
 import { useAppSelector } from '../../../../../redux/hooks';
-import SearchSelect from '../../../../common/Form/Elements/SearchSelect';
 import AlertDialog from '../../../../common/AlertDialog/AlertDialog';
 import {
   IMaterialBreakdown,
@@ -40,13 +39,9 @@ interface IBudgetMaterialView {
   activity: IBudgetActivity;
 }
 
-interface IItem extends Omit<IBudgetMaterial, 'name'> {
-  name: { value: string; label: string };
-}
-
 const initialSelectedItemData = {
   id: '',
-  name: { value: '', label: '' },
+  name: '',
   unit: '',
   hasSubMaterials: false,
   quantity: 1,
@@ -65,7 +60,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
   const { projectId, isBudgetOpen, getBudget, budget, getActivity, activity } =
     props;
   const [tableData, setTableData] = useState<IMaterialBreakdown[]>([]);
-  const [selectedItem, setSelectedItem] = useState<IItem>(
+  const [selectedItem, setSelectedItem] = useState<IBudgetMaterial>(
     initialSelectedItemData,
   );
   const [selectedMaterial, setSelectedMaterial] = useState('');
@@ -90,13 +85,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
   ];
 
   const validationSchema = yup.object().shape({
-    name: yup
-      .object()
-      .shape({
-        value: yup.string().required(),
-        label: yup.string().required(),
-      })
-      .required(appStrings?.requiredField),
+    name: yup.string().required(appStrings?.requiredField),
     unit: yup.string().required(appStrings?.requiredField),
     cost: yup.string().when('hasSubMaterials', (val, schema) => {
       if (val) {
@@ -143,10 +132,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
 
   const editButton = async (budgetMaterialId: string) => {
     const successCallback = (response: IBudgetMaterial) => {
-      setSelectedItem({
-        ...response,
-        name: { value: response.id, label: response.name },
-      });
+      setSelectedItem(response);
       setIsModalOpen(true);
     };
     await getBudgetMaterialById({
@@ -280,30 +266,31 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
     setSearchTerm(event.target.value.toUpperCase());
   };
 
-  const handleSearchSelect = async (id: string) => {
+  const handleAutoComplete = async (data: any) => {
+    const { value, id } = data;
     const m = materials.find(material => id === material.id);
     if (m) {
       const { id, ...rest } = m.material;
       setSelectedItem({
         ...selectedItem,
         ...rest,
-        name: { value: m.id, label: m.material.name },
+        subMaterials: m.subMaterials,
       });
+    } else {
+      setSelectedItem({ ...selectedItem, name: value });
     }
   };
 
-  const handleOnSubmit = async (data: IItem) => {
+  const handleOnSubmit = async (data: IBudgetMaterial) => {
     const { name, ...rest } = data;
-    const subMaterials = !data.id
-      ? materials.find(e => e.id === data.name?.value)?.subMaterials
-      : tableData.find(e => e.id === data.id)?.subMaterials;
+    const subMaterials = tableData.find(e => e.id === data.id)?.subMaterials;
     const budgetMaterial = {
       ...rest,
       quantity: +rest.quantity,
       cost: +rest.cost,
       subtotal: rest.cost * rest.quantity,
-      name: name.label,
-      subMaterials,
+      name,
+      subMaterials: !data.id ? data.subMaterials : subMaterials,
     };
     const successCallback = (item: IBudgetMaterial) => {
       setSelectedItem(initialSelectedItemData);
@@ -367,19 +354,14 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
               validateOnBlur
               onSubmit={handleOnSubmit}
             >
-              <SearchSelect
+              <AutoComplete
                 name="name"
                 label={appStrings.material}
-                placeholder={appStrings.projectName}
-                isDisabled={!!selectedItem.id}
-                options={materials.map(material => ({
-                  value: material.id,
-                  label: material.material.name,
+                suggestions={materials.map(material => ({
+                  value: material.material.name,
+                  id: material.id,
                 }))}
-                value={selectedItem.name}
-                onChange={item => {
-                  handleSearchSelect(item?.value?.value);
-                }}
+                onChange={e => handleAutoComplete(e.value)}
               />
               <Input
                 name="unit"

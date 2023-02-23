@@ -19,6 +19,7 @@ import styles from './AutoComplete.module.css';
 
 interface ISuggestion {
   value: string;
+  id?: string;
 }
 
 export interface IInput extends IFormControl, IFormElementProps {
@@ -77,9 +78,9 @@ const AutoComplete: React.FC<IInput> = props => {
     else if (handleOnBlur) handleOnBlur({ name, value: currentValue });
   };
 
-  const customOnChangeHandler = (value: string) => {
+  const customOnChangeHandler = (value: ISuggestion) => {
     if (onChange) onChange({ name, value });
-    else if (handleOnChange) handleOnChange({ name, value });
+    else if (handleOnChange) handleOnChange({ name, value: value.value });
   };
 
   const suggestionFilter = (item: any, inputValue: string | null) =>
@@ -107,13 +108,17 @@ const AutoComplete: React.FC<IInput> = props => {
   const stateReducer = (state: any, changes: any) => {
     switch (changes.type) {
       case Downshift.stateChangeTypes.mouseUp:
+        if (isFirstCharge) {
+          setIsFirstCharge(false);
+          return { ...changes, inputValue: currentValue };
+        }
         return { ...changes, inputValue: state.inputValue };
       case Downshift.stateChangeTypes.blurInput:
         if (isFirstCharge) {
           setIsFirstCharge(false);
           return { ...changes, inputValue: currentValue };
         }
-        return changes;
+        return { ...changes, inputValue: state.inputValue };
       default:
         return changes;
     }
@@ -127,13 +132,13 @@ const AutoComplete: React.FC<IInput> = props => {
     >
       <Downshift
         onChange={selection => {
-          customOnChangeHandler(selection.value);
+          customOnChangeHandler(selection);
           setSelectedOption(selection.value);
         }}
         itemToString={item => (item ? item.value : '')}
         onInputValueChange={value => {
           if (value !== selectedOption) {
-            customOnChangeHandler(value);
+            customOnChangeHandler({ value });
           }
         }}
         stateReducer={stateReducer}
@@ -162,6 +167,7 @@ const AutoComplete: React.FC<IInput> = props => {
                     onClick={() => {
                       if (!inputValue) setState({ isOpen: true });
                     }}
+                    value={inputValue || currentValue}
                   />
                 </InputGroup>
               </div>
@@ -178,7 +184,7 @@ const AutoComplete: React.FC<IInput> = props => {
                           .map((item, index) => (
                             <ListItem
                               {...getItemProps({
-                                key: item.value,
+                                key: `${item.value}-${index}`,
                                 index,
                                 item,
                               })}
