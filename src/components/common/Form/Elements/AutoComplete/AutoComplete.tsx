@@ -184,7 +184,7 @@ const AutoComplete: React.FC<IInput> = props => {
                           .map((item, index) => (
                             <ListItem
                               {...getItemProps({
-                                key: item.value,
+                                key: `${item.value}-${index}`,
                                 index,
                                 item,
                               })}
