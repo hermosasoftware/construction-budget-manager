@@ -189,7 +189,7 @@ const OrderReport: FC<Props> = props => {
               </View>
               <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
                 <Text className="dark" pdfMode={pdfMode}>
-                  {`${product.tax}%`}
+                  {product.tax === 0 ? 'Exento' : `${product.tax}%`}
                 </Text>
               </View>
               <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
