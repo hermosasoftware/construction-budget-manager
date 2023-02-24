@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Divider, Text } from '@chakra-ui/react';
 import * as yup from 'yup';
-import { CaretLeft, MagicWand } from 'phosphor-react';
+import { CaretLeft, FilePdf, MagicWand } from 'phosphor-react';
+import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../../../redux/hooks';
 import TabGroup from '../../../common/TabGroup/TabGroup';
 import BudgetMaterial from './BudgetMaterial/BudgetMaterial';
@@ -37,7 +38,6 @@ interface IExtraBudgetView {
 
 const ExtraBudget: React.FC<IExtraBudgetView> = props => {
   const { projectId } = props;
-  const appStrings = useAppSelector(state => state.settings.appStrings);
   const [selectedTab, setSelectedTab] = useState('summary');
   const [editExchange, setEditExchange] = useState(false);
   const [editAdminFee, setEditAdminFee] = useState(false);
@@ -45,6 +45,8 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
   const [activityList, setActivityList] = useState<IBudgetActivity[]>([]);
   const [activity, setActivity] = useState<IBudgetActivity>();
   const [budgetFlag, setbudgetFlag] = useState(false);
+  const appStrings = useAppSelector(state => state.settings.appStrings);
+  const navigate = useNavigate();
 
   const getExtraBudget = async () => {
     const successCallback = (response: IProjectBudget) => {
@@ -276,6 +278,16 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
                       onClick={() => setEditAdminFee(true)}
                     />
                   </Form>
+                  <Button
+                    onClick={() => {
+                      navigate(
+                        `/project-detail/${projectId}/extra-pdf-preview/${activity.id}`,
+                      );
+                    }}
+                    className={styles.pdf_button}
+                  >
+                    <FilePdf size={24} />
+                  </Button>
                 </>
               ) : (
                 <TabGroup
