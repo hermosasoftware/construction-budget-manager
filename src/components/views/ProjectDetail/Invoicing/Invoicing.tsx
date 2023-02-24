@@ -23,7 +23,7 @@ import {
 import { useAppSelector } from '../../../../redux/hooks';
 import SearchSelect from '../../../common/Form/Elements/SearchSelect';
 import { formatDate } from '../../../../utils/dates';
-import { IProjectOrder } from '../../../../types/projectOrder';
+import { IOrderProduct, IProjectOrder } from '../../../../types/projectOrder';
 import { getProjectOrders } from '../../../../services/ProjectOrderService';
 import InvoiceTableView from '../../../layout/InvoiceTableView';
 import { TTableHeader } from '../../../layout/InvoiceTableView/InvoiceTableView';
@@ -64,7 +64,7 @@ const initialSelectedOrderData = {
 const initialSelectedProductData = {
   id: '',
   quantity: 1,
-  description: '',
+  description: { value: '', label: '' },
   tax: 0,
   cost: 0,
 };
@@ -77,6 +77,10 @@ interface IInvoice extends IProjectInvoiceDetail {
   option: { value: string; label: string };
 }
 
+interface IInvProd extends Omit<IInvoiceProduct, 'description'> {
+  description: { value: string; label: string };
+}
+
 const Invoicing: React.FC<IInvoicing> = props => {
   const [tableData, setTableData] = useState<IInvoice[]>([]);
   const [selectedItem, setSelectedItem] = useState<IInvoice>(
@@ -85,7 +89,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
   const [selectedOrder, setSelectedOrder] = useState<IInvoiceOrderDetail>(
     initialSelectedOrderData,
   );
-  const [selectedProduct, setSelectedProduct] = useState<IInvoiceProduct>(
+  const [selectedProduct, setSelectedProduct] = useState<IInvProd>(
     initialSelectedProductData,
   );
   const [isProductAlertDialogOpen, setIsProductAlertDialogOpen] =
@@ -210,7 +214,10 @@ const Invoicing: React.FC<IInvoicing> = props => {
     if (product) {
       const item = tableData.find(m => m.id === orderId);
       setSelectedItem(item!);
-      setSelectedProduct(product);
+      setSelectedProduct({
+        ...product,
+        description: { value: product.id, label: product.description },
+      });
       setIsDetailModalOpen(true);
     }
   };
@@ -224,9 +231,10 @@ const Invoicing: React.FC<IInvoicing> = props => {
     setIsProductAlertDialogOpen(true);
   };
 
-  const onSubmitProduct = async (data: IInvoiceProduct) => {
+  const onSubmitProduct = async (data: IInvProd) => {
     const product = {
       ...data,
+      description: data.description.label,
       quantity: +data.quantity,
       cost: +data.cost,
     };
@@ -306,7 +314,10 @@ const Invoicing: React.FC<IInvoicing> = props => {
     activity: yup.string().required(appStrings?.requiredField),
   });
   const productValSchema = yup.object().shape({
-    description: yup.string().required(appStrings?.requiredField),
+    description: yup.object().shape({
+      value: yup.string().required(appStrings?.requiredField),
+      label: yup.string().required(appStrings?.requiredField),
+    }),
     quantity: yup.string().required(appStrings?.requiredField),
     cost: yup.string().required(appStrings?.requiredField),
     tax: yup.number().min(0).max(100).required(appStrings.required),
@@ -326,10 +337,46 @@ const Invoicing: React.FC<IInvoicing> = props => {
     }
   };
 
-  const getOrders = async () => {
-    const successCallback = (response: IProjectOrder[]) => {
-      setOrders(response);
+  const handleSearchProduct = (v: any) => {
+    const products: IOrderProduct[] = [];
+    orders.forEach(e => {
+      products.push(...e.products);
+    });
+    const product = products.find(e => e.id === v);
+    if (product) {
+      const { id, ...rest } = product;
+      const description = {
+        value: product.id,
+        label: String(product.description),
+      };
+      setSelectedProduct({
+        ...selectedProduct,
+        ...rest,
+        description,
+      });
+    }
+  };
+
+  const getOrdersProducts = (invoice: IInvoice) => {
+    const products: IOrderProduct[] = [];
+    orders
+      .filter(e => e.order === invoice.order)
+      .forEach(e => {
+        products.push(...e.products);
+      });
+    const filterIsUsed = (e: IOrderProduct) => {
+      const isUsed = invoice.products?.some(p => {
+        return p.description === e.description;
+      });
+      return !isUsed;
     };
+    return products
+      .filter(filterIsUsed)
+      .map(e => ({ value: e.id, label: e.description }));
+  };
+
+  const getOrders = async () => {
+    const successCallback = (response: IProjectOrder[]) => setOrders(response);
     await getProjectOrders({
       projectId,
       appStrings,
@@ -441,14 +488,33 @@ const Invoicing: React.FC<IInvoicing> = props => {
               validateOnBlur
               onSubmit={onSubmitProduct}
             >
-              <Input name="description" label={appStrings.material} />
+              <SearchSelect
+                name="description"
+                label={appStrings.material}
+                placeholder={appStrings.material}
+                isDisabled={!!selectedProduct.id}
+                options={getOrdersProducts(selectedItem)}
+                value={selectedProduct.description}
+                onChange={item => {
+                  handleSearchProduct(item?.value?.value);
+                }}
+              />
               <Input
                 name="quantity"
                 type="number"
                 label={appStrings.quantity}
               />
-              <Input name="cost" label={appStrings.cost} />
-              <Input name="tax" type="number" label={appStrings.taxAmount} />
+              <Input
+                name="cost"
+                label={appStrings.cost}
+                isDisabled={!!selectedProduct.id}
+              />
+              <Input
+                name="tax"
+                type="number"
+                label={appStrings.taxAmount}
+                isDisabled={!!selectedProduct.id}
+              />
               <br />
               <Button width="full" type="submit">
                 {appStrings.submit}
