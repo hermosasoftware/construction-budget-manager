@@ -89,8 +89,9 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
       subMaterials?.forEach((s: any) => {
         total += Number(s.quantity) * Number.parseFloat(s.cost);
       });
+      total *= Number(row?.material?.quantity);
     } else {
-      total = Number(row?.material?.cost);
+      total = Number(row?.material?.cost) * Number(row?.material?.quantity);
     }
 
     const exchange = Number(exchangeRate);
@@ -129,7 +130,9 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
     const isCostColumn = headerName === 'cost';
     const isSubTotal = headerName === 'subtotal';
     if (isDollarColumn && formatCurrency) {
-      return dolarFormat(Number(row.cost / Number(exchangeRate)));
+      return dolarFormat(
+        Number((row.cost * row.quantity) / Number(exchangeRate)),
+      );
     } else if (isCostColumn && formatCurrency) {
       return colonFormat(Number(row.cost));
     } else if (isSubTotal) {
