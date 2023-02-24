@@ -1,6 +1,6 @@
 import React from 'react';
 import { IStyledComponent } from '../../../types/global';
-import { ReactComponent as MavLogo } from '../../../assets/img/coto-logo.svg';
+import { ReactComponent as Logo } from '../../../assets/img/coto-logo.svg';
 
 import styles from './BrandPoster.module.css';
 
@@ -17,7 +17,7 @@ const BrandPoster: React.FC<IBrandPoster> = props => {
       <div
         className={`center-content fill-parent-vertical ${styles.brand_poster}`}
       >
-        <MavLogo className={styles.mav_logo} />
+        <Logo className={styles.mav_logo} />
       </div>
     </div>
   );
