@@ -52,7 +52,7 @@ const initialSelectedSubMaterialData = {
   id: '',
   cost: 0,
   name: '',
-  quantity: '1',
+  quantity: 1,
   unit: '',
 };
 
@@ -177,6 +177,8 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
         ),
       );
       setIsSubMaterialModalOpen(false);
+      getExtraBudget();
+      getActivity(activity.id);
     };
 
     const successUpdateCallback = (
@@ -196,6 +198,8 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
         ),
       );
       setIsSubMaterialModalOpen(false);
+      getExtraBudget();
+      getActivity(activity.id);
     };
     const serviceCallParameters = {
       materialId: selectedMaterial,
@@ -251,6 +255,8 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
       setSelectedMaterial('');
       setSelectedSubMaterial(initialSelectedSubMaterialData);
       setSubMatAlertDialogOpen(false);
+      getExtraBudget();
+      getActivity(activity.id);
     };
     await deleteExtraBudgetSubMaterial({
       projectId,

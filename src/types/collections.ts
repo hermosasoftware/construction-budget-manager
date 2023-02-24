@@ -13,7 +13,7 @@ export interface ISubMaterial {
   id: string;
   name: string;
   unit: string;
-  quantity: string;
+  quantity: number;
   cost: number;
 }
 
