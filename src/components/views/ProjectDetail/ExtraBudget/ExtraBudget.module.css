@@ -18,3 +18,9 @@
   flex-wrap: wrap;
   min-width: 250px;
 }
+
+.pdf_button {
+  height: 40px !important;
+  margin-left: 10px;
+  align-self: end;
+}

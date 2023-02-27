@@ -42,7 +42,7 @@ const initialSelectedSubMaterialData = {
   id: '',
   cost: 0,
   name: '',
-  quantity: '1',
+  quantity: 1,
   unit: '',
 };
 
