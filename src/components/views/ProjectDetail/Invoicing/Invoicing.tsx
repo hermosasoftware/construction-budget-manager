@@ -375,6 +375,25 @@ const Invoicing: React.FC<IInvoicing> = props => {
       .map(e => ({ value: e.id, label: e.description }));
   };
 
+  const ProductSearchSelect = () => {
+    const options = getOrdersProducts(selectedItem);
+    const hasNoProducts = !options?.length;
+    return (
+      <SearchSelect
+        name="description"
+        label={appStrings.product}
+        placeholder={appStrings.product}
+        helperText={hasNoProducts ? appStrings.noProducts : ''}
+        isDisabled={!!selectedProduct.id || hasNoProducts}
+        options={options}
+        value={selectedProduct.description}
+        onChange={item => {
+          handleSearchProduct(item?.value?.value);
+        }}
+      />
+    );
+  };
+
   const getOrders = async () => {
     const successCallback = (response: IProjectOrder[]) => setOrders(response);
     await getProjectOrders({
@@ -488,17 +507,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
               validateOnBlur
               onSubmit={onSubmitProduct}
             >
-              <SearchSelect
-                name="description"
-                label={appStrings.material}
-                placeholder={appStrings.material}
-                isDisabled={!!selectedProduct.id}
-                options={getOrdersProducts(selectedItem)}
-                value={selectedProduct.description}
-                onChange={item => {
-                  handleSearchProduct(item?.value?.value);
-                }}
-              />
+              <ProductSearchSelect />
               <Input
                 name="quantity"
                 type="number"
