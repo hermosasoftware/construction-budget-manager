@@ -18,14 +18,14 @@ export const getBudgetOthers = async ({
   appStrings,
   successCallback,
   errorCallback,
-}: { projectId: string; activityId?: string } & IService) => {
+}: { projectId: string; activityId: string } & IService) => {
   try {
     const OtherRef = collection(
       db,
       'projects',
       projectId,
       'projectBudget',
-      activityId || 'summary',
+      activityId,
       'budgetOthers',
     );
     const result = await getDocs(OtherRef);

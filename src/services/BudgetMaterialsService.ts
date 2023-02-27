@@ -20,14 +20,14 @@ export const getBudgetMaterials = async ({
   appStrings,
   successCallback,
   errorCallback,
-}: { projectId: string; activityId?: string } & IService) => {
+}: { projectId: string; activityId: string } & IService) => {
   try {
     const matRef = collection(
       db,
       'projects',
       projectId,
       'projectBudget',
-      activityId || 'summary',
+      activityId,
       'budgetMaterials',
     );
     const result = await getDocs(matRef);
@@ -45,7 +45,7 @@ export const getBudgetMaterials = async ({
           'projects',
           projectId,
           'projectBudget',
-          activityId || 'summary',
+          activityId,
           'budgetMaterials',
           elem.id,
           'subMaterials',

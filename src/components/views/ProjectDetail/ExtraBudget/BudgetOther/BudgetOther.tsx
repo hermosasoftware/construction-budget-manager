@@ -15,7 +15,7 @@ import {
   updateExtraBudgetOther,
 } from '../../../../../services/ExtraBudgetOthersService';
 import { IBudgetOther } from '../../../../../types/budgetOther';
-import { IProjectBudget } from '../../../../../types/projectBudget';
+import { IProjectExtraBudget } from '../../../../../types/projectExtraBudget';
 import { IBudgetActivity } from '../../../../../types/budgetActivity';
 import Form, { Input } from '../../../../common/Form';
 import AlertDialog from '../../../../common/AlertDialog/AlertDialog';
@@ -27,7 +27,7 @@ import styles from './BudgetOther.module.css';
 interface IBudgetOtherView {
   projectId: string;
   getExtraBudget: Function;
-  budget: IProjectBudget;
+  budget: IProjectExtraBudget;
   getActivity: Function;
   activity: IBudgetActivity;
 }

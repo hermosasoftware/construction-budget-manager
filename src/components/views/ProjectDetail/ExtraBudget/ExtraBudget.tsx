@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Divider, Text } from '@chakra-ui/react';
 import * as yup from 'yup';
-import { CaretLeft, FilePdf, MagicWand } from 'phosphor-react';
+import { CaretLeft, FilePdf } from 'phosphor-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../../../redux/hooks';
 import TabGroup from '../../../common/TabGroup/TabGroup';
@@ -12,12 +12,8 @@ import BudgetOther from './BudgetOther/BudgetOther';
 import BudgetSummary from './BudgetSummary/BudgetSummary';
 import Form from '../../../common/Form/Form';
 import ExchangeInput from '../../../common/ExchangeInput/ExchangeInput';
-import BigButton from '../../../common/BigButton/BigButton';
-import {
-  copyBudgetToExtraBudget,
-  getProjectExtraBudget,
-} from '../../../../services/ProjectExtraBudgetService';
-import { IProjectBudget } from '../../../../types/projectBudget';
+import { getProjectExtraBudget } from '../../../../services/ProjectExtraBudgetService';
+import { IProjectExtraBudget } from '../../../../types/projectExtraBudget';
 import { IBudgetActivity } from '../../../../types/budgetActivity';
 import {
   getExtraBudgetActivity,
@@ -41,18 +37,16 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
   const [selectedTab, setSelectedTab] = useState('summary');
   const [editExchange, setEditExchange] = useState(false);
   const [editAdminFee, setEditAdminFee] = useState(false);
-  const [budget, setBudget] = useState<IProjectBudget>();
+  const [budget, setBudget] = useState<IProjectExtraBudget>();
   const [activityList, setActivityList] = useState<IBudgetActivity[]>([]);
   const [activity, setActivity] = useState<IBudgetActivity>();
-  const [budgetFlag, setbudgetFlag] = useState(false);
   const appStrings = useAppSelector(state => state.settings.appStrings);
   const navigate = useNavigate();
 
   const getExtraBudget = async () => {
-    const successCallback = (response: IProjectBudget) => {
+    const successCallback = (response: IProjectExtraBudget) =>
       setBudget(response);
-      setbudgetFlag(true);
-    };
+
     await getProjectExtraBudget({
       projectId,
       appStrings,
@@ -110,26 +104,14 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
       setEditAdminFee(false);
       getActivity(extraBudgetActivity.id);
     };
-
-    await updateExtraBudgetActivityAdminFee({
+    const serviceCallParameters = {
       projectId,
       extraBudgetActivityId: extraBudgetActivity.id,
       adminFee: Number(extraBudgetActivity.adminFee),
       appStrings,
       successCallback,
-    });
-  };
-
-  const handleCopyBudget = async () => {
-    const successCallback = () => {
-      setEditExchange(false);
-      getExtraBudget();
     };
-    await copyBudgetToExtraBudget({
-      projectId,
-      appStrings,
-      successCallback,
-    });
+    await updateExtraBudgetActivityAdminFee(serviceCallParameters);
   };
 
   const validationSchemaExchange = yup.object().shape({
@@ -218,102 +200,88 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
   return (
     <div className={styles.operations_container}>
       <Box p={5} borderWidth="1px" borderRadius={12}>
-        {budget ? (
-          <>
-            <div className={styles.toolBar__container}>
-              {activity ? (
-                <>
-                  <div className={styles.tab__container}>
-                    <Button
-                      onClick={() => {
-                        setActivity(undefined);
-                      }}
-                      variant={'ghost'}
-                    >
-                      <CaretLeft size={24} /> <Text>{activity.activity}</Text>
-                    </Button>
-                    <Divider orientation="vertical" />
-                    <TabGroup
-                      className={styles.tabs}
-                      tabs={[
-                        {
-                          id: 'summary',
-                          name: appStrings.summary,
-                          selected: true,
-                        },
-                        { id: 'materials', name: appStrings.materials },
-                        { id: 'labors', name: appStrings.labors },
-                        { id: 'subcontracts', name: appStrings.subcontracts },
-                        { id: 'others', name: appStrings.others },
-                      ]}
-                      variant="rounded"
-                      onSelectedTabChange={activeTabs =>
-                        setSelectedTab(activeTabs[0])
-                      }
-                    />
-                  </div>
-                  <Form
-                    id="exchange-form"
-                    initialFormData={activity}
-                    validationSchema={validationSchemaExchange}
-                    validateOnBlur
-                    style={{ alignItems: 'end', flex: 1 }}
-                    onSubmit={handleOnSubmitExchange}
-                  >
-                    <ExchangeInput
-                      editExchange={editExchange}
-                      onClick={() => setEditExchange(true)}
-                    />
-                  </Form>
-                  <Form
-                    id="adminfee-form"
-                    initialFormData={activity}
-                    validationSchema={validationSchemaAdminFee}
-                    validateOnBlur
-                    style={{ alignItems: 'end', marginLeft: '10px' }}
-                    onSubmit={handleOnSubmitAdminFee}
-                  >
-                    <AdminFeeInput
-                      editAdminFee={editAdminFee}
-                      onClick={() => setEditAdminFee(true)}
-                    />
-                  </Form>
-                  <Button
-                    onClick={() => {
-                      navigate(
-                        `/project-detail/${projectId}/extra-pdf-preview/${activity.id}`,
-                      );
-                    }}
-                    className={styles.pdf_button}
-                  >
-                    <FilePdf size={24} />
-                  </Button>
-                </>
-              ) : (
+        <div className={styles.toolBar__container}>
+          {activity ? (
+            <>
+              <div className={styles.tab__container}>
+                <Button
+                  onClick={() => {
+                    setActivity(undefined);
+                  }}
+                  variant={'ghost'}
+                >
+                  <CaretLeft size={24} /> <Text>{activity.activity}</Text>
+                </Button>
+                <Divider orientation="vertical" />
                 <TabGroup
                   className={styles.tabs}
                   tabs={[
-                    { id: 'summary', name: appStrings.summary, selected: true },
-                    { id: 'activity', name: appStrings.activities },
+                    {
+                      id: 'summary',
+                      name: appStrings.summary,
+                      selected: true,
+                    },
+                    { id: 'materials', name: appStrings.materials },
+                    { id: 'labors', name: appStrings.labors },
+                    { id: 'subcontracts', name: appStrings.subcontracts },
+                    { id: 'others', name: appStrings.others },
                   ]}
                   variant="rounded"
                   onSelectedTabChange={activeTabs =>
                     setSelectedTab(activeTabs[0])
                   }
                 />
-              )}
-            </div>
-            {contentToDisplay(selectedTab)}
-          </>
-        ) : budgetFlag ? (
-          <BigButton
-            title={appStrings.copyBudget}
-            onClick={handleCopyBudget}
-            illustration={
-              <MagicWand color="var(--chakra-colors-purple-500)" size={50} />
-            }
-          />
-        ) : null}
+              </div>
+              <Form
+                id="exchange-form"
+                initialFormData={activity}
+                validationSchema={validationSchemaExchange}
+                validateOnBlur
+                style={{ alignItems: 'end', flex: 1 }}
+                onSubmit={handleOnSubmitExchange}
+              >
+                <ExchangeInput
+                  editExchange={editExchange}
+                  onClick={() => setEditExchange(true)}
+                />
+              </Form>
+              <Form
+                id="adminfee-form"
+                initialFormData={activity}
+                validationSchema={validationSchemaAdminFee}
+                validateOnBlur
+                style={{ alignItems: 'end', marginLeft: '10px' }}
+                onSubmit={handleOnSubmitAdminFee}
+              >
+                <AdminFeeInput
+                  editAdminFee={editAdminFee}
+                  onClick={() => setEditAdminFee(true)}
+                />
+              </Form>
+              <Button
+                onClick={() => {
+                  navigate(
+                    `/project-detail/${projectId}/extra-pdf-preview/${activity.id}`,
+                  );
+                }}
+                className={styles.pdf_button}
+              >
+                <FilePdf size={24} />
+              </Button>
+            </>
+          ) : (
+            <TabGroup
+              className={styles.tabs}
+              tabs={[
+                { id: 'summary', name: appStrings.summary, selected: true },
+                { id: 'activity', name: appStrings.activities },
+              ]}
+              variant="rounded"
+              onSelectedTabChange={activeTabs => setSelectedTab(activeTabs[0])}
+            />
+          )}
+        </div>
+        {budget ? contentToDisplay(selectedTab) : null}
       </Box>
     </div>
   );

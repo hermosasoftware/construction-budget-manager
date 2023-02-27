@@ -3,7 +3,7 @@ import { BagSimple, DotsThreeOutline, Handshake, Wall } from 'phosphor-react';
 import { Divider } from '@chakra-ui/react';
 import BigButton from '../../../../common/BigButton/BigButton';
 import { useAppSelector } from '../../../../../redux/hooks';
-import { IProjectBudget } from '../../../../../types/projectBudget';
+import { IProjectExtraBudget } from '../../../../../types/projectExtraBudget';
 import { IBudgetActivity } from '../../../../../types/budgetActivity';
 import Stat from '../../../../common/Stat/Stat';
 import { colonFormat, dolarFormat } from '../../../../../utils/numbers';
@@ -12,11 +12,11 @@ import styles from './BudgetSummary.module.css';
 
 interface IBudgetSummaryView {
   projectId: string;
-  budget: IProjectBudget;
+  budget: IProjectExtraBudget;
   activityList: IBudgetActivity[];
 }
 
-interface IBudgetTotals extends IProjectBudget {
+interface IBudgetTotals extends IProjectExtraBudget {
   totalDirectCost: number;
   adminFee: number;
   grandTotal: number;
@@ -39,7 +39,7 @@ const BudgetSummary: React.FC<IBudgetSummaryView> = props => {
     sumSubcontracts,
     sumMaterials,
     sumOthers,
-  }: IProjectBudget) => {
+  }: IProjectExtraBudget) => {
     let adminFee = 0;
     let exchange = 0;
     let sumMaterialsDolars = 0;

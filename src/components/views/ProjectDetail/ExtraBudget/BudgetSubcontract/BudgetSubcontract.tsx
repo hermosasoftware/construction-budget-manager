@@ -15,7 +15,7 @@ import {
   updateExtraBudgetSubcontract,
 } from '../../../../../services/ExtraBudgetSubcontractsService';
 import { IBudgetSubcontract } from '../../../../../types/budgetSubcontract';
-import { IProjectBudget } from '../../../../../types/projectBudget';
+import { IProjectExtraBudget } from '../../../../../types/projectExtraBudget';
 import { IBudgetActivity } from '../../../../../types/budgetActivity';
 import Form, { Input } from '../../../../common/Form';
 import AlertDialog from '../../../../common/AlertDialog/AlertDialog';
@@ -27,7 +27,7 @@ import styles from './BudgetSubcontract.module.css';
 interface IBudgetSubcontractView {
   projectId: string;
   getExtraBudget: Function;
-  budget: IProjectBudget;
+  budget: IProjectExtraBudget;
   getActivity: Function;
   activity: IBudgetActivity;
 }

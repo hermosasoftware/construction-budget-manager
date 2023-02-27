@@ -15,7 +15,7 @@ import {
   updateExtraBudgetActivity,
 } from '../../../../../services/ExtraBudgetActivityService';
 import { IBudgetActivity } from '../../../../../types/budgetActivity';
-import { IProjectBudget } from '../../../../../types/projectBudget';
+import { IProjectExtraBudget } from '../../../../../types/projectExtraBudget';
 import Form, { DatePicker, Input } from '../../../../common/Form';
 import AlertDialog from '../../../../common/AlertDialog/AlertDialog';
 import { useAppSelector } from '../../../../../redux/hooks';
@@ -26,7 +26,7 @@ import styles from './BudgetActivity.module.css';
 interface IBudgetActivityView {
   projectId: string;
   getExtraBudget: Function;
-  budget: IProjectBudget;
+  budget: IProjectExtraBudget;
   activityList: IBudgetActivity[];
   setActivity: Function;
 }
