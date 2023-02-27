@@ -513,17 +513,8 @@ const Invoicing: React.FC<IInvoicing> = props => {
                 type="number"
                 label={appStrings.quantity}
               />
-              <Input
-                name="cost"
-                label={appStrings.cost}
-                isDisabled={!!selectedProduct.id}
-              />
-              <Input
-                name="tax"
-                type="number"
-                label={appStrings.taxAmount}
-                isDisabled={!!selectedProduct.id}
-              />
+              <Input name="cost" label={appStrings.cost} />
+              <Input name="tax" type="number" label={appStrings.taxAmount} />
               <br />
               <Button width="full" type="submit">
                 {appStrings.submit}
