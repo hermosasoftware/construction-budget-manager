@@ -32,6 +32,7 @@ import { formatDate } from '../../../../utils/dates';
 import { getProjectActivities } from '../../../../services/ProjectService';
 import TabGroup from '../../../common/TabGroup/TabGroup';
 import styles from './Orders.module.css';
+import { IActivity } from '../../../../types/activity';
 
 interface IOrdersView {
   projectId: string;
@@ -43,12 +44,6 @@ interface IProduct extends Omit<IOrderProduct, 'description'> {
 
 interface IOrder extends Omit<IProjectOrder, 'activity'> {
   activity: { value: string; label: string };
-}
-
-interface IActivity {
-  activity: string;
-  id: string;
-  isExtra?: boolean;
 }
 
 const initialSelectedOrderData = {
