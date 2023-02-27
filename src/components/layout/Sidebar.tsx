@@ -11,7 +11,6 @@ import {
   Button,
 } from '@chakra-ui/react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import SearchInput from '../common/SearchInput/SearchInput';
 import MenuBar from './MenuBar';
 import menuItems from '../../config/sidebarItems';
 import { useAppSelector } from '../../redux/hooks';
@@ -49,7 +48,6 @@ const Sidebar = () => {
       <Stack className={styles.sideBar_container}>
         <Stack className="center-content-cross">
           <Logo className={styles.logo} />
-          <SearchInput placeholder={appStrings?.search} />
           <MenuBar menuItems={menuItems(appStrings)} />
         </Stack>
 
