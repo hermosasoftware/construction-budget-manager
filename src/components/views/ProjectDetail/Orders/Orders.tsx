@@ -31,15 +31,12 @@ import SearchSelect from '../../../common/Form/Elements/SearchSelect';
 import { formatDate } from '../../../../utils/dates';
 import { getProjectActivities } from '../../../../services/ProjectService';
 import TabGroup from '../../../common/TabGroup/TabGroup';
+
 import styles from './Orders.module.css';
 import { IActivity } from '../../../../types/activity';
 
 interface IOrdersView {
   projectId: string;
-}
-
-interface IProduct extends Omit<IOrderProduct, 'description'> {
-  description: { value: string; label: string };
 }
 
 interface IOrder extends Omit<IProjectOrder, 'activity'> {
@@ -511,8 +508,12 @@ const Orders: React.FC<IOrdersView> = props => {
                   label={appStrings.material}
                   suggestions={getSuggestions()}
                 />
-                <Input name="quantity" label={appStrings.quantity} />
-                <Input name="cost" type={'number'} label={appStrings.cost} />
+                <Input
+                  name="quantity"
+                  type="number"
+                  label={appStrings.quantity}
+                />
+                <Input name="cost" type="number" label={appStrings.cost} />
                 <Input name="tax" type="number" label={appStrings.taxAmount} />
                 <br />
                 <Button width="full" type="submit">

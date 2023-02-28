@@ -24,9 +24,11 @@ import MaterialsTableView, {
 import { Box, Flex, Heading } from '@chakra-ui/react';
 import SearchInput from '../../common/SearchInput';
 import Modal from '../../common/Modal';
-import styles from './Materials.module.css';
 import ExchangeInput from '../../common/ExchangeInput';
 import AlertDialog from '../../common/AlertDialog/AlertDialog';
+
+import styles from './Materials.module.css';
+
 const initialSelectedMaterialData = {
   id: '',
   material: {
@@ -105,7 +107,7 @@ export default function Materials() {
   const onSubmit = async (data: IMaterial) => {
     const value: IMaterial = {
       ...data,
-      cost: !data.hasSubMaterials ? data.cost : 0,
+      cost: !data.hasSubMaterials ? +data.cost : 0,
     };
     const successAddCallback = (materialId: string) => {
       Object.assign(value, { id: materialId });
@@ -177,7 +179,7 @@ export default function Materials() {
     };
     const serviceCallParameters = {
       materialId: selectedMaterial?.material?.id,
-      submaterial: data,
+      submaterial: { ...data, cost: +data.cost, quantity: +data.quantity },
       appStrings,
       successCallback: !data.id ? successAddCallback : successUpdateCallback,
     };
@@ -402,12 +404,13 @@ export default function Materials() {
                   />
                   <Input
                     name="quantity"
+                    type="number"
                     label={appStrings.quantity}
                     innerStyle={{ width: '200px', marginRight: '5px' }}
                   />
                   <Input
                     name="cost"
-                    type={'number'}
+                    type="number"
                     label={appStrings.cost}
                     innerStyle={{ width: '200px', marginRight: '5px' }}
                   />
