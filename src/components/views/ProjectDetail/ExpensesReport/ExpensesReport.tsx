@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Flex, Heading } from '@chakra-ui/react';
+import { Box, Flex, Heading } from '@chakra-ui/react';
 import * as yup from 'yup';
 import Button from '../../../common/Button/Button';
 import Modal from '../../../common/Modal/Modal';
@@ -151,73 +151,77 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
 
   return (
     <div className={`${styles.operations_container}`}>
-      <Flex marginBottom="5px">
-        <SearchInput
-          style={{ margin: '0 10px 0 0', maxWidth: '500px' }}
-          placeholder="Search"
-          onChange={handleSearch}
-        ></SearchInput>
-        <div style={{ textAlign: 'end' }}>
-          <Button onClick={() => setIsModalOpen(true)}>+</Button>
-          <Modal
-            isOpen={isModalOpen}
-            onClose={() => {
-              setSelectedItem(initialSelectedItemData);
-              setIsModalOpen(false);
-            }}
-          >
-            <Heading as="h2" size="lg">
-              {selectedItem.id ? appStrings.editExpense : appStrings.addExpense}
-            </Heading>
-            <Form
-              id="project-form"
-              initialFormData={selectedItem}
-              validationSchema={validationSchema}
-              validateOnChange
-              validateOnBlur
-              onSubmit={handleOnSubmit}
+      <Box p={5} borderWidth="1px" borderRadius={12}>
+        <Flex marginBottom="5px">
+          <SearchInput
+            style={{ margin: '0 10px 0 0', maxWidth: '500px' }}
+            placeholder="Search"
+            onChange={handleSearch}
+          ></SearchInput>
+          <div style={{ textAlign: 'end' }}>
+            <Button onClick={() => setIsModalOpen(true)}>+</Button>
+            <Modal
+              isOpen={isModalOpen}
+              onClose={() => {
+                setSelectedItem(initialSelectedItemData);
+                setIsModalOpen(false);
+              }}
             >
-              <Input name="name" label={appStrings.name} />
-              <Input
-                name="docNumber"
-                type="number"
-                label={appStrings.docNumber}
-              />
-              <Input name="owner" label={appStrings.owner} />
-              <Input name="amount" type="number" label={appStrings.amount} />
-              <Input name="work" label={appStrings.work} />
-              <DatePicker name="date" label={appStrings.date}></DatePicker>
-              <br />
-              <Button width="full" type="submit">
-                {appStrings.submit}
-              </Button>
-            </Form>
-          </Modal>
-        </div>
-      </Flex>
-      <AlertDialog
-        title={appStrings.deleteExpense}
-        content={appStrings.deleteWarning}
-        isOpen={isAlertDialogOpen}
-        onClose={() => {
-          setSelectedItem(initialSelectedItemData);
-          setIsAlertDialogOpen(false);
-        }}
-        onSubmit={() => deleteButton()}
-      />
-      <TableView
-        headers={tableHeader}
-        items={formatTableData()}
-        filter={value =>
-          searchTerm === '' || value.name.toUpperCase().includes(searchTerm)
-        }
-        onClickEdit={id => editButton(id)}
-        onClickDelete={id => {
-          setSelectedItem({ ...selectedItem, id: id });
-          setIsAlertDialogOpen(true);
-        }}
-      />
-      {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
+              <Heading as="h2" size="lg">
+                {selectedItem.id
+                  ? appStrings.editExpense
+                  : appStrings.addExpense}
+              </Heading>
+              <Form
+                id="project-form"
+                initialFormData={selectedItem}
+                validationSchema={validationSchema}
+                validateOnChange
+                validateOnBlur
+                onSubmit={handleOnSubmit}
+              >
+                <Input name="name" label={appStrings.name} />
+                <Input
+                  name="docNumber"
+                  type="number"
+                  label={appStrings.docNumber}
+                />
+                <Input name="owner" label={appStrings.owner} />
+                <Input name="amount" type="number" label={appStrings.amount} />
+                <Input name="work" label={appStrings.work} />
+                <DatePicker name="date" label={appStrings.date}></DatePicker>
+                <br />
+                <Button width="full" type="submit">
+                  {appStrings.submit}
+                </Button>
+              </Form>
+            </Modal>
+          </div>
+        </Flex>
+        <AlertDialog
+          title={appStrings.deleteExpense}
+          content={appStrings.deleteWarning}
+          isOpen={isAlertDialogOpen}
+          onClose={() => {
+            setSelectedItem(initialSelectedItemData);
+            setIsAlertDialogOpen(false);
+          }}
+          onSubmit={() => deleteButton()}
+        />
+        <TableView
+          headers={tableHeader}
+          items={formatTableData()}
+          filter={value =>
+            searchTerm === '' || value.name.toUpperCase().includes(searchTerm)
+          }
+          onClickEdit={id => editButton(id)}
+          onClickDelete={id => {
+            setSelectedItem({ ...selectedItem, id: id });
+            setIsAlertDialogOpen(true);
+          }}
+        />
+        {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
+      </Box>
     </div>
   );
 };

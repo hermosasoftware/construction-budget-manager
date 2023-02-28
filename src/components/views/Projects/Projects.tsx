@@ -149,84 +149,90 @@ export default function Projects() {
           onSelectedTabChange={activeTabs => setSelectedTab(activeTabs[0])}
         />
         <div className={`${styles.operations_container}`}>
-          <Flex marginBottom="5px">
-            <SearchInput
-              style={{ margin: '0 10px 0 0', maxWidth: '500px' }}
-              placeholder={appStrings.search}
-              onChange={handleSearch}
-            ></SearchInput>
-            <div style={{ textAlign: 'end' }}>
-              <Button onClick={() => setIsModalOpen(true)}>+</Button>
-              <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-                <Heading as="h2" size="lg">
-                  {selectedItem.id
-                    ? appStrings.editProject
-                    : appStrings.createProject}
-                </Heading>
-                <Form
-                  id="project-form"
-                  initialFormData={selectedItem}
-                  validationSchema={validationSchema}
-                  validateOnChange
-                  validateOnBlur
-                  onSubmit={handleOnSubmit}
+          <Box p={5} borderWidth="1px" borderRadius={12}>
+            <Flex marginBottom="5px">
+              <SearchInput
+                style={{ margin: '0 10px 0 0', maxWidth: '500px' }}
+                placeholder={appStrings.search}
+                onChange={handleSearch}
+              ></SearchInput>
+              <div style={{ textAlign: 'end' }}>
+                <Button onClick={() => setIsModalOpen(true)}>+</Button>
+                <Modal
+                  isOpen={isModalOpen}
+                  onClose={() => setIsModalOpen(false)}
                 >
-                  <Input
-                    name="name"
-                    label={appStrings.name}
-                    placeholder={appStrings.projectName}
-                  />
-                  <Input
-                    name="client"
-                    label={appStrings.client}
-                    placeholder={appStrings.clientName}
-                  />
-                  <Input
-                    name="location"
-                    label={appStrings.location}
-                    placeholder={appStrings.locationDescription}
-                  />
-                  <Select
-                    name="status"
-                    label={appStrings.status}
-                    options={[
-                      { id: 'active', name: appStrings.active },
-                      { id: 'inactive', name: appStrings.inactive },
-                    ]}
-                    containerStyle={{ width: '30%', alignSelf: 'start' }}
-                  />
-                  <br />
-                  <Button width="full" type="submit">
-                    {appStrings.submit}
-                  </Button>
-                </Form>
-              </Modal>
-            </div>
-          </Flex>
-          <AlertDialog
-            title={appStrings.deleteProject}
-            content={appStrings.deleteWarning}
-            isOpen={isAlertDialogOpen}
-            onClose={() => {
-              setSelectedItem(initialSelectedItemData);
-              setIsAlertDialogOpen(false);
-            }}
-            onSubmit={() => deleteButton()}
-          />
-          <TableView
-            headers={tableHeader}
-            items={tableData}
-            filter={value =>
-              searchTerm === '' || value.name.toUpperCase().includes(searchTerm)
-            }
-            handleRowClick={handleRowClick}
-            onClickEdit={id => editButton(id)}
-            onClickDelete={id => {
-              setSelectedItem({ ...selectedItem, id: id });
-              setIsAlertDialogOpen(true);
-            }}
-          />
-          {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
+                  <Heading as="h2" size="lg">
+                    {selectedItem.id
+                      ? appStrings.editProject
+                      : appStrings.createProject}
+                  </Heading>
+                  <Form
+                    id="project-form"
+                    initialFormData={selectedItem}
+                    validationSchema={validationSchema}
+                    validateOnChange
+                    validateOnBlur
+                    onSubmit={handleOnSubmit}
+                  >
+                    <Input
+                      name="name"
+                      label={appStrings.name}
+                      placeholder={appStrings.projectName}
+                    />
+                    <Input
+                      name="client"
+                      label={appStrings.client}
+                      placeholder={appStrings.clientName}
+                    />
+                    <Input
+                      name="location"
+                      label={appStrings.location}
+                      placeholder={appStrings.locationDescription}
+                    />
+                    <Select
+                      name="status"
+                      label={appStrings.status}
+                      options={[
+                        { id: 'active', name: appStrings.active },
+                        { id: 'inactive', name: appStrings.inactive },
+                      ]}
+                      containerStyle={{ width: '30%', alignSelf: 'start' }}
+                    />
+                    <br />
+                    <Button width="full" type="submit">
+                      {appStrings.submit}
+                    </Button>
+                  </Form>
+                </Modal>
+              </div>
+            </Flex>
+            <AlertDialog
+              title={appStrings.deleteProject}
+              content={appStrings.deleteWarning}
+              isOpen={isAlertDialogOpen}
+              onClose={() => {
+                setSelectedItem(initialSelectedItemData);
+                setIsAlertDialogOpen(false);
+              }}
+              onSubmit={() => deleteButton()}
+            />
+            <TableView
+              headers={tableHeader}
+              items={tableData}
+              filter={value =>
+                searchTerm === '' ||
+                value.name.toUpperCase().includes(searchTerm)
+              }
+              handleRowClick={handleRowClick}
+              onClickEdit={id => editButton(id)}
+              onClickDelete={id => {
+                setSelectedItem({ ...selectedItem, id: id });
+                setIsAlertDialogOpen(true);
+              }}
+            />
+            {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
+          </Box>
         </div>
       </div>
     </>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { Skeleton } from '@chakra-ui/react';
 import { useAppSelector } from '../../../../../../redux/hooks';
 import ExtraReport from '../../../../../reports/ExtraReport/ExtraReport';
 import { getProjectById } from '../../../../../../services/ProjectService';
@@ -108,7 +109,7 @@ export default function ActivityPreview() {
 
   return (
     <>
-      {project && activity && (
+      {project && activity ? (
         <div className={`${styles.page_container}`}>
           <ExtraReport
             project={project}
@@ -135,6 +136,8 @@ export default function ActivityPreview() {
             ></ExtraReport>
           </DownloadPDF>
         </div>
+      ) : (
+        <Skeleton className={styles.page_container} height={'95%'} />
       )}
     </>
   );
