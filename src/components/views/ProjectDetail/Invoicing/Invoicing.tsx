@@ -237,6 +237,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
       description: data.description.label,
       quantity: +data.quantity,
       cost: +data.cost,
+      tax: +data.tax,
     };
     const successAddCallback = (invoiceId: string, item: IInvoiceProduct) => {
       setTableData(
@@ -513,7 +514,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
                 type="number"
                 label={appStrings.quantity}
               />
-              <Input name="cost" label={appStrings.cost} />
+              <Input name="cost" type="number" label={appStrings.cost} />
               <Input name="tax" type="number" label={appStrings.taxAmount} />
               <br />
               <Button width="full" type="submit">

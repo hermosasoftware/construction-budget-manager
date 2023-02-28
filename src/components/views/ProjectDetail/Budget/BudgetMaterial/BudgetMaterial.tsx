@@ -212,6 +212,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
             : m,
         ),
       );
+      setSelectedSubMaterial(initialSelectedSubMaterialData);
       setIsSubMaterialModalOpen(false);
       getBudget();
       getActivity(activity.id);
@@ -233,6 +234,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
             : m,
         ),
       );
+      setSelectedSubMaterial(initialSelectedSubMaterialData);
       setIsSubMaterialModalOpen(false);
       getBudget();
       getActivity(activity.id);
@@ -241,7 +243,11 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
       materialId: selectedMaterial,
       projectId,
       activityId: activity.id,
-      budgetSubMaterial: data,
+      budgetSubMaterial: {
+        ...data,
+        cost: +data.cost,
+        quantity: +data.quantity,
+      },
       appStrings,
       successCallback: !data.id ? successAddCallback : successUpdateCallback,
     };

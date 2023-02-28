@@ -176,6 +176,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
             : m,
         ),
       );
+      setSelectedSubMaterial(initialSelectedSubMaterialData);
       setIsSubMaterialModalOpen(false);
       getExtraBudget();
       getActivity(activity.id);
@@ -197,6 +198,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
             : m,
         ),
       );
+      setSelectedSubMaterial(initialSelectedSubMaterialData);
       setIsSubMaterialModalOpen(false);
       getExtraBudget();
       getActivity(activity.id);
@@ -205,7 +207,11 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
       materialId: selectedMaterial,
       projectId,
       activityId: activity.id,
-      budgetSubMaterial: data,
+      budgetSubMaterial: {
+        ...data,
+        cost: +data.cost,
+        quantity: +data.quantity,
+      },
       appStrings,
       successCallback: !data.id ? successAddCallback : successUpdateCallback,
     };
@@ -425,12 +431,13 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
               />
               <Input
                 name="quantity"
+                type="number"
                 label={appStrings.quantity}
                 innerStyle={{ width: '200px', marginRight: '5px' }}
               />
               <Input
                 name="cost"
-                type={'number'}
+                type="number"
                 label={appStrings.cost}
                 innerStyle={{ width: '200px', marginRight: '5px' }}
               />
