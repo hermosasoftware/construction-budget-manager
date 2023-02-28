@@ -462,6 +462,7 @@ const Orders: React.FC<IOrdersView> = props => {
                   name="proforma"
                   type="number"
                   label={appStrings.proforma}
+                  placeholder={appStrings.proformaNumber}
                 />
                 <DatePicker
                   name="date"
@@ -507,6 +508,7 @@ const Orders: React.FC<IOrdersView> = props => {
                   name="description"
                   label={appStrings.material}
                   suggestions={getSuggestions()}
+                  placeholder={appStrings.materialName}
                 />
                 <Input
                   name="quantity"

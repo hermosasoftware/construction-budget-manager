@@ -466,7 +466,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
                 <SearchSelect
                   name="option"
                   label={appStrings.order}
-                  placeholder={appStrings.orderId}
+                  placeholder={appStrings.selectOrder}
                   isDisabled={!!selectedOrder.id}
                   options={orders.map(o => ({
                     value: o.id,
@@ -481,6 +481,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
                   name="invoice"
                   type="number"
                   label={appStrings.invoice}
+                  placeholder={appStrings.invoiceNumber}
                 />
                 <Input name="activity" label={appStrings.activity} isDisabled />
                 <DatePicker name="date" label={appStrings.date}></DatePicker>

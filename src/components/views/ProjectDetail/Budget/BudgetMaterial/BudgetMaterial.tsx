@@ -374,6 +374,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
                   id: material.id,
                 }))}
                 onChange={e => handleAutoComplete(e.value)}
+                placeholder={appStrings.materialName}
               />
               <Input
                 name="unit"

@@ -204,7 +204,7 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
               <Input
                 name="name"
                 label={appStrings.name}
-                placeholder={appStrings.projectName}
+                placeholder={appStrings.laborName}
               />
               <Input
                 name="unit"

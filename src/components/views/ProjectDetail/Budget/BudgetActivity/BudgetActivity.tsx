@@ -22,6 +22,7 @@ import { useAppSelector } from '../../../../../redux/hooks';
 import { colonFormat } from '../../../../../utils/numbers';
 
 import styles from './BudgetActivity.module.css';
+import { formatDate } from '../../../../../utils/dates';
 
 interface IBudgetActivityView {
   projectId: string;
@@ -67,7 +68,7 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
   const formatTableData = () =>
     tableData.map(data => ({
       ...data,
-      date: data.date.toDateString(),
+      date: formatDate(data.date, 'MM/DD/YYYY'),
       sumMaterials: colonFormat(data.sumMaterials),
       sumLabors: colonFormat(data.sumLabors),
       sumSubcontracts: colonFormat(data.sumSubcontracts),
@@ -200,7 +201,11 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
               validateOnBlur
               onSubmit={handleOnSubmit}
             >
-              <Input name="activity" label={appStrings.name} />
+              <Input
+                name="activity"
+                label={appStrings.name}
+                placeholder={appStrings.activityName}
+              />
               <DatePicker name="date" label={appStrings.date}></DatePicker>
               <br />
               <Button width="full" type="submit">

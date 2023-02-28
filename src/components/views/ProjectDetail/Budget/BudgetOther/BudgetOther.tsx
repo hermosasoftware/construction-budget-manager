@@ -198,7 +198,11 @@ const BudgetOther: React.FC<IBudgetOtherView> = props => {
               validateOnBlur
               onSubmit={handleOnSubmit}
             >
-              <Input name="name" label={appStrings.name} />
+              <Input
+                name="name"
+                label={appStrings.name}
+                placeholder={appStrings.name}
+              />
               <Input
                 name="quantity"
                 type="number"

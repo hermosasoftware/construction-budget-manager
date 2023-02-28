@@ -19,6 +19,7 @@ import { useAppSelector } from '../../../../redux/hooks';
 import { colonFormat } from '../../../../utils/numbers';
 
 import styles from './ExpensesReport.module.css';
+import { formatDate } from '../../../../utils/dates';
 interface IExpensesReport {
   projectId: string;
 }
@@ -56,7 +57,7 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
   const formatTableData = () =>
     tableData.map(data => ({
       ...data,
-      date: data.date.toDateString(),
+      date: formatDate(data.date, 'MM/DD/YYYY'),
       amount: colonFormat(data.amount),
     }));
 
@@ -180,15 +181,27 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
                 validateOnBlur
                 onSubmit={handleOnSubmit}
               >
-                <Input name="name" label={appStrings.name} />
+                <Input
+                  name="name"
+                  label={appStrings.name}
+                  placeholder={appStrings.expenseName}
+                />
                 <Input
                   name="docNumber"
                   type="number"
                   label={appStrings.docNumber}
                 />
-                <Input name="owner" label={appStrings.owner} />
+                <Input
+                  name="owner"
+                  label={appStrings.owner}
+                  placeholder={appStrings.ownerName}
+                />
                 <Input name="amount" type="number" label={appStrings.amount} />
-                <Input name="work" label={appStrings.work} />
+                <Input
+                  name="work"
+                  label={appStrings.work}
+                  placeholder={appStrings.workName}
+                />
                 <DatePicker name="date" label={appStrings.date}></DatePicker>
                 <br />
                 <Button width="full" type="submit">
