@@ -1,4 +1,4 @@
-import { Flex, FormLabel, Heading } from '@chakra-ui/react';
+import { Box, Flex, FormLabel, Heading } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import * as yup from 'yup';
 import { FilePdf } from 'phosphor-react';
@@ -433,165 +433,169 @@ const Invoicing: React.FC<IInvoicing> = props => {
 
   return (
     <div className={`${styles.operations_container}`}>
-      <Flex marginBottom="5px">
-        <SearchInput
-          style={{ margin: '0 10px 0 0', maxWidth: '500px' }}
-          placeholder="Search"
-          onChange={handleSearch}
-        ></SearchInput>
-        <div style={{ textAlign: 'end' }}>
-          <Button onClick={() => setIsModalOpen(true)}>+</Button>
-          <Modal
-            isOpen={isModalOpen}
-            onClose={() => {
-              setSelectedItem(initialSelectedItemData);
-              setSelectedOrder(initialSelectedOrderData);
-              setIsModalOpen(false);
-            }}
-          >
-            <Heading as="h2" size="lg">
-              {selectedItem.id ? appStrings.editInvoice : appStrings.addInvoice}
-            </Heading>
-            <Form
-              id="invoice-form"
-              initialFormData={selectedItem}
-              validationSchema={validationSchema}
-              validateOnChange
-              validateOnBlur
-              onSubmit={handleOnSubmit}
+      <Box p={5} borderWidth="1px" borderRadius={12}>
+        <Flex marginBottom="5px">
+          <SearchInput
+            style={{ margin: '0 10px 0 0', maxWidth: '500px' }}
+            placeholder="Search"
+            onChange={handleSearch}
+          ></SearchInput>
+          <div style={{ textAlign: 'end' }}>
+            <Button onClick={() => setIsModalOpen(true)}>+</Button>
+            <Modal
+              isOpen={isModalOpen}
+              onClose={() => {
+                setSelectedItem(initialSelectedItemData);
+                setSelectedOrder(initialSelectedOrderData);
+                setIsModalOpen(false);
+              }}
             >
-              <SearchSelect
-                name="option"
-                label={appStrings.order}
-                placeholder={appStrings.selectOrder}
-                isDisabled={!!selectedOrder.id}
-                options={orders.map(o => ({
-                  value: o.id,
-                  label: String(o.order),
-                }))}
-                value={selectedOrder.option}
-                onChange={item => {
-                  handleSearchSelect(item?.value?.value);
-                }}
-              />
-              <Input
-                name="invoice"
-                type="number"
-                label={appStrings.invoice}
-                placeholder={appStrings.invoiceNumber}
-              />
-              <Input name="activity" label={appStrings.activity} isDisabled />
-              <DatePicker name="date" label={appStrings.date}></DatePicker>
-              <div className={styles.fileUpload_container}>
-                <FileUploader
-                  name="pdfFile"
-                  label={appStrings.uploadPDF}
-                  buttonLabel={appStrings.selectFile}
-                  acceptedFiles={[EFileTypes.pdf]}
-                ></FileUploader>
-                {selectedItem.pdfURL && (
-                  <div style={{ width: '40%' }}>
-                    <FormLabel>{appStrings.CurrentPDF}</FormLabel>
-                    <Button
-                      onClick={() => {
-                        window.open(selectedItem.pdfURL);
-                      }}
-                      style={{ height: '40px', width: '100%' }}
-                      rightIcon={<FilePdf size={24} />}
-                    >
-                      {appStrings.open}
-                    </Button>
-                  </div>
-                )}
-              </div>
+              <Heading as="h2" size="lg">
+                {selectedItem.id
+                  ? appStrings.editInvoice
+                  : appStrings.addInvoice}
+              </Heading>
+              <Form
+                id="invoice-form"
+                initialFormData={selectedItem}
+                validationSchema={validationSchema}
+                validateOnChange
+                validateOnBlur
+                onSubmit={handleOnSubmit}
+              >
+                <SearchSelect
+                  name="option"
+                  label={appStrings.order}
+                  placeholder={appStrings.selectOrder}
+                  isDisabled={!!selectedOrder.id}
+                  options={orders.map(o => ({
+                    value: o.id,
+                    label: String(o.order),
+                  }))}
+                  value={selectedOrder.option}
+                  onChange={item => {
+                    handleSearchSelect(item?.value?.value);
+                  }}
+                />
+                <Input
+                  name="invoice"
+                  type="number"
+                  label={appStrings.invoice}
+                  placeholder={appStrings.invoiceNumber}
+                />
+                <Input name="activity" label={appStrings.activity} isDisabled />
+                <DatePicker name="date" label={appStrings.date}></DatePicker>
+                <div className={styles.fileUpload_container}>
+                  <FileUploader
+                    name="pdfFile"
+                    label={appStrings.uploadPDF}
+                    buttonLabel={appStrings.selectFile}
+                    acceptedFiles={[EFileTypes.pdf]}
+                  ></FileUploader>
+                  {selectedItem.pdfURL && (
+                    <div style={{ width: '40%' }}>
+                      <FormLabel>{appStrings.CurrentPDF}</FormLabel>
+                      <Button
+                        onClick={() => {
+                          window.open(selectedItem.pdfURL);
+                        }}
+                        style={{ height: '40px', width: '100%' }}
+                        rightIcon={<FilePdf size={24} />}
+                      >
+                        {appStrings.open}
+                      </Button>
+                    </div>
+                  )}
+                </div>
 
-              <br />
-              <Button width="full" type="submit">
-                {appStrings.submit}
-              </Button>
-            </Form>
-          </Modal>
-          <Modal
-            isOpen={isDetailModalOpen}
-            onClose={() => {
-              setSelectedItem(initialSelectedItemData);
-              setSelectedOrder(initialSelectedOrderData);
-              setSelectedProduct(initialSelectedProductData);
-              setIsDetailModalOpen(false);
-            }}
-          >
-            <Heading as="h2" size="lg">
-              {selectedProduct.id
-                ? appStrings.editInvoiceDetail
-                : appStrings.addInvoiceDetail}
-            </Heading>
-            <Form
-              id="product-form"
-              initialFormData={selectedProduct}
-              validationSchema={productValSchema}
-              validateOnChange
-              validateOnBlur
-              onSubmit={onSubmitProduct}
+                <br />
+                <Button width="full" type="submit">
+                  {appStrings.submit}
+                </Button>
+              </Form>
+            </Modal>
+            <Modal
+              isOpen={isDetailModalOpen}
+              onClose={() => {
+                setSelectedItem(initialSelectedItemData);
+                setSelectedOrder(initialSelectedOrderData);
+                setSelectedProduct(initialSelectedProductData);
+                setIsDetailModalOpen(false);
+              }}
             >
-              <ProductSearchSelect />
-              <Input
-                name="quantity"
-                type="number"
-                label={appStrings.quantity}
-              />
-              <Input name="cost" type="number" label={appStrings.cost} />
-              <Input name="tax" type="number" label={appStrings.taxAmount} />
-              <br />
-              <Button width="full" type="submit">
-                {appStrings.submit}
-              </Button>
-            </Form>
-          </Modal>
-        </div>
-      </Flex>
-      <AlertDialog
-        title={appStrings.deleteInvoice}
-        content={appStrings.deleteWarning}
-        isOpen={isAlertDialogOpen}
-        onClose={() => {
-          setSelectedItem(initialSelectedItemData);
-          setIsAlertDialogOpen(false);
-        }}
-        onSubmit={() => deleteButton()}
-      />
-      <AlertDialog
-        title={appStrings.deleteProduct}
-        content={appStrings.deleteWarning}
-        isOpen={isProductAlertDialogOpen}
-        onClose={() => {
-          setSelectedProduct(initialSelectedProductData);
-          setIsProductAlertDialogOpen(false);
-        }}
-        onSubmit={() => deleteProduct()}
-      />
-      <InvoiceTableView
-        headers={tableHeader}
-        items={formatTableData()}
-        filter={value =>
-          searchTerm === '' ||
-          value.invoice?.toString().toUpperCase().includes(searchTerm)
-        }
-        handleRowClick={() => {}}
-        onClickEdit={id => editButton(id)}
-        onClickDelete={id => {
-          setSelectedItem({ ...selectedItem, id: id });
-          setIsAlertDialogOpen(true);
-        }}
-        onClickAddProduct={id => addProduct(id)}
-        onClickEditProduct={(orderId, productId) =>
-          editProduct(orderId, productId)
-        }
-        onClickDeleteProduct={(orderId, productId) =>
-          delProduct(orderId, productId)
-        }
-        formatCurrency
-      />
-      {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
+              <Heading as="h2" size="lg">
+                {selectedProduct.id
+                  ? appStrings.editInvoiceDetail
+                  : appStrings.addInvoiceDetail}
+              </Heading>
+              <Form
+                id="product-form"
+                initialFormData={selectedProduct}
+                validationSchema={productValSchema}
+                validateOnChange
+                validateOnBlur
+                onSubmit={onSubmitProduct}
+              >
+                <ProductSearchSelect />
+                <Input
+                  name="quantity"
+                  type="number"
+                  label={appStrings.quantity}
+                />
+                <Input name="cost" type="number" label={appStrings.cost} />
+                <Input name="tax" type="number" label={appStrings.taxAmount} />
+                <br />
+                <Button width="full" type="submit">
+                  {appStrings.submit}
+                </Button>
+              </Form>
+            </Modal>
+          </div>
+        </Flex>
+        <AlertDialog
+          title={appStrings.deleteInvoice}
+          content={appStrings.deleteWarning}
+          isOpen={isAlertDialogOpen}
+          onClose={() => {
+            setSelectedItem(initialSelectedItemData);
+            setIsAlertDialogOpen(false);
+          }}
+          onSubmit={() => deleteButton()}
+        />
+        <AlertDialog
+          title={appStrings.deleteProduct}
+          content={appStrings.deleteWarning}
+          isOpen={isProductAlertDialogOpen}
+          onClose={() => {
+            setSelectedProduct(initialSelectedProductData);
+            setIsProductAlertDialogOpen(false);
+          }}
+          onSubmit={() => deleteProduct()}
+        />
+        <InvoiceTableView
+          headers={tableHeader}
+          items={formatTableData()}
+          filter={value =>
+            searchTerm === '' ||
+            value.invoice?.toString().toUpperCase().includes(searchTerm)
+          }
+          handleRowClick={() => {}}
+          onClickEdit={id => editButton(id)}
+          onClickDelete={id => {
+            setSelectedItem({ ...selectedItem, id: id });
+            setIsAlertDialogOpen(true);
+          }}
+          onClickAddProduct={id => addProduct(id)}
+          onClickEditProduct={(orderId, productId) =>
+            editProduct(orderId, productId)
+          }
+          onClickDeleteProduct={(orderId, productId) =>
+            delProduct(orderId, productId)
+          }
+          formatCurrency
+        />
+        {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
+      </Box>
     </div>
   );
 };

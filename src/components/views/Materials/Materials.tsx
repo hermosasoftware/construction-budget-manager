@@ -74,14 +74,17 @@ export default function Materials() {
     { name: 'dollarCost', value: 'cost($)' },
   ];
 
+  const formatTableData = () =>
+    materialsData.map(data => ({
+      ...data,
+      material: { ...data.material, quantity: 1 },
+    }));
+
   const handleSearch = async (event: { target: { value: string } }) => {
     setSearchTerm(event.target.value.toUpperCase());
   };
 
-  const handleRowClick = (event: MouseEvent) => {
-    const row = event.target as HTMLInputElement;
-    const materialID = row.id;
-  };
+  const handleRowClick = (event: MouseEvent) => {};
 
   const validationSchema = yup.object().shape({
     name: yup.string().required(appStrings?.requiredField),
@@ -301,163 +304,170 @@ export default function Materials() {
           </h1>
         </Box>
         <div className={`${styles.content_container}`}>
-          <Flex marginBottom="5px">
-            <SearchInput
-              style={{ margin: '0 10px 0 0', maxWidth: '500px' }}
-              placeholder={appStrings.search}
-              onChange={handleSearch}
-            ></SearchInput>
-            <div
-              style={{ textAlign: 'end' }}
-              className={styles.exchange_container}
-            >
-              <Form
-                id="exchange-form"
-                initialFormData={{ exchange }}
-                validationSchema={exchangeValSchema}
-                validateOnBlur
-                style={{ alignItems: 'end', flex: 1 }}
-                onSubmit={handleOnSubmitExchange}
+          <Box p={5} borderWidth="1px" borderRadius={12}>
+            <Flex marginBottom="5px">
+              <SearchInput
+                style={{ margin: '0 10px 0 0', maxWidth: '500px' }}
+                placeholder={appStrings.search}
+                onChange={handleSearch}
+              ></SearchInput>
+              <div
+                style={{ textAlign: 'end' }}
+                className={styles.exchange_container}
               >
-                <ExchangeInput
-                  editExchange={editExchange}
-                  onClick={() => setEditExchange(true)}
-                />
-              </Form>
-              <Button onClick={() => setIsModalOpen(true)}>+</Button>
-              <Modal
-                isOpen={isModalOpen}
-                onClose={() => {
-                  setIsModalOpen(false);
-                  setSelectedMaterial(initialSelectedMaterialData);
-                }}
-              >
-                <Heading as="h2" size="lg">
-                  {selectedMaterial.id
-                    ? appStrings.editMaterial
-                    : appStrings.createMaterial}
-                </Heading>
                 <Form
-                  id="material-form"
-                  initialFormData={selectedMaterial.material}
-                  validationSchema={validationSchema}
-                  validateOnChange
+                  id="exchange-form"
+                  initialFormData={{ exchange }}
+                  validationSchema={exchangeValSchema}
                   validateOnBlur
-                  onSubmit={onSubmit}
+                  style={{ alignItems: 'end', flex: 1 }}
+                  onSubmit={handleOnSubmitExchange}
                 >
-                  <Input
-                    name="name"
-                    label={appStrings.name}
-                    innerStyle={{ width: '200px', marginRight: '5px' }}
-                    placeholder={appStrings.materialName}
+                  <ExchangeInput
+                    editExchange={editExchange}
+                    onClick={() => setEditExchange(true)}
                   />
-                  <Input
-                    name="unit"
-                    label={appStrings.unit}
-                    innerStyle={{ width: '200px', marginRight: '5px' }}
-                    placeholder={appStrings.metricUnit}
-                  />
-                  <Switch
-                    name="hasSubMaterials"
-                    label={appStrings.hasSubmaterials}
-                    onChange={e => handleHasSubMaterialChange(e)}
-                    helperText={appStrings.submaterialsDisclaimer}
-                  />
-                  {!selectedMaterial.material?.hasSubMaterials && (
+                </Form>
+                <Button
+                  className={styles.button_add}
+                  onClick={() => setIsModalOpen(true)}
+                >
+                  +
+                </Button>
+                <Modal
+                  isOpen={isModalOpen}
+                  onClose={() => {
+                    setIsModalOpen(false);
+                    setSelectedMaterial(initialSelectedMaterialData);
+                  }}
+                >
+                  <Heading as="h2" size="lg">
+                    {selectedMaterial.id
+                      ? appStrings.editMaterial
+                      : appStrings.createMaterial}
+                  </Heading>
+                  <Form
+                    id="material-form"
+                    initialFormData={selectedMaterial.material}
+                    validationSchema={validationSchema}
+                    validateOnChange
+                    validateOnBlur
+                    onSubmit={onSubmit}
+                  >
+                    <Input
+                      name="name"
+                      label={appStrings.name}
+                      innerStyle={{ width: '200px', marginRight: '5px' }}
+                      placeholder={appStrings.materialName}
+                    />
+                    <Input
+                      name="unit"
+                      label={appStrings.unit}
+                      innerStyle={{ width: '200px', marginRight: '5px' }}
+                      placeholder={appStrings.metricUnit}
+                    />
+                    <Switch
+                      name="hasSubMaterials"
+                      label={appStrings.hasSubmaterials}
+                      onChange={e => handleHasSubMaterialChange(e)}
+                      helperText={appStrings.submaterialsDisclaimer}
+                    />
+                    {!selectedMaterial.material?.hasSubMaterials && (
+                      <Input
+                        name="cost"
+                        type={'number'}
+                        label={appStrings.cost}
+                        innerStyle={{ width: '200px', marginRight: '5px' }}
+                      />
+                    )}
+                    <br />
+                    <Button width="full" type="submit">
+                      {appStrings.submit}
+                    </Button>
+                  </Form>
+                </Modal>
+                <Modal
+                  isOpen={isSubMaterialModalOpen}
+                  onClose={() => setIsSubMaterialModalOpen(false)}
+                >
+                  <Heading as="h2" size="lg">
+                    {selectedMaterial.id
+                      ? appStrings.editSubmaterial
+                      : appStrings.createSubmaterial}
+                  </Heading>
+                  <Form
+                    id="submaterial-form"
+                    initialFormData={selectedSubMaterial}
+                    validationSchema={subMaterialValSchema}
+                    validateOnChange
+                    validateOnBlur
+                    onSubmit={onSubmitSubmaterial}
+                  >
+                    <Input
+                      name="name"
+                      label={appStrings.name}
+                      innerStyle={{ width: '200px', marginRight: '5px' }}
+                    />
+                    <Input
+                      name="unit"
+                      label={appStrings.unit}
+                      innerStyle={{ width: '200px', marginRight: '5px' }}
+                    />
+                    <Input
+                      name="quantity"
+                      type="number"
+                      label={appStrings.quantity}
+                      innerStyle={{ width: '200px', marginRight: '5px' }}
+                    />
                     <Input
                       name="cost"
-                      type={'number'}
+                      type="number"
                       label={appStrings.cost}
                       innerStyle={{ width: '200px', marginRight: '5px' }}
                     />
-                  )}
-                  <br />
-                  <Button width="full" type="submit">
-                    {appStrings.submit}
-                  </Button>
-                </Form>
-              </Modal>
-              <Modal
-                isOpen={isSubMaterialModalOpen}
-                onClose={() => setIsSubMaterialModalOpen(false)}
-              >
-                <Heading as="h2" size="lg">
-                  {selectedMaterial.id
-                    ? appStrings.editSubmaterial
-                    : appStrings.createSubmaterial}
-                </Heading>
-                <Form
-                  id="submaterial-form"
-                  initialFormData={selectedSubMaterial}
-                  validationSchema={subMaterialValSchema}
-                  validateOnChange
-                  validateOnBlur
-                  onSubmit={onSubmitSubmaterial}
-                >
-                  <Input
-                    name="name"
-                    label={appStrings.name}
-                    innerStyle={{ width: '200px', marginRight: '5px' }}
-                  />
-                  <Input
-                    name="unit"
-                    label={appStrings.unit}
-                    innerStyle={{ width: '200px', marginRight: '5px' }}
-                  />
-                  <Input
-                    name="quantity"
-                    type="number"
-                    label={appStrings.quantity}
-                    innerStyle={{ width: '200px', marginRight: '5px' }}
-                  />
-                  <Input
-                    name="cost"
-                    type="number"
-                    label={appStrings.cost}
-                    innerStyle={{ width: '200px', marginRight: '5px' }}
-                  />
-                  <br />
-                  <Button width="full" type="submit">
-                    {appStrings.submit}
-                  </Button>
-                </Form>
-              </Modal>
-            </div>
-          </Flex>
-          <AlertDialog
-            title={appStrings.deleteMaterial}
-            content={appStrings.deleteWarning}
-            isOpen={isAlertDialogOpen}
-            onClose={() => {
-              setSelectedMaterial(initialSelectedMaterialData);
-              setSelectedSubMaterial(initialSelectedSubMaterialData);
-              setIsAlertDialogOpen(false);
-            }}
-            onSubmit={() => deleteButton()}
-          />
-          <MaterialsTableView
-            headers={tableHeader}
-            items={materialsData}
-            filter={value =>
-              searchTerm === '' ||
-              value?.material?.name?.toUpperCase().includes(searchTerm)
-            }
-            handleRowClick={handleRowClick}
-            onClickEdit={id => editButton(id)}
-            onClickDelete={id => {
-              setSelectedMaterial({ ...selectedMaterial, id });
-              setIsAlertDialogOpen(true);
-            }}
-            onClickAddSubMaterial={id => addSubMaterial(id)}
-            onClickEditSubMaterial={(materialId, submaterialId) =>
-              editSubMaterial(materialId, submaterialId)
-            }
-            onClickDeleteSubMaterial={(materialId, submaterialId) => {
-              delSubMaterial(materialId, submaterialId);
-            }}
-            exchangeRate={Number(exchange)}
-            formatCurrency
-          />
+                    <br />
+                    <Button width="full" type="submit">
+                      {appStrings.submit}
+                    </Button>
+                  </Form>
+                </Modal>
+              </div>
+            </Flex>
+            <AlertDialog
+              title={appStrings.deleteMaterial}
+              content={appStrings.deleteWarning}
+              isOpen={isAlertDialogOpen}
+              onClose={() => {
+                setSelectedMaterial(initialSelectedMaterialData);
+                setSelectedSubMaterial(initialSelectedSubMaterialData);
+                setIsAlertDialogOpen(false);
+              }}
+              onSubmit={() => deleteButton()}
+            />
+            <MaterialsTableView
+              headers={tableHeader}
+              items={formatTableData()}
+              filter={value =>
+                searchTerm === '' ||
+                value?.material?.name?.toUpperCase().includes(searchTerm)
+              }
+              handleRowClick={handleRowClick}
+              onClickEdit={id => editButton(id)}
+              onClickDelete={id => {
+                setSelectedMaterial({ ...selectedMaterial, id });
+                setIsAlertDialogOpen(true);
+              }}
+              onClickAddSubMaterial={id => addSubMaterial(id)}
+              onClickEditSubMaterial={(materialId, submaterialId) =>
+                editSubMaterial(materialId, submaterialId)
+              }
+              onClickDeleteSubMaterial={(materialId, submaterialId) => {
+                delSubMaterial(materialId, submaterialId);
+              }}
+              exchangeRate={Number(exchange)}
+              formatCurrency
+            />
+          </Box>
         </div>
       </div>
     </>

@@ -4,6 +4,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  orderBy,
   query,
   setDoc,
   writeBatch,
@@ -22,7 +23,7 @@ export const getMaterials = async ({
   errorCallback,
 }: IService) => {
   try {
-    const docSnap = await getDocs(materialDocRef);
+    const docSnap = await getDocs(query(materialDocRef, orderBy('name')));
 
     const materials = docSnap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
     let allMaterials = null;
