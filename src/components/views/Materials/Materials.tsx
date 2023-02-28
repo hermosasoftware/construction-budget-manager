@@ -349,11 +349,13 @@ export default function Materials() {
                     name="name"
                     label={appStrings.name}
                     innerStyle={{ width: '200px', marginRight: '5px' }}
+                    placeholder={appStrings.materialName}
                   />
                   <Input
                     name="unit"
                     label={appStrings.unit}
                     innerStyle={{ width: '200px', marginRight: '5px' }}
+                    placeholder={appStrings.metricUnit}
                   />
                   <Switch
                     name="hasSubMaterials"

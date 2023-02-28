@@ -201,7 +201,7 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
               <Input
                 name="name"
                 label={appStrings.name}
-                placeholder={appStrings.projectName}
+                placeholder={appStrings.subcontractName}
               />
               <Input
                 name="quantity"
