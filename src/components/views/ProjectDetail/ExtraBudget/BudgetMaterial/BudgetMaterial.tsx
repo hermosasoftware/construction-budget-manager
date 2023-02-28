@@ -18,7 +18,7 @@ import {
   updateExtraBudgetSubMaterial,
 } from '../../../../../services/ExtraBudgetMaterialsService';
 import { IBudgetMaterial } from '../../../../../types/budgetMaterial';
-import { IProjectBudget } from '../../../../../types/projectBudget';
+import { IProjectExtraBudget } from '../../../../../types/projectExtraBudget';
 import { IBudgetActivity } from '../../../../../types/budgetActivity';
 import Form, { AutoComplete, Input, Switch } from '../../../../common/Form';
 import AlertDialog from '../../../../common/AlertDialog/AlertDialog';
@@ -33,7 +33,7 @@ import styles from './BudgetMaterial.module.css';
 interface IBudgetMaterialView {
   projectId: string;
   getExtraBudget: Function;
-  budget: IProjectBudget;
+  budget: IProjectExtraBudget;
   getActivity: Function;
   activity: IBudgetActivity;
 }

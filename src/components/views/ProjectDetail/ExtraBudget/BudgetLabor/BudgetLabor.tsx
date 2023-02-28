@@ -15,7 +15,7 @@ import {
   updateExtraBudgetLabor,
 } from '../../../../../services/ExtraBudgetLaborsService';
 import { IBudgetLabor } from '../../../../../types/budgetLabor';
-import { IProjectBudget } from '../../../../../types/projectBudget';
+import { IProjectExtraBudget } from '../../../../../types/projectExtraBudget';
 import { IBudgetActivity } from '../../../../../types/budgetActivity';
 import Form, { Input } from '../../../../common/Form';
 import AlertDialog from '../../../../common/AlertDialog/AlertDialog';
@@ -27,7 +27,7 @@ import styles from './BudgetLabor.module.css';
 interface IBudgetLaborView {
   projectId: string;
   getExtraBudget: Function;
-  budget: IProjectBudget;
+  budget: IProjectExtraBudget;
   getActivity: Function;
   activity: IBudgetActivity;
 }

@@ -3,7 +3,7 @@ import { BagSimple, DotsThreeOutline, Handshake, Wall } from 'phosphor-react';
 import { Divider } from '@chakra-ui/react';
 import BigButton from '../../../../../common/BigButton/BigButton';
 import { useAppSelector } from '../../../../../../redux/hooks';
-import { IProjectBudget } from '../../../../../../types/projectBudget';
+import { IProjectExtraBudget } from '../../../../../../types/projectExtraBudget';
 import { IBudgetActivity } from '../../../../../../types/budgetActivity';
 import Stat from '../../../../../common/Stat/Stat';
 import { colonFormat, dolarFormat } from '../../../../../../utils/numbers';
@@ -12,7 +12,7 @@ import styles from './ActivitySummary.module.css';
 
 interface IActivitySummaryView {
   projectId: string;
-  budget: IProjectBudget;
+  budget: IProjectExtraBudget;
   activity: IBudgetActivity;
 }
 

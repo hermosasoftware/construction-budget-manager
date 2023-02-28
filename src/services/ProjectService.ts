@@ -19,6 +19,7 @@ import { IProject } from '../types/project';
 import { IService } from '../types/service';
 import { toastSuccess, toastError } from '../utils/toast';
 import { IProjectBudget } from '../types/projectBudget';
+import { IProjectExtraBudget } from '../types/projectExtraBudget';
 import { deleteCollect } from './herperService';
 
 export const getAllProjects = async ({
@@ -133,15 +134,20 @@ export const createProject = async ({
 }: { project: IProject } & IService) => {
   try {
     const data = await runTransaction(db, async transaction => {
-      const projectBudget: IProjectBudget = {
+      const budgetParams = {
         sumLabors: 0,
         sumMaterials: 0,
         sumSubcontracts: 0,
         sumOthers: 0,
-        exchange: 1,
-        adminFee: 12,
         creationDate: new Date(),
       };
+      const projectBudget: IProjectBudget = {
+        ...budgetParams,
+        exchange: 1,
+        adminFee: 12,
+      };
+      const projectExtraBudget: IProjectExtraBudget = budgetParams;
+
       const { id, ...rest } = project;
       const projectRef = doc(collection(db, 'projects'));
       transaction.set(projectRef, rest);
@@ -152,7 +158,15 @@ export const createProject = async ({
         'projectBudget',
         'summary',
       );
+      const extraBudgetRef = doc(
+        db,
+        'projects',
+        projectRef.id,
+        'projectExtraBudget',
+        'summary',
+      );
       transaction.set(budgetRef, projectBudget);
+      transaction.set(extraBudgetRef, projectExtraBudget);
 
       return {
         ...project,
