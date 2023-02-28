@@ -32,6 +32,8 @@ import FileUploader, {
 } from '../../../common/FileUploader/FileUploader';
 
 import styles from './Invoicing.module.css';
+import { getProjectActivities } from '../../../../services/ProjectService';
+import { IActivity } from '../../../../types/activity';
 interface IInvoicing {
   projectId: string;
 }
@@ -94,6 +96,8 @@ const Invoicing: React.FC<IInvoicing> = props => {
   );
   const [isProductAlertDialogOpen, setIsProductAlertDialogOpen] =
     useState(false);
+
+  const [allActivities, setAllActivities] = useState<IActivity[]>([]);
   const [orders, setOrders] = useState<IProjectOrder[]>([]);
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -150,15 +154,19 @@ const Invoicing: React.FC<IInvoicing> = props => {
     setSearchTerm(event.target.value.toUpperCase());
   };
 
+  const getActivityById = (id?: string): IActivity =>
+    allActivities.find(e => e.id === id)!;
+
   const editButton = async (projectInvoiceDetailId: string) => {
     const invoice = tableData.find(e => e.id === projectInvoiceDetailId);
     const order = orders.find(e => e.order === invoice?.order);
     if (order) {
       const { id, ...rest } = order;
-      const option = { value: order.id, label: String(order.order) };
+      const option = { value: id, label: String(order.order) };
       setSelectedOrder({
         ...selectedOrder,
         ...rest,
+        id,
         option,
       });
       setSelectedItem({ ...invoice!, option });
@@ -328,12 +336,17 @@ const Invoicing: React.FC<IInvoicing> = props => {
     if (order) {
       const { id, ...rest } = order;
       const option = { value: order.id, label: String(order.order) };
+      const orderActivity = getActivityById(rest.activity);
       setSelectedOrder({
         ...selectedOrder,
         ...rest,
         option,
       });
-      setSelectedItem({ ...selectedItem, option });
+      setSelectedItem({
+        ...selectedItem,
+        option,
+        activity: orderActivity.activity,
+      });
     }
   };
 
@@ -383,7 +396,9 @@ const Invoicing: React.FC<IInvoicing> = props => {
         name="description"
         label={appStrings.product}
         placeholder={appStrings.product}
-        helperText={hasNoProducts ? appStrings.noProducts : ''}
+        helperText={
+          hasNoProducts && !selectedProduct.id ? appStrings.noProducts : ''
+        }
         isDisabled={!!selectedProduct.id || hasNoProducts}
         options={options}
         value={selectedProduct.description}
@@ -402,11 +417,16 @@ const Invoicing: React.FC<IInvoicing> = props => {
       successCallback,
     });
   };
+  const getActivities = async () => {
+    const successCallback = (data: IActivity[]) => setAllActivities(data);
+    await getProjectActivities({ projectId, appStrings, successCallback });
+  };
 
   useEffect(() => {
     let abortController = new AbortController();
     getInvoicing();
     getOrders();
+    getActivities();
     return () => abortController.abort();
   }, []);
 
@@ -454,7 +474,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
                 }}
               />
               <Input name="invoice" type="number" label={appStrings.invoice} />
-              <Input name="activity" label={appStrings.activity} />
+              <Input name="activity" label={appStrings.activity} isDisabled />
               <DatePicker name="date" label={appStrings.date}></DatePicker>
               <div className={styles.fileUpload_container}>
                 <FileUploader
