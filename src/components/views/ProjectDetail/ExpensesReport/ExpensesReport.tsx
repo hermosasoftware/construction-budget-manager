@@ -19,6 +19,7 @@ import { useAppSelector } from '../../../../redux/hooks';
 import { colonFormat } from '../../../../utils/numbers';
 
 import styles from './ExpensesReport.module.css';
+import { formatDate } from '../../../../utils/dates';
 interface IExpensesReport {
   projectId: string;
 }
@@ -56,7 +57,7 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
   const formatTableData = () =>
     tableData.map(data => ({
       ...data,
-      date: data.date.toDateString(),
+      date: formatDate(data.date, 'MM/DD/YYYY'),
       amount: colonFormat(data.amount),
     }));
 
