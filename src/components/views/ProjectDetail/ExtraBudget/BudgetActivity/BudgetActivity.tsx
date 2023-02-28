@@ -210,7 +210,11 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
               validateOnBlur
               onSubmit={handleOnSubmit}
             >
-              <Input name="activity" label={appStrings.name} />
+              <Input
+                name="activity"
+                label={appStrings.name}
+                placeholder={appStrings.activityName}
+              />
               <Input
                 name="exchange"
                 type="number"

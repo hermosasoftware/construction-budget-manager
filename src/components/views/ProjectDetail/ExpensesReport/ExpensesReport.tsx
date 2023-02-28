@@ -178,15 +178,27 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
               validateOnBlur
               onSubmit={handleOnSubmit}
             >
-              <Input name="name" label={appStrings.name} />
+              <Input
+                name="name"
+                label={appStrings.name}
+                placeholder={appStrings.expenseName}
+              />
               <Input
                 name="docNumber"
                 type="number"
                 label={appStrings.docNumber}
               />
-              <Input name="owner" label={appStrings.owner} />
+              <Input
+                name="owner"
+                label={appStrings.owner}
+                placeholder={appStrings.ownerName}
+              />
               <Input name="amount" type="number" label={appStrings.amount} />
-              <Input name="work" label={appStrings.work} />
+              <Input
+                name="work"
+                label={appStrings.work}
+                placeholder={appStrings.workName}
+              />
               <DatePicker name="date" label={appStrings.date}></DatePicker>
               <br />
               <Button width="full" type="submit">
