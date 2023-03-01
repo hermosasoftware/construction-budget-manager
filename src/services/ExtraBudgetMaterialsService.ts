@@ -152,7 +152,7 @@ export const createExtraBudgetMaterial = async ({
         let subMatSubtotal = 0;
         subMaterials.forEach(e => {
           const { id, ...rest } = e;
-          batch.set(doc(collection(matRef, 'subMaterials')), rest);
+          batch.set(doc(matRef, 'subMaterials', id), rest);
           subMatSubtotal += rest.cost * rest.quantity;
         });
         summaryTotal += subMatSubtotal * rest.quantity;
@@ -171,6 +171,7 @@ export const createExtraBudgetMaterial = async ({
       return {
         ...extraBudgetMaterial,
         id: matRef.id,
+        subMaterials: rest.hasSubMaterials ? subMaterials : [],
       } as IBudgetMaterial;
     });
 
