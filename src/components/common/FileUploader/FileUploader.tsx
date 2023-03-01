@@ -1,17 +1,13 @@
-import {
-  InputProps,
-  FormControl,
-  FormLabel,
-  InputGroup,
-  Input,
-} from '@chakra-ui/react';
+import { InputProps, InputGroup, Input } from '@chakra-ui/react';
 import { Pencil, Plus } from 'phosphor-react';
 import { useContext, useMemo, useState } from 'react';
+import FormControl, {
+  IFormControl,
+} from '../Form/Layout/FormControl/FormControl';
 import { useAppSelector } from '../../../redux/hooks';
 import { IFormElementProps } from '../../../types/forms';
 import Button from '../Button/Button';
 import { FormContext } from '../Form/Form';
-import { IFormControl } from '../Form/Layout/FormControl/FormControl';
 
 import styles from './FileUploader.module.css';
 
@@ -70,7 +66,6 @@ const FileUploader: React.FC<IFileUploader & InputProps> = props => {
       errorMessage={error || errors[name]}
       {...formControlProps}
     >
-      {label && <FormLabel>{label}</FormLabel>}
       <Button
         variant="ghost_outlined"
         className={`${styles.button} ${isUploaded ? styles.isUploaded : ''}`}
