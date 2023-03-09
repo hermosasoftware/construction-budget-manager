@@ -13,10 +13,9 @@ import { FirebaseError } from 'firebase/app';
 import { auth, db } from '../config/firebaseConfig';
 import { login, logout } from '../redux/reducers/sessionSlice';
 import { changeMaterials } from '../redux/reducers/materialsSlice';
-import { getMaterials } from '../services/materialsService';
+import { listenMaterials } from '../services/materialsService';
 import { IService } from '../types/service';
 import { toastError, toastSuccess } from '../utils/toast';
-import { IMaterialBreakdown } from '../types/collections';
 
 export const verifyEmail = async ({
   email,
@@ -159,6 +158,7 @@ export const logOut = async () => {
 };
 
 export const handleAuthChange = (dispatch: Function, appStrings: any) => {
+  let stopListenMaterials: Function;
   onAuthStateChanged(auth, async userAuth => {
     if (userAuth) {
       // user is logged in, send the user's details to redux, store the current user in the state
@@ -170,11 +170,14 @@ export const handleAuthChange = (dispatch: Function, appStrings: any) => {
           // photoUrl: userAuth.photoURL,
         }),
       );
-      const successCallback = (response: IMaterialBreakdown[]) =>
-        dispatch(changeMaterials(response));
-      await getMaterials({ appStrings, successCallback });
+      const successCallback = (response: Function) => {
+        stopListenMaterials = response;
+      };
+      await listenMaterials({ appStrings, successCallback });
     } else {
+      stopListenMaterials && stopListenMaterials();
       dispatch(logout());
+      dispatch(changeMaterials([]));
     }
   });
 };

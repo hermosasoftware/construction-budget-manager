@@ -65,6 +65,7 @@ export default function Materials() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubMaterialModalOpen, setIsSubMaterialModalOpen] = useState(false);
   const appStrings = useAppSelector(state => state.settings.appStrings);
+  const materials = useAppSelector(state => state.materials.materials);
 
   const tableHeader: TTableHeader[] = [
     { name: 'name', value: appStrings.name },
@@ -75,7 +76,7 @@ export default function Materials() {
   ];
 
   const formatTableData = () =>
-    materialsData.map(data => ({
+    materials.map(data => ({
       ...data,
       material: { ...data.material, quantity: 1 },
     }));
@@ -275,13 +276,17 @@ export default function Materials() {
     });
   };
 
+  // useEffect(() => {
+  //   (async function () {
+  //     const successCallback = (response: IMaterialBreakdown[]) =>
+  //       setMaterialsDataTable(response);
+  //     await getMaterials({ appStrings, successCallback });
+  //   })();
+  // }, []);
+
   useEffect(() => {
-    (async function () {
-      const successCallback = (response: IMaterialBreakdown[]) =>
-        setMaterialsDataTable(response);
-      await getMaterials({ appStrings, successCallback });
-    })();
-  }, []);
+    setMaterialsDataTable(materials);
+  }, [materials]);
 
   useEffect(() => {
     if (!isModalOpen) setSelectedMaterial(initialSelectedMaterialData);

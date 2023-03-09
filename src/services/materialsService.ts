@@ -4,9 +4,11 @@ import {
   doc,
   getDoc,
   getDocs,
+  onSnapshot,
   orderBy,
   query,
   setDoc,
+  updateDoc,
   writeBatch,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
@@ -14,6 +16,13 @@ import { db } from '../config/firebaseConfig';
 import { IMaterial, ISubMaterial } from '../types/collections';
 import { IService } from '../types/service';
 import { toastError, toastSuccess } from '../utils/toast';
+import {
+  changeMaterials,
+  insertMaterial,
+  modifyMaterial,
+  removeMaterial,
+} from '../redux/reducers/materialsSlice';
+import { store } from '../redux/store';
 
 const materialDocRef = collection(db, 'materials');
 
@@ -42,6 +51,97 @@ export const getMaterials = async ({
       allMaterials = resul;
     });
     successCallback && successCallback(allMaterials);
+  } catch (e) {
+    let errorMessage = appStrings.genericError;
+    if (e instanceof FirebaseError) errorMessage = e.message;
+    toastError(appStrings.getInformationError, errorMessage);
+    errorCallback && errorCallback();
+  }
+};
+
+export const listenMaterials = async ({
+  appStrings,
+  successCallback,
+  errorCallback,
+}: IService) => {
+  try {
+    const q = query(materialDocRef, orderBy('name'));
+    const { dispatch, getState } = store;
+
+    const unsubscribe = onSnapshot(
+      q,
+      { includeMetadataChanges: true },
+      querySnapshot => {
+        let materialsList = [...getState().materials.materials];
+
+        const a: any = querySnapshot
+          .docChanges({ includeMetadataChanges: true })
+          .map(async change => {
+            const elem = {
+              ...change.doc.data(),
+              id: change.doc.id,
+            } as IMaterial;
+            const materialQ = query(
+              collection(db, 'materials', elem.id, 'subMaterials'),
+            );
+
+            if (change.type === 'added') {
+              const subMaterials = await getDocs(materialQ);
+              const data = subMaterials.docs.map(doc => ({
+                ...doc.data(),
+                id: doc.id,
+              })) as ISubMaterial[];
+
+              if (materialsList.length > 0) {
+                dispatch(
+                  insertMaterial({
+                    id: elem.id,
+                    material: elem,
+                    subMaterials: data,
+                  }),
+                );
+              } else {
+                return {
+                  id: elem.id,
+                  material: elem,
+                  subMaterials: data,
+                };
+              }
+            }
+            if (change.type === 'modified') {
+              const subMaterials = await getDocs(materialQ);
+              const data = subMaterials.docs.map(doc => ({
+                ...doc.data(),
+                id: doc.id,
+              })) as ISubMaterial[];
+              dispatch(
+                modifyMaterial({
+                  id: elem.id,
+                  material: elem,
+                  subMaterials: data,
+                }),
+              );
+            }
+            if (change.type === 'removed') {
+              dispatch(
+                removeMaterial({
+                  id: elem.id,
+                  material: elem,
+                  subMaterials: [],
+                }),
+              );
+            }
+
+            return [];
+          });
+
+        Promise.all(a).then(result => {
+          result.flat().length && dispatch(changeMaterials(result));
+        });
+
+        successCallback && successCallback(unsubscribe);
+      },
+    );
   } catch (e) {
     let errorMessage = appStrings.genericError;
     if (e instanceof FirebaseError) errorMessage = e.message;
@@ -138,7 +238,9 @@ export const addSubmaterial = async ({
   try {
     const { id, ...rest } = submaterial;
     const subMatRef = collection(db, 'materials', materialId, 'subMaterials');
+    const matRef = doc(db, 'materials', materialId);
     const docRef = await addDoc(subMatRef, rest);
+    await updateDoc(matRef, {});
     toastSuccess(appStrings.success, appStrings.saveSuccess);
     successCallback && successCallback(materialId, docRef.id);
   } catch (e) {
@@ -158,6 +260,7 @@ export const updateSubMaterial = async ({
 } & IService) => {
   try {
     const { id, ...rest } = submaterial;
+    const matRef = doc(db, 'materials', materialId);
     const subMaterialDocRef = doc(
       db,
       'materials',
@@ -166,6 +269,7 @@ export const updateSubMaterial = async ({
       id,
     );
     await setDoc(subMaterialDocRef, rest);
+    await updateDoc(matRef, {});
     toastSuccess(appStrings.success, appStrings.saveSuccess);
     successCallback && successCallback(materialId, id);
   } catch (e) {
@@ -197,8 +301,8 @@ export const deleteSubMaterial = async ({
     const totalSubMat = subMatDoc.data().cost * subMatDoc.data().quantity;
     const totalMatCost = matDoc.data().cost - totalSubMat;
 
-    batch.update(matRef, { cost: totalMatCost });
     batch.delete(subMatRef);
+    batch.update(matRef, { cost: totalMatCost });
 
     await batch.commit();
 
