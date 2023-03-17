@@ -55,9 +55,7 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
   const tableHeader: TTableHeader[] = [
     { name: 'activity', value: appStrings.name },
     { name: 'date', value: appStrings.date },
-    { name: 'sumMaterials', value: appStrings.materials, isGreen: true },
-    { name: 'adminFee', value: appStrings.adminFee, isGreen: true },
-    { name: 'total', value: appStrings.total, isGreen: true },
+    { name: 'subtotal', value: appStrings.subtotal, isGreen: true },
     { name: 'dollars', value: appStrings.dollars, isGreen: true },
   ];
 
@@ -65,15 +63,8 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
     tableData.map(data => ({
       ...data,
       date: formatDate(data.date, 'MM/DD/YYYY'),
-      sumMaterials: colonFormat(data.sumMaterials),
-      adminFee: colonFormat((data.sumMaterials * budget.adminFee) / 100),
-      total: colonFormat(
-        data.sumMaterials + (data.sumMaterials * budget.adminFee) / 100,
-      ),
-      dollars: colonFormat(
-        (data.sumMaterials + (data.sumMaterials * budget.adminFee) / 100) /
-          budget.exchange,
-      ),
+      subtotal: colonFormat(data.sumMaterials),
+      dollars: colonFormat(data.sumMaterials / budget.exchange),
     }));
 
   const getActivities = async () => {
