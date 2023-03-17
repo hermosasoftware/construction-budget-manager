@@ -41,6 +41,7 @@ export default function Projects() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const appStrings = useAppSelector(state => state.settings.appStrings);
+  const projects = useAppSelector(state => state.projects.projects);
   const navigate = useNavigate();
   const tableHeader: TTableHeader[] = [
     { name: 'name', value: appStrings.name },
@@ -49,25 +50,30 @@ export default function Projects() {
   ];
 
   const getProjects = async (status: string) => {
-    const successCallback = (response: IProject[]) => setTableData(response);
-    await getProjectsByStatus({ status, appStrings, successCallback });
+    const filteredProjects = projects.filter(
+      project => project.status === status,
+    );
+    setTableData(filteredProjects);
+
+    // const successCallback = (response: IProject[]) => setTableData(response);
+    // await getProjectsByStatus({ status, appStrings, successCallback });
   };
 
-  const addItem = (item: IProject) => setTableData([item, ...tableData]);
+  // const addItem = (item: IProject) => setTableData([item, ...tableData]);
 
-  const updateItem = (item: IProject) => {
-    const index = tableData.findIndex(e => e.id === item.id);
-    const data = [...tableData];
-    data.splice(index, 1, item);
-    setTableData(data);
-  };
+  // const updateItem = (item: IProject) => {
+  //   const index = tableData.findIndex(e => e.id === item.id);
+  //   const data = [...tableData];
+  //   data.splice(index, 1, item);
+  //   setTableData(data);
+  // };
 
-  const removeItem = (id: string) => {
-    const index = tableData.findIndex(e => e.id === id);
-    const data = [...tableData];
-    data.splice(index, 1);
-    setTableData(data);
-  };
+  // const removeItem = (id: string) => {
+  //   const index = tableData.findIndex(e => e.id === id);
+  //   const data = [...tableData];
+  //   data.splice(index, 1);
+  //   setTableData(data);
+  // };
 
   const handleSearch = async (event: { target: { value: string } }) => {
     setSearchTerm(event.target.value.toUpperCase());
@@ -89,7 +95,7 @@ export default function Projects() {
 
   const deleteButton = async () => {
     const successCallback = () => {
-      removeItem(selectedItem.id);
+      // removeItem(selectedItem.id);
       setSelectedItem(initialSelectedItemData);
       setIsAlertDialogOpen(false);
     };
@@ -104,11 +110,11 @@ export default function Projects() {
     const successCallback = (item: IProject) => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
-      project.id
-        ? selectedTab === item.status
-          ? updateItem(item)
-          : removeItem(item.id)
-        : selectedTab === item.status && addItem(item);
+      // project.id
+      //   ? selectedTab === item.status
+      //     ? updateItem(item)
+      //     : removeItem(item.id)
+      //   : selectedTab === item.status && addItem(item);
     };
     const serviceCallParameters = { project, appStrings, successCallback };
     project.id
@@ -131,7 +137,7 @@ export default function Projects() {
     let abortController = new AbortController();
     getProjects(selectedTab);
     return () => abortController.abort();
-  }, [selectedTab]);
+  }, [selectedTab, projects]);
 
   return (
     <>

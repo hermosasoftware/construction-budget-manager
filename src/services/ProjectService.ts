@@ -12,6 +12,8 @@ import {
   runTransaction,
   deleteDoc,
   documentId,
+  onSnapshot,
+  FirestoreError,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
@@ -20,7 +22,93 @@ import { IService } from '../types/service';
 import { toastSuccess, toastError } from '../utils/toast';
 import { IProjectBudget } from '../types/projectBudget';
 import { IProjectExtraBudget } from '../types/projectExtraBudget';
-import { deleteCollect } from './herperService';
+import { deleteCollect, listenersList } from './herperService';
+import { store } from '../redux/store';
+import {
+  changeProjects,
+  insertProject,
+  modifyProject,
+  removeProject,
+} from '../redux/reducers/projectsSlice';
+
+export const listenProjects = async ({
+  appStrings,
+  successCallback,
+  errorCallback,
+}: IService) => {
+  try {
+    const projectRef = collection(db, 'projects');
+    const projectsQuery = query(projectRef, orderBy('name'));
+    const { dispatch, getState } = store;
+
+    const unsubscribe = onSnapshot(
+      projectsQuery,
+      querySnapshot => {
+        let projectsList = [...getState().projects.projects];
+
+        const projects: any = querySnapshot.docChanges().map(async change => {
+          const elem = {
+            ...change.doc.data(),
+            id: change.doc.id,
+          } as IProject;
+
+          if (change.type === 'added') {
+            return changeTypeAdded(dispatch, projectsList, elem);
+          }
+          if (change.type === 'modified') {
+            return changeTypeModified(dispatch, elem);
+          }
+          if (change.type === 'removed') {
+            return changeTypeRemoved(dispatch, elem);
+          }
+        });
+
+        Promise.all(projects).then(result => {
+          result.flat().length && dispatch(changeProjects(result));
+        });
+      },
+      error => {
+        const index = listenersList.findIndex(e => e.name === 'projects');
+        if (index !== -1) {
+          listenersList.splice(index, 1);
+          dispatch(changeProjects([]));
+        }
+        throw error;
+      },
+    );
+    successCallback && successCallback(unsubscribe);
+  } catch (error) {
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError || error instanceof FirestoreError) {
+      errorMessage = error.message;
+    }
+    toastError(appStrings.getInformationError, errorMessage);
+    errorCallback && errorCallback();
+  }
+};
+
+const changeTypeAdded = async (
+  dispatch: any,
+  projectsList: IProject[],
+  elem: IProject,
+) => {
+  if (projectsList.length > 0) {
+    dispatch(insertProject(elem));
+    return [];
+  } else {
+    return elem;
+  }
+};
+
+const changeTypeModified = async (dispatch: any, elem: IProject) => {
+  dispatch(modifyProject(elem));
+  return [];
+};
+
+const changeTypeRemoved = async (dispatch: any, elem: IProject) => {
+  dispatch(removeProject(elem));
+  return [];
+};
 
 export const getAllProjects = async ({
   appStrings,

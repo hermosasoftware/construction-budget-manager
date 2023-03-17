@@ -4,6 +4,10 @@ import settings from './reducers/settingsSlice';
 import session from './reducers/sessionSlice';
 import modals from './reducers/modalsSlice';
 import materials from './reducers/materialsSlice';
+import projects from './reducers/projectsSlice';
+import projectExpenses from './reducers/projectExpensesSlice';
+import projectInvoices from './reducers/projectInvoicesSlice';
+import projectOrders from './reducers/projectOrdersSlice';
 
 import logger from 'redux-logger';
 
@@ -13,6 +17,10 @@ export const store = configureStore({
     session,
     modals,
     materials,
+    projects,
+    projectExpenses,
+    projectInvoices,
+    projectOrders,
   },
   middleware: getDefaultMiddleware => getDefaultMiddleware().concat(logger),
 });

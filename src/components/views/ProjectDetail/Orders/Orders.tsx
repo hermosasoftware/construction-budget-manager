@@ -90,6 +90,9 @@ const Orders: React.FC<IOrdersView> = props => {
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const appStrings = useAppSelector(state => state.settings.appStrings);
+  const projectOrders = useAppSelector(
+    state => state.projectOrders.projectOrders,
+  );
   const navigate = useNavigate();
 
   const tableHeader: TTableHeader[] = [
@@ -120,8 +123,8 @@ const Orders: React.FC<IOrdersView> = props => {
         const a = getActivityById(data.activity);
         return {
           ...data,
-          date: formatDate(data.date, 'MM/DD/YYYY'),
-          deliverDate: formatDate(data.deliverDate, 'MM/DD/YYYY'),
+          date: formatDate(new Date(data.date), 'MM/DD/YYYY'),
+          deliverDate: formatDate(new Date(data.deliverDate), 'MM/DD/YYYY'),
           activity: a?.isExtra
             ? `${a?.activity} (${appStrings.extra})`
             : a?.activity,
@@ -146,37 +149,37 @@ const Orders: React.FC<IOrdersView> = props => {
     return { value: activity?.id, label: activity?.activity };
   };
 
-  const getOrders = async () => {
-    const successCallback = (response: IProjectOrder[]) => {
-      setTableData(response);
-    };
-    await getProjectOrders({
-      projectId,
-      appStrings,
-      successCallback,
-    });
-  };
+  // const getOrders = async () => {
+  //   const successCallback = (response: IProjectOrder[]) => {
+  //     setTableData(response);
+  //   };
+  //   await getProjectOrders({
+  //     projectId,
+  //     appStrings,
+  //     successCallback,
+  //   });
+  // };
 
   const getActivities = async () => {
     const successCallback = (data: IActivity[]) => setAllActivities(data);
     await getProjectActivities({ projectId, appStrings, successCallback });
   };
 
-  const addItem = (item: IProjectOrder) => setTableData([item, ...tableData]);
+  // const addItem = (item: IProjectOrder) => setTableData([item, ...tableData]);
 
-  const updateItem = (item: IProjectOrder) => {
-    const index = tableData.findIndex(e => e.id === item.id);
-    const data = [...tableData];
-    data.splice(index, 1, item);
-    setTableData(data);
-  };
+  // const updateItem = (item: IProjectOrder) => {
+  //   const index = tableData.findIndex(e => e.id === item.id);
+  //   const data = [...tableData];
+  //   data.splice(index, 1, item);
+  //   setTableData(data);
+  // };
 
-  const removeItem = (id: string) => {
-    const index = tableData.findIndex(e => e.id === id);
-    const data = [...tableData];
-    data.splice(index, 1);
-    setTableData(data);
-  };
+  // const removeItem = (id: string) => {
+  //   const index = tableData.findIndex(e => e.id === id);
+  //   const data = [...tableData];
+  //   data.splice(index, 1);
+  //   setTableData(data);
+  // };
 
   const handleSearch = async (event: { target: { value: string } }) => {
     setSearchTerm(event.target.value.toUpperCase());
@@ -217,7 +220,7 @@ const Orders: React.FC<IOrdersView> = props => {
 
   const deleteButton = async () => {
     const successCallback = () => {
-      removeItem(selectedOrder.id);
+      // removeItem(selectedOrder.id);
       setSelectedOrder(initialSelectedOrderData);
       setIsAlertDialogOpen(false);
     };
@@ -266,16 +269,16 @@ const Orders: React.FC<IOrdersView> = props => {
 
   const deleteProduct = async () => {
     const successCallback = () => {
-      setTableData(
-        tableData.map(e =>
-          e.id === selectedOrder.id
-            ? {
-                ...e,
-                products: e.products?.filter(s => s.id !== selectedProduct.id),
-              }
-            : e,
-        ),
-      );
+      // setTableData(
+      //   tableData.map(e =>
+      //     e.id === selectedOrder.id
+      //       ? {
+      //           ...e,
+      //           products: e.products?.filter(s => s.id !== selectedProduct.id),
+      //         }
+      //       : e,
+      //   ),
+      // );
       setSelectedOrder(initialSelectedOrderData);
       setSelectedProduct(initialSelectedProductData);
       setIsProductAlertDialogOpen(false);
@@ -295,7 +298,7 @@ const Orders: React.FC<IOrdersView> = props => {
     const successCallback = (item: IProjectOrder) => {
       setSelectedOrder(initialSelectedOrderData);
       setIsModalOpen(false);
-      projectOrder.id ? updateItem(item) : addItem(item);
+      // projectOrder.id ? updateItem(item) : addItem(item);
     };
     const serviceCallParameters = {
       projectId,
@@ -318,32 +321,32 @@ const Orders: React.FC<IOrdersView> = props => {
       tax: +rest.tax,
     };
     const successAddCallback = (orderId: string, item: IOrderProduct) => {
-      setTableData(
-        tableData.map(m =>
-          m?.id === orderId
-            ? {
-                ...m,
-                products: [...m.products, item],
-              }
-            : m,
-        ),
-      );
+      // setTableData(
+      //   tableData.map(m =>
+      //     m?.id === orderId
+      //       ? {
+      //           ...m,
+      //           products: [...m.products, item],
+      //         }
+      //       : m,
+      //   ),
+      // );
       setSelectedProduct(initialSelectedProductData);
       setMaterialRef(initialMaterialRefData);
       setIsProductModalOpen(false);
     };
 
     const successUpdateCallback = (orderId: string, item: IOrderProduct) => {
-      setTableData(
-        tableData.map(m =>
-          m?.id === orderId
-            ? {
-                ...m,
-                products: m?.products?.map(s => (s.id === item.id ? item : s)),
-              }
-            : m,
-        ),
-      );
+      // setTableData(
+      //   tableData.map(m =>
+      //     m?.id === orderId
+      //       ? {
+      //           ...m,
+      //           products: m?.products?.map(s => (s.id === item.id ? item : s)),
+      //         }
+      //       : m,
+      //   ),
+      // );
       setSelectedProduct(initialSelectedProductData);
       setMaterialRef(initialMaterialRefData);
       setIsProductModalOpen(false);
@@ -386,10 +389,14 @@ const Orders: React.FC<IOrdersView> = props => {
 
   useEffect(() => {
     let abortController = new AbortController();
-    getOrders();
+    // getOrders();
     getActivities();
     return () => abortController.abort();
   }, []);
+
+  useEffect(() => {
+    setTableData(projectOrders);
+  }, [projectOrders]);
 
   return (
     <div className={`${styles.operations_container}`}>

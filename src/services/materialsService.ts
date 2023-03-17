@@ -2,6 +2,7 @@ import {
   addDoc,
   collection,
   doc,
+  FirestoreError,
   getDoc,
   getDocs,
   onSnapshot,
@@ -13,7 +14,11 @@ import {
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
-import { IMaterial, ISubMaterial } from '../types/collections';
+import {
+  IMaterial,
+  IMaterialBreakdown,
+  ISubMaterial,
+} from '../types/collections';
 import { IService } from '../types/service';
 import { toastError, toastSuccess } from '../utils/toast';
 import {
@@ -23,8 +28,125 @@ import {
   removeMaterial,
 } from '../redux/reducers/materialsSlice';
 import { store } from '../redux/store';
+import { listenersList } from './herperService';
 
 const materialDocRef = collection(db, 'materials');
+
+export const listenMaterials = async ({
+  appStrings,
+  successCallback,
+  errorCallback,
+}: IService) => {
+  try {
+    const materialsQuery = query(materialDocRef, orderBy('name'));
+    const { dispatch, getState } = store;
+
+    const unsubscribe = onSnapshot(
+      materialsQuery,
+      { includeMetadataChanges: true },
+      querySnapshot => {
+        let materialsList = [...getState().materials.materials];
+
+        const materials: any = querySnapshot
+          .docChanges({ includeMetadataChanges: true })
+          .map(async change => {
+            const elem = {
+              ...change.doc.data(),
+              id: change.doc.id,
+            } as IMaterial;
+
+            if (change.type === 'added') {
+              return changeTypeAdded(dispatch, materialsList, elem);
+            }
+            if (change.type === 'modified') {
+              return changeTypeModified(dispatch, elem);
+            }
+            if (change.type === 'removed') {
+              return changeTypeRemoved(dispatch, elem);
+            }
+          });
+
+        Promise.all(materials).then(result => {
+          result.flat().length && dispatch(changeMaterials(result));
+        });
+      },
+      error => {
+        const index = listenersList.findIndex(e => e.name === 'materials');
+        if (index !== -1) {
+          listenersList.splice(index, 1);
+          dispatch(changeMaterials([]));
+        }
+        throw error;
+      },
+    );
+    successCallback && successCallback(unsubscribe);
+  } catch (e) {
+    let errorMessage = appStrings.genericError;
+    if (e instanceof FirebaseError || e instanceof FirestoreError) {
+      errorMessage = e.message;
+    }
+    toastError(appStrings.getInformationError, errorMessage);
+    errorCallback && errorCallback();
+  }
+};
+
+const changeTypeAdded = async (
+  dispatch: any,
+  materialsList: IMaterialBreakdown[],
+  elem: IMaterial,
+) => {
+  const materialQ = query(collection(db, 'materials', elem.id, 'subMaterials'));
+  const subMaterials = await getDocs(materialQ);
+  const data = subMaterials.docs.map(doc => ({
+    ...doc.data(),
+    id: doc.id,
+  })) as ISubMaterial[];
+
+  if (materialsList.length > 0) {
+    dispatch(
+      insertMaterial({
+        id: elem.id,
+        material: elem,
+        subMaterials: data,
+      }),
+    );
+    return [];
+  } else {
+    return {
+      id: elem.id,
+      material: elem,
+      subMaterials: data,
+    };
+  }
+};
+
+const changeTypeModified = async (dispatch: any, elem: IMaterial) => {
+  const materialQ = query(collection(db, 'materials', elem.id, 'subMaterials'));
+  const subMaterials = await getDocs(materialQ);
+  const data = subMaterials.docs.map(doc => ({
+    ...doc.data(),
+    id: doc.id,
+  })) as ISubMaterial[];
+  dispatch(
+    modifyMaterial({
+      id: elem.id,
+      material: elem,
+      subMaterials: data,
+    }),
+  );
+  return [];
+};
+
+const changeTypeRemoved = async (dispatch: any, elem: IMaterial) => {
+  dispatch(
+    removeMaterial({
+      id: elem.id,
+      material: elem,
+      subMaterials: [],
+    }),
+  );
+  return [];
+};
 
 export const getMaterials = async ({
   appStrings,
@@ -51,97 +173,6 @@ export const getMaterials = async ({
       allMaterials = resul;
     });
     successCallback && successCallback(allMaterials);
-  } catch (e) {
-    let errorMessage = appStrings.genericError;
-    if (e instanceof FirebaseError) errorMessage = e.message;
-    toastError(appStrings.getInformationError, errorMessage);
-    errorCallback && errorCallback();
-  }
-};
-
-export const listenMaterials = async ({
-  appStrings,
-  successCallback,
-  errorCallback,
-}: IService) => {
-  try {
-    const q = query(materialDocRef, orderBy('name'));
-    const { dispatch, getState } = store;
-
-    const unsubscribe = onSnapshot(
-      q,
-      { includeMetadataChanges: true },
-      querySnapshot => {
-        let materialsList = [...getState().materials.materials];
-
-        const a: any = querySnapshot
-          .docChanges({ includeMetadataChanges: true })
-          .map(async change => {
-            const elem = {
-              ...change.doc.data(),
-              id: change.doc.id,
-            } as IMaterial;
-            const materialQ = query(
-              collection(db, 'materials', elem.id, 'subMaterials'),
-            );
-
-            if (change.type === 'added') {
-              const subMaterials = await getDocs(materialQ);
-              const data = subMaterials.docs.map(doc => ({
-                ...doc.data(),
-                id: doc.id,
-              })) as ISubMaterial[];
-
-              if (materialsList.length > 0) {
-                dispatch(
-                  insertMaterial({
-                    id: elem.id,
-                    material: elem,
-                    subMaterials: data,
-                  }),
-                );
-              } else {
-                return {
-                  id: elem.id,
-                  material: elem,
-                  subMaterials: data,
-                };
-              }
-            }
-            if (change.type === 'modified') {
-              const subMaterials = await getDocs(materialQ);
-              const data = subMaterials.docs.map(doc => ({
-                ...doc.data(),
-                id: doc.id,
-              })) as ISubMaterial[];
-              dispatch(
-                modifyMaterial({
-                  id: elem.id,
-                  material: elem,
-                  subMaterials: data,
-                }),
-              );
-            }
-            if (change.type === 'removed') {
-              dispatch(
-                removeMaterial({
-                  id: elem.id,
-                  material: elem,
-                  subMaterials: [],
-                }),
-              );
-            }
-
-            return [];
-          });
-
-        Promise.all(a).then(result => {
-          result.flat().length && dispatch(changeMaterials(result));
-        });
-
-        successCallback && successCallback(unsubscribe);
-      },
-    );
   } catch (e) {
     let errorMessage = appStrings.genericError;
     if (e instanceof FirebaseError) errorMessage = e.message;

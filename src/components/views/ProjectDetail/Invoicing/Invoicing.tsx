@@ -98,13 +98,17 @@ const Invoicing: React.FC<IInvoicing> = props => {
     useState(false);
 
   const [allActivities, setAllActivities] = useState<IActivity[]>([]);
-  const [orders, setOrders] = useState<IProjectOrder[]>([]);
+
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const { projectId } = props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
+  const projectInvoices = useAppSelector(
+    state => state.projectInvoices.projectInvoices,
+  );
+  const orders = useAppSelector(state => state.projectOrders.projectOrders);
 
   const tableHeader: TTableHeader[] = [
     { name: 'invoice', value: appStrings.invoice },
@@ -120,35 +124,35 @@ const Invoicing: React.FC<IInvoicing> = props => {
   ];
 
   const formatTableData = () =>
-    tableData.map(data => ({
+    projectInvoices.map(data => ({
       ...data,
-      date: formatDate(data.date, 'MM/DD/YYYY'),
+      date: formatDate(new Date(data.date), 'MM/DD/YYYY'),
     }));
 
-  const getInvoicing = async () => {
-    const successCallback = (response: IInvoice[]) => setTableData(response);
-    await getProjectInvoicing({
-      projectId,
-      appStrings,
-      successCallback,
-    });
-  };
+  // const getInvoicing = async () => {
+  //   const successCallback = (response: IInvoice[]) => setTableData(response);
+  //   await getProjectInvoicing({
+  //     projectId,
+  //     appStrings,
+  //     successCallback,
+  //   });
+  // };
 
-  const addItem = (item: IInvoice) => setTableData([item, ...tableData]);
+  // const addItem = (item: IInvoice) => setTableData([item, ...tableData]);
 
-  const updateItem = (item: IInvoice) => {
-    const index = tableData.findIndex(e => e.id === item.id);
-    const data = [...tableData];
-    data.splice(index, 1, item);
-    setTableData(data);
-  };
+  // const updateItem = (item: IInvoice) => {
+  //   const index = tableData.findIndex(e => e.id === item.id);
+  //   const data = [...tableData];
+  //   data.splice(index, 1, item);
+  //   setTableData(data);
+  // };
 
-  const removeItem = (id: string) => {
-    const index = tableData.findIndex(e => e.id === id);
-    const data = [...tableData];
-    data.splice(index, 1);
-    setTableData(data);
-  };
+  // const removeItem = (id: string) => {
+  //   const index = tableData.findIndex(e => e.id === id);
+  //   const data = [...tableData];
+  //   data.splice(index, 1);
+  //   setTableData(data);
+  // };
 
   const handleSearch = async (event: { target: { value: string } }) => {
     setSearchTerm(event.target.value.toUpperCase());
@@ -177,7 +181,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
 
   const deleteButton = async () => {
     const successCallback = () => {
-      removeItem(selectedItem.id);
+      // removeItem(selectedItem.id);
       setSelectedItem(initialSelectedItemData);
       setIsAlertDialogOpen(false);
     };
@@ -193,7 +197,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
     const successCallback = (item: IInvoice) => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
-      projectInvoiceDetail.id ? updateItem(item) : addItem(item);
+      // projectInvoiceDetail.id ? updateItem(item) : addItem(item);
     };
     const { option, ...rest } = projectInvoiceDetail;
     const serviceCallParameters = {
@@ -410,14 +414,14 @@ const Invoicing: React.FC<IInvoicing> = props => {
     );
   };
 
-  const getOrders = async () => {
-    const successCallback = (response: IProjectOrder[]) => setOrders(response);
-    await getProjectOrders({
-      projectId,
-      appStrings,
-      successCallback,
-    });
-  };
+  // const getOrders = async () => {
+  //   const successCallback = (response: IProjectOrder[]) => setOrders(response);
+  //   await getProjectOrders({
+  //     projectId,
+  //     appStrings,
+  //     successCallback,
+  //   });
+  // };
   const getActivities = async () => {
     const successCallback = (data: IActivity[]) => setAllActivities(data);
     await getProjectActivities({ projectId, appStrings, successCallback });
@@ -425,8 +429,8 @@ const Invoicing: React.FC<IInvoicing> = props => {
 
   useEffect(() => {
     let abortController = new AbortController();
-    getInvoicing();
-    getOrders();
+    // getInvoicing();
+    // getOrders();
     getActivities();
     return () => abortController.abort();
   }, []);
@@ -594,7 +598,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
           }
           formatCurrency
         />
-        {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
+        {!projectInvoices.length ? <h1>{appStrings.noRecords}</h1> : null}
       </Box>
     </div>
   );

@@ -8,13 +8,145 @@ import {
   deleteDoc,
   query,
   orderBy,
+  onSnapshot,
+  FirestoreError,
+  writeBatch,
+  updateDoc,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
 import { IOrderProduct, IProjectOrder } from '../types/projectOrder';
 import { IService } from '../types/service';
 import { toastSuccess, toastError } from '../utils/toast';
-import { deleteCollect } from './herperService';
+import { deleteCollect, listenersList } from './herperService';
+import { store } from '../redux/store';
+import {
+  changeProjectOrders,
+  insertProjectOrder,
+  modifyProjectOrder,
+  removeProjectOrder,
+} from '../redux/reducers/projectOrdersSlice';
+
+export const listenProjectOrders = ({
+  projectId,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: { projectId: string } & IService) => {
+  try {
+    const orderRef = collection(db, 'projects', projectId, 'projectOrders');
+    const OrdersQuery = query(orderRef, orderBy('order', 'desc'));
+    const { dispatch, getState } = store;
+
+    const unsubscribe = onSnapshot(
+      OrdersQuery,
+      { includeMetadataChanges: true },
+      querySnapshot => {
+        let ordersList = [...getState().projectOrders.projectOrders];
+
+        const projectOrders: any = querySnapshot
+          .docChanges({ includeMetadataChanges: true })
+          .map(async change => {
+            const elem = {
+              ...change.doc.data(),
+              id: change.doc.id,
+              date: change.doc.data().date.toDate().toISOString(),
+              deliverDate: change.doc.data().date.toDate().toISOString(),
+            } as IProjectOrder;
+
+            if (change.type === 'added') {
+              return changeTypeAdded(dispatch, ordersList, orderRef, elem);
+            }
+            if (change.type === 'modified') {
+              return changeTypeModified(dispatch, orderRef, elem);
+            }
+            if (change.type === 'removed') {
+              return changeTypeRemoved(dispatch, elem);
+            }
+          });
+
+        Promise.all(projectOrders).then(result => {
+          result.flat().length && dispatch(changeProjectOrders(result));
+        });
+      },
+      error => {
+        const index = listenersList.findIndex(e => e.name === 'projectOrders');
+        if (index !== -1) {
+          listenersList.splice(index, 1);
+          dispatch(changeProjectOrders([]));
+        }
+        throw error;
+      },
+    );
+    successCallback && successCallback(unsubscribe);
+  } catch (e) {
+    let errorMessage = appStrings.genericError;
+    if (e instanceof FirebaseError || e instanceof FirestoreError) {
+      errorMessage = e.message;
+    }
+    toastError(appStrings.getInformationError, errorMessage);
+    errorCallback && errorCallback();
+  }
+};
+
+const changeTypeAdded = async (
+  dispatch: any,
+  ordersList: IProjectOrder[],
+  invRef: any,
+  elem: IProjectOrder,
+) => {
+  const productQ = query(collection(invRef, elem.id, 'products'));
+  const products = await getDocs(productQ);
+  const data = products.docs.map(doc => ({
+    ...doc.data(),
+    id: doc.id,
+  })) as IOrderProduct[];
+
+  if (ordersList.length > 0) {
+    dispatch(
+      insertProjectOrder({
+        ...elem,
+        products: data,
+      }),
+    );
+    return [];
+  } else {
+    return {
+      ...elem,
+      products: data,
+    };
+  }
+};
+
+const changeTypeModified = async (
+  dispatch: any,
+  invRef: any,
+  elem: IProjectOrder,
+) => {
+  const productQ = query(collection(invRef, elem.id, 'products'));
+  const products = await getDocs(productQ);
+  const data = products.docs.map(doc => ({
+    ...doc.data(),
+    id: doc.id,
+  })) as IOrderProduct[];
+  dispatch(
+    modifyProjectOrder({
+      ...elem,
+      products: data,
+    }),
+  );
+  return [];
+};
+
+const changeTypeRemoved = async (dispatch: any, elem: IProjectOrder) => {
+  dispatch(
+    removeProjectOrder({
+      ...elem,
+      products: [],
+    }),
+  );
+  return [];
+};
 
 export const getProjectOrders = async ({
   projectId,
@@ -218,6 +350,7 @@ export const addOrderProduct = async ({
 } & IService) => {
   try {
     const { id, ...rest } = product;
+    const orderRef = doc(db, 'projects', projectId, 'projectOrders', orderId);
     const productRef = collection(
       db,
       'projects',
@@ -234,6 +367,7 @@ export const addOrderProduct = async ({
       ...rest,
       id: docRef.id,
     };
+    await updateDoc(orderRef, {});
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
@@ -262,7 +396,8 @@ export const updateOrderProduct = async ({
 } & IService) => {
   try {
     const { id, ...rest } = product;
-    const matRef = doc(
+    const orderRef = doc(db, 'projects', projectId, 'projectOrders', orderId);
+    const productRef = doc(
       db,
       'projects',
       projectId,
@@ -271,7 +406,9 @@ export const updateOrderProduct = async ({
       'products',
       id,
     );
-    await setDoc(matRef, rest);
+
+    await setDoc(productRef, rest);
+    await updateDoc(orderRef, {});
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
@@ -299,16 +436,20 @@ export const deleteOrderProduct = async ({
   orderProductId: string;
 } & IService) => {
   try {
-    const matRef = doc(
+    const orderRef = doc(
       db,
       'projects',
       projectId,
       'projectOrders',
       projectOrderId,
-      'products',
-      orderProductId,
     );
-    await deleteDoc(matRef);
+    const productRef = doc(collection(orderRef, 'products'), orderProductId);
+    const batch = writeBatch(db);
+
+    batch.delete(productRef);
+    batch.update(orderRef, {});
+
+    await batch.commit();
 
     toastSuccess(appStrings.success, appStrings.deleteSuccess);
 
