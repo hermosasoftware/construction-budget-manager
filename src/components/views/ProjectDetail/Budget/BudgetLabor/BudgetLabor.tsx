@@ -16,7 +16,6 @@ import {
 } from '../../../../../services/BudgetLaborsService';
 import { IBudgetLabor } from '../../../../../types/budgetLabor';
 import { IProjectBudget } from '../../../../../types/projectBudget';
-import { IBudgetActivity } from '../../../../../types/budgetActivity';
 import Form, { Input } from '../../../../common/Form';
 import AlertDialog from '../../../../common/AlertDialog/AlertDialog';
 import { useAppSelector } from '../../../../../redux/hooks';
@@ -29,8 +28,6 @@ interface IBudgetLaborView {
   isBudgetOpen: boolean;
   getBudget: Function;
   budget: IProjectBudget;
-  getActivity: Function;
-  activity: IBudgetActivity;
 }
 
 const initialSelectedItemData = {
@@ -43,8 +40,7 @@ const initialSelectedItemData = {
 };
 
 const BudgetLabor: React.FC<IBudgetLaborView> = props => {
-  const { projectId, isBudgetOpen, getBudget, budget, getActivity, activity } =
-    props;
+  const { projectId, isBudgetOpen, getBudget, budget } = props;
   const [tableData, setTableData] = useState<IBudgetLabor[]>([]);
   const [selectedItem, setSelectedItem] = useState<IBudgetLabor>(
     initialSelectedItemData,
@@ -76,7 +72,6 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
       setTableData(response);
     await getBudgetLabors({
       projectId,
-      activityId: activity.id,
       appStrings,
       successCallback,
     });
@@ -105,7 +100,6 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
     };
     await getBudgetLaborById({
       projectId,
-      activityId: activity.id,
       budgetLaborId,
       appStrings,
       successCallback,
@@ -118,11 +112,9 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
       setSelectedItem(initialSelectedItemData);
       setIsAlertDialogOpen(false);
       getBudget();
-      getActivity(activity.id);
     };
     await deleteBudgetLabor({
       projectId,
-      activityId: activity.id,
       budgetLaborId: selectedItem.id,
       appStrings,
       successCallback,
@@ -139,11 +131,9 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
       setIsModalOpen(false);
       budgetLabor.id ? updateItem(item) : addItem(item);
       getBudget();
-      getActivity(activity.id);
     };
     const serviceCallParameters = {
       projectId,
-      activityId: activity.id,
       budgetLabor: {
         ...budgetLabor,
         quantity: +budgetLabor.quantity,

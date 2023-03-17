@@ -16,7 +16,6 @@ import {
 } from '../../../../../services/BudgetOthersService';
 import { IBudgetOther } from '../../../../../types/budgetOther';
 import { IProjectBudget } from '../../../../../types/projectBudget';
-import { IBudgetActivity } from '../../../../../types/budgetActivity';
 import Form, { Input } from '../../../../common/Form';
 import AlertDialog from '../../../../common/AlertDialog/AlertDialog';
 import { useAppSelector } from '../../../../../redux/hooks';
@@ -29,8 +28,6 @@ interface IBudgetOtherView {
   isBudgetOpen: boolean;
   getBudget: Function;
   budget: IProjectBudget;
-  getActivity: Function;
-  activity: IBudgetActivity;
 }
 
 const initialSelectedItemData = {
@@ -42,8 +39,7 @@ const initialSelectedItemData = {
 };
 
 const BudgetOther: React.FC<IBudgetOtherView> = props => {
-  const { projectId, isBudgetOpen, getBudget, budget, getActivity, activity } =
-    props;
+  const { projectId, isBudgetOpen, getBudget, budget } = props;
   const [tableData, setTableData] = useState<IBudgetOther[]>([]);
   const [selectedItem, setSelectedItem] = useState<IBudgetOther>(
     initialSelectedItemData,
@@ -74,7 +70,6 @@ const BudgetOther: React.FC<IBudgetOtherView> = props => {
       setTableData(response);
     await getBudgetOthers({
       projectId,
-      activityId: activity.id,
       appStrings,
       successCallback,
     });
@@ -103,7 +98,7 @@ const BudgetOther: React.FC<IBudgetOtherView> = props => {
     };
     await getBudgetOtherById({
       projectId,
-      activityId: activity.id,
+
       budgetOtherId,
       appStrings,
       successCallback,
@@ -116,11 +111,10 @@ const BudgetOther: React.FC<IBudgetOtherView> = props => {
       setSelectedItem(initialSelectedItemData);
       setIsAlertDialogOpen(false);
       getBudget();
-      getActivity(activity.id);
     };
     await deleteBudgetOther({
       projectId,
-      activityId: activity.id,
+
       budgetOtherId: selectedItem.id,
       appStrings,
       successCallback,
@@ -137,11 +131,10 @@ const BudgetOther: React.FC<IBudgetOtherView> = props => {
       setIsModalOpen(false);
       budgetOther.id ? updateItem(item) : addItem(item);
       getBudget();
-      getActivity(activity.id);
     };
     const serviceCallParameters = {
       projectId,
-      activityId: activity.id,
+
       budgetOther: {
         ...budgetOther,
         quantity: +budgetOther.quantity,

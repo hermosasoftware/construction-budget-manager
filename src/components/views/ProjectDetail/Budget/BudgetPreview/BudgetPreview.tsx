@@ -40,7 +40,12 @@ export default function ActivityPreview() {
   };
 
   const getBudget = async () => {
-    const successCallback = (response: IProjectBudget) => setBudget(response);
+    const successCallback = async (response: IProjectBudget) => {
+      const labors = await getLabors();
+      const subcontracts = await getSubcontracts();
+      const others = await getOthers();
+      setBudget({ ...response, labors, subcontracts, others });
+    };
     await getProjectBudget({
       projectId,
       appStrings,
@@ -52,10 +57,7 @@ export default function ActivityPreview() {
     const successCallback = (response: IBudgetActivity[]) => {
       const list = response.map(async element => {
         const materials = await getMaterials(element.id);
-        const labors = await getLabors(element.id);
-        const subcontracts = await getSubcontracts(element.id);
-        const others = await getOthers(element.id);
-        return { ...element, materials, labors, subcontracts, others };
+        return { ...element, materials };
       });
       Promise.all(list).then(a => setActivity(a));
     };
@@ -81,37 +83,34 @@ export default function ActivityPreview() {
     return list;
   };
 
-  const getLabors = async (activityId: string) => {
+  const getLabors = async () => {
     let list: IBudgetLabor[] = [];
     const successCallback = (response: IBudgetLabor[]) => (list = response);
     await getBudgetLabors({
       projectId,
-      activityId,
       appStrings,
       successCallback,
     });
     return list;
   };
 
-  const getSubcontracts = async (activityId: string) => {
+  const getSubcontracts = async () => {
     let list: IBudgetSubcontract[] = [];
     const successCallback = (response: IBudgetSubcontract[]) =>
       (list = response);
     await getBudgetSubcontracts({
       projectId,
-      activityId,
       appStrings,
       successCallback,
     });
     return list;
   };
 
-  const getOthers = async (activityId: string) => {
+  const getOthers = async () => {
     let list: IBudgetOther[] = [];
     const successCallback = (response: IBudgetOther[]) => (list = response);
     await getBudgetOthers({
       projectId,
-      activityId,
       appStrings,
       successCallback,
     });
