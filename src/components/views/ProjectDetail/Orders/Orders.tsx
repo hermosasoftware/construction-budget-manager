@@ -18,11 +18,11 @@ import {
   deleteOrderProduct,
   deleteProjectOrder,
   getProjectOrderById,
-  getProjectOrders,
   updateOrderProduct,
   updateProjectOrder,
 } from '../../../../services/ProjectOrderService';
 import { IOrderProduct, IProjectOrder } from '../../../../types/projectOrder';
+import { IActivity } from '../../../../types/activity';
 import { useAppSelector } from '../../../../redux/hooks';
 import OrdersTableView, {
   TTableHeader,
@@ -33,7 +33,6 @@ import { getProjectActivities } from '../../../../services/ProjectService';
 import TabGroup from '../../../common/TabGroup/TabGroup';
 
 import styles from './Orders.module.css';
-import { IActivity } from '../../../../types/activity';
 
 interface IOrdersView {
   projectId: string;
@@ -73,7 +72,6 @@ const initialMaterialRefData = {
 
 const Orders: React.FC<IOrdersView> = props => {
   const { projectId } = props;
-  const [tableData, setTableData] = useState<IProjectOrder[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<IOrder>(
     initialSelectedOrderData,
   );
@@ -101,7 +99,6 @@ const Orders: React.FC<IOrdersView> = props => {
     { name: 'date', value: 'Creation Date' },
     { name: 'deliverDate', value: 'Deliver Date' },
     { name: 'activity', value: appStrings.activity },
-    // { name: 'status', value: 'Status' },
     { name: 'description', value: appStrings.description },
     { name: 'quantity', value: appStrings.quantity },
     { name: 'cost', value: appStrings.cost },
@@ -117,7 +114,7 @@ const Orders: React.FC<IOrdersView> = props => {
 
   const formatTableData = () => {
     const showOnlySent = selectedTab === 'sent';
-    return tableData
+    return projectOrders
       .filter(e => (showOnlySent ? e.sentStatus : !e.sentStatus))
       .map(data => {
         const a = getActivityById(data.activity);
@@ -134,7 +131,7 @@ const Orders: React.FC<IOrdersView> = props => {
 
   const getSuggestions = () => {
     let products: any[] = [];
-    tableData.forEach(d => {
+    projectOrders.forEach(d => {
       const p = d.products?.map(p => ({ value: p.description }));
       products = [...products, ...p];
     });
@@ -149,37 +146,10 @@ const Orders: React.FC<IOrdersView> = props => {
     return { value: activity?.id, label: activity?.activity };
   };
 
-  // const getOrders = async () => {
-  //   const successCallback = (response: IProjectOrder[]) => {
-  //     setTableData(response);
-  //   };
-  //   await getProjectOrders({
-  //     projectId,
-  //     appStrings,
-  //     successCallback,
-  //   });
-  // };
-
   const getActivities = async () => {
     const successCallback = (data: IActivity[]) => setAllActivities(data);
     await getProjectActivities({ projectId, appStrings, successCallback });
   };
-
-  // const addItem = (item: IProjectOrder) => setTableData([item, ...tableData]);
-
-  // const updateItem = (item: IProjectOrder) => {
-  //   const index = tableData.findIndex(e => e.id === item.id);
-  //   const data = [...tableData];
-  //   data.splice(index, 1, item);
-  //   setTableData(data);
-  // };
-
-  // const removeItem = (id: string) => {
-  //   const index = tableData.findIndex(e => e.id === id);
-  //   const data = [...tableData];
-  //   data.splice(index, 1);
-  //   setTableData(data);
-  // };
 
   const handleSearch = async (event: { target: { value: string } }) => {
     setSearchTerm(event.target.value.toUpperCase());
@@ -208,7 +178,7 @@ const Orders: React.FC<IOrdersView> = props => {
   };
 
   const exportPDFButton = (id: string) => {
-    const order = tableData.find(e => e.id === id);
+    const order = projectOrders.find(e => e.id === id);
     const activity = getActivityById(order?.activity);
     order &&
       navigate(
@@ -220,7 +190,6 @@ const Orders: React.FC<IOrdersView> = props => {
 
   const deleteButton = async () => {
     const successCallback = () => {
-      // removeItem(selectedOrder.id);
       setSelectedOrder(initialSelectedOrderData);
       setIsAlertDialogOpen(false);
     };
@@ -233,9 +202,11 @@ const Orders: React.FC<IOrdersView> = props => {
   };
 
   const addProduct = async (productId: string) => {
-    const order = tableData.find(m => m.id === productId)!;
+    const order = projectOrders.find(m => m.id === productId)!;
     const parsedOrder = {
-      ...order!,
+      ...order,
+      date: new Date(order?.date),
+      deliverDate: new Date(order?.deliverDate),
       activity: getFormattedActivity(order?.activity),
     };
     setSelectedOrder(parsedOrder);
@@ -243,13 +214,15 @@ const Orders: React.FC<IOrdersView> = props => {
   };
 
   const editProduct = async (orderId: string, productId: string) => {
-    const product = tableData
+    const product = projectOrders
       .find(m => m?.id === orderId)
       ?.products?.find(s => s.id === productId);
     if (product) {
-      const order = tableData.find(m => m.id === orderId);
+      const order = projectOrders.find(m => m.id === orderId)!;
       const parsedOrder = {
-        ...order!,
+        ...order,
+        date: new Date(order?.date),
+        deliverDate: new Date(order?.deliverDate),
         activity: getFormattedActivity(order?.activity),
       };
       setSelectedOrder(parsedOrder);
@@ -269,16 +242,6 @@ const Orders: React.FC<IOrdersView> = props => {
 
   const deleteProduct = async () => {
     const successCallback = () => {
-      // setTableData(
-      //   tableData.map(e =>
-      //     e.id === selectedOrder.id
-      //       ? {
-      //           ...e,
-      //           products: e.products?.filter(s => s.id !== selectedProduct.id),
-      //         }
-      //       : e,
-      //   ),
-      // );
       setSelectedOrder(initialSelectedOrderData);
       setSelectedProduct(initialSelectedProductData);
       setIsProductAlertDialogOpen(false);
@@ -295,10 +258,9 @@ const Orders: React.FC<IOrdersView> = props => {
   const handleOnSubmit = async (projectOrder: IOrder) => {
     const { activity, sentStatus, ...rest } = projectOrder;
     const isSent = sentStatus === 'sent';
-    const successCallback = (item: IProjectOrder) => {
+    const successCallback = () => {
       setSelectedOrder(initialSelectedOrderData);
       setIsModalOpen(false);
-      // projectOrder.id ? updateItem(item) : addItem(item);
     };
     const serviceCallParameters = {
       projectId,
@@ -320,33 +282,13 @@ const Orders: React.FC<IOrdersView> = props => {
       cost: +rest.cost,
       tax: +rest.tax,
     };
-    const successAddCallback = (orderId: string, item: IOrderProduct) => {
-      // setTableData(
-      //   tableData.map(m =>
-      //     m?.id === orderId
-      //       ? {
-      //           ...m,
-      //           products: [...m.products, item],
-      //         }
-      //       : m,
-      //   ),
-      // );
+    const successAddCallback = () => {
       setSelectedProduct(initialSelectedProductData);
       setMaterialRef(initialMaterialRefData);
       setIsProductModalOpen(false);
     };
 
-    const successUpdateCallback = (orderId: string, item: IOrderProduct) => {
-      // setTableData(
-      //   tableData.map(m =>
-      //     m?.id === orderId
-      //       ? {
-      //           ...m,
-      //           products: m?.products?.map(s => (s.id === item.id ? item : s)),
-      //         }
-      //       : m,
-      //   ),
-      // );
+    const successUpdateCallback = () => {
       setSelectedProduct(initialSelectedProductData);
       setMaterialRef(initialMaterialRefData);
       setIsProductModalOpen(false);
@@ -389,14 +331,9 @@ const Orders: React.FC<IOrdersView> = props => {
 
   useEffect(() => {
     let abortController = new AbortController();
-    // getOrders();
     getActivities();
     return () => abortController.abort();
   }, []);
-
-  useEffect(() => {
-    setTableData(projectOrders);
-  }, [projectOrders]);
 
   return (
     <div className={`${styles.operations_container}`}>
@@ -421,10 +358,10 @@ const Orders: React.FC<IOrdersView> = props => {
           <div style={{ textAlign: 'end' }}>
             <Button
               onClick={() => {
-                tableData.length
+                projectOrders.length
                   ? setSelectedOrder({
                       ...initialSelectedOrderData,
-                      order: tableData[0].order + 1,
+                      order: projectOrders[0].order + 1,
                     })
                   : setSelectedOrder(initialSelectedOrderData);
                 setIsModalOpen(true);
@@ -576,7 +513,7 @@ const Orders: React.FC<IOrdersView> = props => {
           }
           formatCurrency
         />
-        {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
+        {!projectOrders.length ? <h1>{appStrings.noRecords}</h1> : null}
       </Box>
     </div>
   );

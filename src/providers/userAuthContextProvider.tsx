@@ -11,7 +11,7 @@ import {
 import { query, where, collection, addDoc, getDocs } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { auth, db } from '../config/firebaseConfig';
-import { login } from '../redux/reducers/sessionSlice';
+import { login, logout } from '../redux/reducers/sessionSlice';
 import { changeMaterials } from '../redux/reducers/materialsSlice';
 import { listenMaterials } from '../services/materialsService';
 import { IService } from '../types/service';
@@ -175,14 +175,15 @@ export const handleAuthChange = (dispatch: Function, appStrings: any) => {
           // photoUrl: userAuth.photoURL,
         }),
       );
-      startListeners(dispatch, appStrings);
+      startListeners(appStrings);
     } else {
+      dispatch(logout());
       cleanListeners(dispatch);
     }
   });
 };
 
-const startListeners = async (dispatch: Function, appStrings: any) => {
+const startListeners = async (appStrings: any) => {
   const successCallbackMaterials = (response: Function) => {
     listenersList.push({ name: 'globalMaterials', stop: response });
   };

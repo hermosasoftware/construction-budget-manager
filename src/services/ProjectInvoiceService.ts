@@ -11,6 +11,7 @@ import {
   orderBy,
   onSnapshot,
   FirestoreError,
+  writeBatch,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import {
@@ -377,6 +378,13 @@ export const addInvoiceProduct = async ({
 } & IService) => {
   try {
     const { id, ...rest } = product;
+    const invRef = doc(
+      db,
+      'projects',
+      projectId,
+      'projectInvoicing',
+      invoiceId,
+    );
     const productRef = collection(
       db,
       'projects',
@@ -392,6 +400,7 @@ export const addInvoiceProduct = async ({
       ...rest,
       id: docRef.id,
     };
+    await updateDoc(invRef, {});
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
@@ -420,7 +429,14 @@ export const updateInvoiceProduct = async ({
 } & IService) => {
   try {
     const { id, ...rest } = product;
-    const matRef = doc(
+    const invRef = doc(
+      db,
+      'projects',
+      projectId,
+      'projectInvoicing',
+      invoiceId,
+    );
+    const productRef = doc(
       db,
       'projects',
       projectId,
@@ -429,7 +445,8 @@ export const updateInvoiceProduct = async ({
       'products',
       id,
     );
-    await setDoc(matRef, rest);
+    await setDoc(productRef, rest);
+    await updateDoc(invRef, {});
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
@@ -457,7 +474,14 @@ export const deleteInvoiceProduct = async ({
   invoiceProductId: string;
 } & IService) => {
   try {
-    const matRef = doc(
+    const invRef = doc(
+      db,
+      'projects',
+      projectId,
+      'projectInvoicing',
+      projectInvoiceId,
+    );
+    const productRef = doc(
       db,
       'projects',
       projectId,
@@ -466,7 +490,12 @@ export const deleteInvoiceProduct = async ({
       'products',
       invoiceProductId,
     );
-    await deleteDoc(matRef);
+    const batch = writeBatch(db);
+
+    batch.delete(productRef);
+    batch.update(invRef, {});
+
+    await batch.commit();
 
     toastSuccess(appStrings.success, appStrings.deleteSuccess);
 

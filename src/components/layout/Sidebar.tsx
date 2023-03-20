@@ -18,12 +18,11 @@ import { List } from 'phosphor-react';
 import { useBreakpointValue } from '@chakra-ui/react';
 import { useState } from 'react';
 import { ReactComponent as Logo } from '../../assets/img/coto-logo.svg';
-import { useDispatch } from 'react-redux';
 import { auth } from '../../config/firebaseConfig';
-import { logout } from '../../redux/reducers/sessionSlice';
 import { listenersList } from '../../services/herperService';
 
 import styles from './Sidebar.module.css';
+
 const smVariant = { navigation: 'drawer', navigationButton: true };
 const mdVariant = { navigation: 'sidebar', navigationButton: false };
 
@@ -35,7 +34,6 @@ const Sidebar = () => {
     ...state.settings,
   }));
 
-  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -75,7 +73,6 @@ const Sidebar = () => {
       await listener.stop();
     }
     await auth.signOut();
-    dispatch(logout());
     navigate('/login');
   };
 

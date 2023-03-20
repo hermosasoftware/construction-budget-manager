@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Box, Flex, Heading } from '@chakra-ui/react';
 import * as yup from 'yup';
 import Button from '../../../common/Button/Button';
@@ -11,15 +11,15 @@ import {
   createProjectExpense,
   deleteProjectExpense,
   getProjectExpenseById,
-  getProjectExpenses,
   updateProjectExpense,
 } from '../../../../services/ProjectExpensesService';
 import { IProjectExpense } from '../../../../types/projectExpense';
 import { useAppSelector } from '../../../../redux/hooks';
 import { colonFormat } from '../../../../utils/numbers';
+import { formatDate } from '../../../../utils/dates';
 
 import styles from './ExpensesReport.module.css';
-import { formatDate } from '../../../../utils/dates';
+
 interface IExpensesReport {
   projectId: string;
 }
@@ -35,7 +35,6 @@ const initialSelectedItemData = {
 };
 
 const ExpensesReport: React.FC<IExpensesReport> = props => {
-  // const [tableData, setTableData] = useState<IProjectExpense[]>([]);
   const [selectedItem, setSelectedItem] = useState<IProjectExpense>(
     initialSelectedItemData,
   );
@@ -64,28 +63,6 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
       amount: colonFormat(data.amount),
     }));
 
-  // const getExpenses = async () => {
-  //   const successCallback = (response: IProjectExpense[]) =>
-  //     setTableData(response);
-  //   await getProjectExpenses({ projectId, appStrings, successCallback });
-  // };
-
-  // const addItem = (item: IProjectExpense) => setTableData([item, ...tableData]);
-
-  // const updateItem = (item: IProjectExpense) => {
-  //   const index = tableData.findIndex(e => e.id === item.id);
-  //   const data = [...tableData];
-  //   data.splice(index, 1, item);
-  //   setTableData(data);
-  // };
-
-  // const removeItem = (id: string) => {
-  //   const index = tableData.findIndex(e => e.id === id);
-  //   const data = [...tableData];
-  //   data.splice(index, 1);
-  //   setTableData(data);
-  // };
-
   const handleSearch = async (event: { target: { value: string } }) => {
     setSearchTerm(event.target.value.toUpperCase());
   };
@@ -105,7 +82,6 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
 
   const deleteButton = async () => {
     const successCallback = () => {
-      // removeItem(selectedItem.id);
       setSelectedItem(initialSelectedItemData);
       setIsAlertDialogOpen(false);
     };
@@ -121,7 +97,6 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
     const successCallback = (item: IProjectExpense) => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
-      // projectExpense.id ? updateItem(item) : addItem(item);
     };
     const serviceCallParameters = {
       projectId,
@@ -146,12 +121,6 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
     work: yup.string().required(appStrings?.requiredField),
     date: yup.date().required(appStrings?.requiredField),
   });
-
-  // useEffect(() => {
-  //   let abortController = new AbortController();
-  //   getExpenses();
-  //   return () => abortController.abort();
-  // }, []);
 
   return (
     <div className={`${styles.operations_container}`}>

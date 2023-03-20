@@ -2,9 +2,9 @@ export interface IProjectOrder {
   id: string;
   order: number;
   proforma: string;
-  date: Date;
+  date: Date | string;
   activity: string;
-  deliverDate: Date;
+  deliverDate: Date | string;
   sentStatus: boolean | string;
   cost: number;
   products: IOrderProduct[];

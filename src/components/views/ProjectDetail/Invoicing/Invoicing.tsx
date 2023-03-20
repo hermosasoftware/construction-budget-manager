@@ -12,19 +12,19 @@ import {
   createProjectInvoiceDetail,
   deleteInvoiceProduct,
   deleteProjectInvoiceDetail,
-  getProjectInvoicing,
   updateInvoiceProduct,
   updateProjectInvoiceDetail,
 } from '../../../../services/ProjectInvoiceService';
+import { getProjectActivities } from '../../../../services/ProjectService';
 import {
   IInvoiceProduct,
   IProjectInvoiceDetail,
 } from '../../../../types/projectInvoiceDetail';
+import { IActivity } from '../../../../types/activity';
 import { useAppSelector } from '../../../../redux/hooks';
 import SearchSelect from '../../../common/Form/Elements/SearchSelect';
 import { formatDate } from '../../../../utils/dates';
 import { IOrderProduct, IProjectOrder } from '../../../../types/projectOrder';
-import { getProjectOrders } from '../../../../services/ProjectOrderService';
 import InvoiceTableView from '../../../layout/InvoiceTableView';
 import { TTableHeader } from '../../../layout/InvoiceTableView/InvoiceTableView';
 import FileUploader, {
@@ -32,8 +32,6 @@ import FileUploader, {
 } from '../../../common/FileUploader/FileUploader';
 
 import styles from './Invoicing.module.css';
-import { getProjectActivities } from '../../../../services/ProjectService';
-import { IActivity } from '../../../../types/activity';
 interface IInvoicing {
   projectId: string;
 }
@@ -84,7 +82,6 @@ interface IInvProd extends Omit<IInvoiceProduct, 'description'> {
 }
 
 const Invoicing: React.FC<IInvoicing> = props => {
-  const [tableData, setTableData] = useState<IInvoice[]>([]);
   const [selectedItem, setSelectedItem] = useState<IInvoice>(
     initialSelectedItemData,
   );
@@ -129,31 +126,6 @@ const Invoicing: React.FC<IInvoicing> = props => {
       date: formatDate(new Date(data.date), 'MM/DD/YYYY'),
     }));
 
-  // const getInvoicing = async () => {
-  //   const successCallback = (response: IInvoice[]) => setTableData(response);
-  //   await getProjectInvoicing({
-  //     projectId,
-  //     appStrings,
-  //     successCallback,
-  //   });
-  // };
-
-  // const addItem = (item: IInvoice) => setTableData([item, ...tableData]);
-
-  // const updateItem = (item: IInvoice) => {
-  //   const index = tableData.findIndex(e => e.id === item.id);
-  //   const data = [...tableData];
-  //   data.splice(index, 1, item);
-  //   setTableData(data);
-  // };
-
-  // const removeItem = (id: string) => {
-  //   const index = tableData.findIndex(e => e.id === id);
-  //   const data = [...tableData];
-  //   data.splice(index, 1);
-  //   setTableData(data);
-  // };
-
   const handleSearch = async (event: { target: { value: string } }) => {
     setSearchTerm(event.target.value.toUpperCase());
   };
@@ -162,7 +134,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
     allActivities.find(e => e.id === id)!;
 
   const editButton = async (projectInvoiceDetailId: string) => {
-    const invoice = tableData.find(e => e.id === projectInvoiceDetailId);
+    const invoice = projectInvoices.find(e => e.id === projectInvoiceDetailId);
     const order = orders.find(e => e.order === invoice?.order);
     if (order) {
       const { id, ...rest } = order;
@@ -173,7 +145,11 @@ const Invoicing: React.FC<IInvoicing> = props => {
         id,
         option,
       });
-      setSelectedItem({ ...invoice!, option });
+      setSelectedItem({
+        ...invoice!,
+        date: new Date(invoice!.date),
+        option,
+      });
     }
 
     setIsModalOpen(true);
@@ -181,7 +157,6 @@ const Invoicing: React.FC<IInvoicing> = props => {
 
   const deleteButton = async () => {
     const successCallback = () => {
-      // removeItem(selectedItem.id);
       setSelectedItem(initialSelectedItemData);
       setIsAlertDialogOpen(false);
     };
@@ -194,10 +169,9 @@ const Invoicing: React.FC<IInvoicing> = props => {
   };
 
   const handleOnSubmit = async (projectInvoiceDetail: IInvoice) => {
-    const successCallback = (item: IInvoice) => {
+    const successCallback = () => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
-      // projectInvoiceDetail.id ? updateItem(item) : addItem(item);
     };
     const { option, ...rest } = projectInvoiceDetail;
     const serviceCallParameters = {
@@ -215,17 +189,18 @@ const Invoicing: React.FC<IInvoicing> = props => {
   };
 
   const addProduct = async (invoiceId: string) => {
-    setSelectedItem(tableData.find(m => m.id === invoiceId)!);
+    const item = projectInvoices.find(m => m.id === invoiceId) as IInvoice;
+    setSelectedItem(item);
     setIsDetailModalOpen(true);
   };
 
   const editProduct = async (orderId: string, productId: string) => {
-    const product = tableData
+    const product = projectInvoices
       .find(m => m?.id === orderId)
       ?.products?.find(s => s.id === productId);
     if (product) {
-      const item = tableData.find(m => m.id === orderId);
-      setSelectedItem(item!);
+      const item = projectInvoices.find(m => m.id === orderId) as IInvoice;
+      setSelectedItem(item);
       setSelectedProduct({
         ...product,
         description: { value: product.id, label: product.description },
@@ -251,33 +226,13 @@ const Invoicing: React.FC<IInvoicing> = props => {
       cost: +data.cost,
       tax: +data.tax,
     };
-    const successAddCallback = (invoiceId: string, item: IInvoiceProduct) => {
-      setTableData(
-        tableData.map(m =>
-          m?.id === invoiceId
-            ? {
-                ...m,
-                products: m.products ? [...m.products, item] : [item],
-              }
-            : m,
-        ),
-      );
+    const successAddCallback = () => {
       setSelectedProduct(initialSelectedProductData);
       setSelectedItem(initialSelectedItemData);
       setIsDetailModalOpen(false);
     };
 
-    const successUpdateCallback = (orderId: string, item: IInvoiceProduct) => {
-      setTableData(
-        tableData.map(m =>
-          m?.id === orderId
-            ? {
-                ...m,
-                products: m?.products?.map(s => (s.id === item.id ? item : s)),
-              }
-            : m,
-        ),
-      );
+    const successUpdateCallback = () => {
       setSelectedProduct(initialSelectedProductData);
       setIsDetailModalOpen(false);
     };
@@ -295,16 +250,6 @@ const Invoicing: React.FC<IInvoicing> = props => {
 
   const deleteProduct = async () => {
     const successCallback = () => {
-      setTableData(
-        tableData.map(e =>
-          e.id === selectedItem.id
-            ? {
-                ...e,
-                products: e.products?.filter(s => s.id !== selectedProduct.id),
-              }
-            : e,
-        ),
-      );
       setSelectedItem(initialSelectedItemData);
       setSelectedProduct(initialSelectedProductData);
       setIsProductAlertDialogOpen(false);
@@ -414,14 +359,6 @@ const Invoicing: React.FC<IInvoicing> = props => {
     );
   };
 
-  // const getOrders = async () => {
-  //   const successCallback = (response: IProjectOrder[]) => setOrders(response);
-  //   await getProjectOrders({
-  //     projectId,
-  //     appStrings,
-  //     successCallback,
-  //   });
-  // };
   const getActivities = async () => {
     const successCallback = (data: IActivity[]) => setAllActivities(data);
     await getProjectActivities({ projectId, appStrings, successCallback });
@@ -429,8 +366,6 @@ const Invoicing: React.FC<IInvoicing> = props => {
 
   useEffect(() => {
     let abortController = new AbortController();
-    // getInvoicing();
-    // getOrders();
     getActivities();
     return () => abortController.abort();
   }, []);

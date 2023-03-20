@@ -51,7 +51,7 @@ export const listenProjectOrders = ({
               ...change.doc.data(),
               id: change.doc.id,
               date: change.doc.data().date.toDate().toISOString(),
-              deliverDate: change.doc.data().date.toDate().toISOString(),
+              deliverDate: change.doc.data().deliverDate.toDate().toISOString(),
             } as IProjectOrder;
 
             if (change.type === 'added') {
@@ -92,10 +92,10 @@ export const listenProjectOrders = ({
 const changeTypeAdded = async (
   dispatch: any,
   ordersList: IProjectOrder[],
-  invRef: any,
+  orderRef: any,
   elem: IProjectOrder,
 ) => {
-  const productQ = query(collection(invRef, elem.id, 'products'));
+  const productQ = query(collection(orderRef, elem.id, 'products'));
   const products = await getDocs(productQ);
   const data = products.docs.map(doc => ({
     ...doc.data(),
@@ -120,10 +120,10 @@ const changeTypeAdded = async (
 
 const changeTypeModified = async (
   dispatch: any,
-  invRef: any,
+  orderRef: any,
   elem: IProjectOrder,
 ) => {
-  const productQ = query(collection(invRef, elem.id, 'products'));
+  const productQ = query(collection(orderRef, elem.id, 'products'));
   const products = await getDocs(productQ);
   const data = products.docs.map(doc => ({
     ...doc.data(),
