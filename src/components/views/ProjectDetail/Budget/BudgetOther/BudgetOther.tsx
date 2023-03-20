@@ -98,7 +98,6 @@ const BudgetOther: React.FC<IBudgetOtherView> = props => {
     };
     await getBudgetOtherById({
       projectId,
-
       budgetOtherId,
       appStrings,
       successCallback,
@@ -114,7 +113,6 @@ const BudgetOther: React.FC<IBudgetOtherView> = props => {
     };
     await deleteBudgetOther({
       projectId,
-
       budgetOtherId: selectedItem.id,
       appStrings,
       successCallback,
@@ -134,7 +132,6 @@ const BudgetOther: React.FC<IBudgetOtherView> = props => {
     };
     const serviceCallParameters = {
       projectId,
-
       budgetOther: {
         ...budgetOther,
         quantity: +budgetOther.quantity,

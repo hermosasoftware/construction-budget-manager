@@ -170,15 +170,11 @@ export const deleteBudgetActivity = async ({
     }
 
     await deleteCollect(`${actRef.path}/budgetMaterials`, ['subMaterials']);
-    await deleteCollect(`${actRef.path}/budgetLabors`);
-    await deleteCollect(`${actRef.path}/budgetSubcontracts`);
 
     const batch = writeBatch(db);
 
     batch.update(sumRef, {
       sumMaterials: increment(-actDoc.data().sumMaterials),
-      sumLabors: increment(-actDoc.data().sumLabors),
-      sumSubcontracts: increment(-actDoc.data().sumSubcontracts),
     });
     batch.delete(actRef);
 

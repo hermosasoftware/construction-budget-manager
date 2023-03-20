@@ -223,12 +223,21 @@ export const deleteProject = async ({
     const extraBudgetRef = `${projectRef}/projectExtraBudget`;
 
     await deleteMaterialAndSubmaterials(budgetRef);
-    await deleteCollect(budgetRef, ['budgetLabors', 'budgetSubcontracts']);
+    await deleteCollect(budgetRef, [
+      'budgetLabors',
+      'budgetSubcontracts',
+      'budgetOthers',
+    ]);
     await deleteMaterialAndSubmaterials(extraBudgetRef);
-    await deleteCollect(extraBudgetRef, ['budgetLabors', 'budgetSubcontracts']);
+    await deleteCollect(extraBudgetRef, [
+      'budgetLabors',
+      'budgetSubcontracts',
+      'budgetOthers',
+    ]);
     await deleteCollect(`${projectRef}/projectBudget`);
     await deleteCollect(`${projectRef}/projectExtraBudget`);
-    await deleteCollect(`${projectRef}/projectInvoicing`);
+    await deleteCollect(`${projectRef}/projectOrders`, ['products']);
+    await deleteCollect(`${projectRef}/projectInvoicing`, ['products']);
     await deleteCollect(`${projectRef}/projectExpenses`);
     await deleteDoc(doc(db, projectRef));
 
