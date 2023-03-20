@@ -20,9 +20,9 @@ import Form, { DatePicker, Input } from '../../../../common/Form';
 import AlertDialog from '../../../../common/AlertDialog/AlertDialog';
 import { useAppSelector } from '../../../../../redux/hooks';
 import { colonFormat } from '../../../../../utils/numbers';
+import { formatDate } from '../../../../../utils/dates';
 
 import styles from './BudgetActivity.module.css';
-import { formatDate } from '../../../../../utils/dates';
 
 interface IBudgetActivityView {
   projectId: string;
@@ -55,24 +55,16 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
   const tableHeader: TTableHeader[] = [
     { name: 'activity', value: appStrings.name },
     { name: 'date', value: appStrings.date },
-    { name: 'sumMaterials', value: appStrings.materials, isGreen: true },
-    { name: 'sumLabors', value: appStrings.labors, isGreen: true },
-    {
-      name: 'sumSubcontracts',
-      value: appStrings.subcontracts,
-      isGreen: true,
-    },
-    { name: 'sumOthers', value: appStrings.others, isGreen: true },
+    { name: 'subtotal', value: appStrings.subtotal, isGreen: true },
+    { name: 'dollars', value: appStrings.dollars, isGreen: true },
   ];
 
   const formatTableData = () =>
     tableData.map(data => ({
       ...data,
       date: formatDate(data.date, 'MM/DD/YYYY'),
-      sumMaterials: colonFormat(data.sumMaterials),
-      sumLabors: colonFormat(data.sumLabors),
-      sumSubcontracts: colonFormat(data.sumSubcontracts),
-      sumOthers: colonFormat(data.sumOthers),
+      subtotal: colonFormat(data.sumMaterials),
+      dollars: colonFormat(data.sumMaterials / budget.exchange),
     }));
 
   const getActivities = async () => {

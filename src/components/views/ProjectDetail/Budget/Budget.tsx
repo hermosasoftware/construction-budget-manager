@@ -11,7 +11,6 @@ import BudgetLabor from './BudgetLabor/BudgetLabor';
 import BudgetSubcontract from './BudgetSubcontract/BudgetSubcontract';
 import BudgetOther from './BudgetOther/BudgetOther';
 import BudgetSummary from './BudgetSummary/BudgetSummary';
-import ActivitySummary from './BudgetActivity/ActivitySummary/ActivitySummary';
 import Form from '../../../common/Form/Form';
 import ExchangeInput from '../../../common/ExchangeInput/ExchangeInput';
 import {
@@ -40,6 +39,7 @@ const Budget: React.FC<IBudgetView> = props => {
   const { projectId, project, setProject } = props;
   const [budget, setBudget] = useState<IProjectBudget>();
   const [activity, setActivity] = useState<IBudgetActivity>();
+  const [selectedActivityTab, setSelectedActivityTab] = useState(false);
   const [selectedTab, setSelectedTab] = useState('summary');
   const [editExchange, setEditExchange] = useState(false);
   const [editAdminFee, setEditAdminFee] = useState(false);
@@ -131,45 +131,8 @@ const Budget: React.FC<IBudgetView> = props => {
   const contentToDisplay = (option: string) => {
     const contentOptions: any = activity
       ? {
-          summary: (
-            <ActivitySummary
-              projectId={projectId}
-              budget={budget!}
-              activity={activity}
-            />
-          ),
           materials: (
             <BudgetMaterial
-              projectId={projectId}
-              isBudgetOpen={isBudgetOpen}
-              getBudget={getBudget}
-              budget={budget!}
-              getActivity={getActivity}
-              activity={activity}
-            />
-          ),
-          labors: (
-            <BudgetLabor
-              projectId={projectId}
-              isBudgetOpen={isBudgetOpen}
-              getBudget={getBudget}
-              budget={budget!}
-              getActivity={getActivity}
-              activity={activity}
-            />
-          ),
-          subcontracts: (
-            <BudgetSubcontract
-              projectId={projectId}
-              isBudgetOpen={isBudgetOpen}
-              getBudget={getBudget}
-              budget={budget!}
-              getActivity={getActivity}
-              activity={activity}
-            />
-          ),
-          others: (
-            <BudgetOther
               projectId={projectId}
               isBudgetOpen={isBudgetOpen}
               getBudget={getBudget}
@@ -190,6 +153,30 @@ const Budget: React.FC<IBudgetView> = props => {
               setActivity={setActivity}
             />
           ),
+          labors: (
+            <BudgetLabor
+              projectId={projectId}
+              isBudgetOpen={isBudgetOpen}
+              getBudget={getBudget}
+              budget={budget!}
+            />
+          ),
+          subcontracts: (
+            <BudgetSubcontract
+              projectId={projectId}
+              isBudgetOpen={isBudgetOpen}
+              getBudget={getBudget}
+              budget={budget!}
+            />
+          ),
+          others: (
+            <BudgetOther
+              projectId={projectId}
+              isBudgetOpen={isBudgetOpen}
+              getBudget={getBudget}
+              budget={budget!}
+            />
+          ),
         };
     return contentOptions[option];
   };
@@ -203,6 +190,7 @@ const Budget: React.FC<IBudgetView> = props => {
               <Button
                 onClick={() => {
                   setActivity(undefined);
+                  setSelectedActivityTab(true);
                 }}
                 variant={'ghost'}
               >
@@ -212,11 +200,11 @@ const Budget: React.FC<IBudgetView> = props => {
               <TabGroup
                 className={styles.tabs}
                 tabs={[
-                  { id: 'summary', name: appStrings.summary, selected: true },
-                  { id: 'materials', name: appStrings.materials },
-                  { id: 'labors', name: appStrings.labors },
-                  { id: 'subcontracts', name: appStrings.subcontracts },
-                  { id: 'others', name: appStrings.others },
+                  {
+                    id: 'materials',
+                    name: appStrings.materials,
+                    selected: true,
+                  },
                 ]}
                 variant="rounded"
                 onSelectedTabChange={activeTabs =>
@@ -228,8 +216,19 @@ const Budget: React.FC<IBudgetView> = props => {
             <TabGroup
               className={styles.tabs}
               tabs={[
-                { id: 'summary', name: appStrings.summary, selected: true },
-                { id: 'activity', name: appStrings.activities },
+                {
+                  id: 'summary',
+                  name: appStrings.summary,
+                  selected: !selectedActivityTab,
+                },
+                {
+                  id: 'activity',
+                  name: appStrings.activities,
+                  selected: selectedActivityTab,
+                },
+                { id: 'labors', name: appStrings.labors },
+                { id: 'subcontracts', name: appStrings.subcontracts },
+                { id: 'others', name: appStrings.others },
               ]}
               variant="rounded"
               onSelectedTabChange={activeTabs => setSelectedTab(activeTabs[0])}

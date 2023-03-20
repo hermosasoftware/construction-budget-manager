@@ -1,3 +1,7 @@
+import { IBudgetLabor } from './budgetLabor';
+import { IBudgetOther } from './budgetOther';
+import { IBudgetSubcontract } from './budgetSubcontract';
+
 export interface IProjectBudget {
   sumLabors: number;
   sumMaterials: number;
@@ -6,4 +10,7 @@ export interface IProjectBudget {
   exchange: number;
   adminFee: number;
   creationDate: Date;
+  labors?: IBudgetLabor[];
+  subcontracts?: IBudgetSubcontract[];
+  others?: IBudgetOther[];
 }

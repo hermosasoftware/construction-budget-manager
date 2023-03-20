@@ -1,5 +1,3 @@
-import { IBudgetLabor } from './budgetLabor';
-import { IBudgetSubcontract } from './budgetSubcontract';
 import { IMaterialBreakdown } from './collections';
 
 export interface IBudgetActivity {
@@ -13,7 +11,4 @@ export interface IBudgetActivity {
   sumOthers: number;
   date: Date;
   materials?: IMaterialBreakdown[];
-  labors?: IBudgetLabor[];
-  subcontracts?: IBudgetSubcontract[];
-  others?: IBudgetSubcontract[];
 }

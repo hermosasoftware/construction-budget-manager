@@ -170,7 +170,7 @@ const BudgetReport: FC<Props> = props => {
 
         {activity.map((element, k) => (
           <Fragment key={k}>
-            <View className="mt-100" pdfMode={pdfMode}>
+            <View className="mt-30" pdfMode={pdfMode}>
               <Text className="fs-20 bold" pdfMode={pdfMode}>
                 {`Activity Details`}
               </Text>
@@ -205,11 +205,7 @@ const BudgetReport: FC<Props> = props => {
             </View>
             {!!element.materials?.length && (
               <>
-                <View className="mt-30" pdfMode={pdfMode}>
-                  <Text className="fs-20 left bold" pdfMode={pdfMode}>
-                    {`Materials`}
-                  </Text>
-
+                <View className="mt-10" pdfMode={pdfMode}>
                   <View className="bg-dark flex left" pdfMode={pdfMode}>
                     <View className="w-48 p-4-8" pdfMode={pdfMode}>
                       <Text className="white bold" pdfMode={pdfMode}>
@@ -379,395 +375,300 @@ const BudgetReport: FC<Props> = props => {
                 </View>
               </>
             )}
+          </Fragment>
+        ))}
 
-            {!!element.labors?.length && (
-              <>
-                <View className="mt-30" pdfMode={pdfMode}>
-                  <Text className="fs-20 left bold" pdfMode={pdfMode}>
-                    {`Labors`}
-                  </Text>
-                  <View className="bg-dark flex left" pdfMode={pdfMode}>
-                    <View className="w-48 p-4-8" pdfMode={pdfMode}>
-                      <Text className="white bold" pdfMode={pdfMode}>
-                        {`Description`}
-                      </Text>
-                    </View>
-                    <View className="w-10 p-4-8" pdfMode={pdfMode}>
-                      <Text className="white bold" pdfMode={pdfMode}>
-                        {`Qty.`}
-                      </Text>
-                    </View>
-                    <View className="w-10 p-4-8" pdfMode={pdfMode}>
-                      <Text className="white bold" pdfMode={pdfMode}>
-                        {`Unit`}
-                      </Text>
-                    </View>
-                    <View className="w-20 p-4-8" pdfMode={pdfMode}>
-                      <Text className="white bold" pdfMode={pdfMode}>
-                        {` Unit Cost`}
-                      </Text>
-                    </View>
-                    <View className="w-20 p-4-8" pdfMode={pdfMode}>
-                      <Text className="white bold" pdfMode={pdfMode}>
-                        {`Subtotal`}
-                      </Text>
-                    </View>
-                    <View className="w-15 p-4-8" pdfMode={pdfMode}>
-                      <Text className="white bold" pdfMode={pdfMode}>
-                        {`Dolars`}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-                {element.labors.map((labor, i) => {
-                  return (
-                    <View key={i} className="row flex left" pdfMode={pdfMode}>
-                      <View className="w-48 p-4-8 pb-10" pdfMode={pdfMode}>
-                        <Text className="dark" pdfMode={pdfMode}>
-                          {labor.name}
-                        </Text>
-                      </View>
-                      <View className="w-10 p-4-8 pb-10" pdfMode={pdfMode}>
-                        <Text className="dark" pdfMode={pdfMode}>
-                          {`${labor.quantity}`}
-                        </Text>
-                      </View>
-                      <View className="w-10 p-4-8 pb-10" pdfMode={pdfMode}>
-                        <Text className="dark" pdfMode={pdfMode}>
-                          {labor.unit}
-                        </Text>
-                      </View>
-                      <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
-                        <Text className="dark" pdfMode={pdfMode}>
-                          {colonFormat(labor.cost)}
-                        </Text>
-                      </View>
-                      <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
-                        <Text className="dark" pdfMode={pdfMode}>
-                          {colonFormat(labor.quantity * labor.cost)}
-                        </Text>
-                      </View>
-                      <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
-                        <Text className="dark" pdfMode={pdfMode}>
-                          {dolarFormat(
-                            (labor.quantity * labor.cost) / budget.exchange,
-                          )}
-                        </Text>
-                      </View>
-                    </View>
-                  );
-                })}
-                <View className="flex left bg-gray p-5" pdfMode={pdfMode}>
-                  <View className="w-48 p-4-8 pb-10" pdfMode={pdfMode}>
-                    <Text className="bold" pdfMode={pdfMode}>
-                      {`TOTAL`}
-                    </Text>
-                  </View>
-                  <View className="w-10 p-4-8 pb-10" pdfMode={pdfMode}></View>
-                  <View className="w-10 p-4-8 pb-10" pdfMode={pdfMode}></View>
-                  <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
-                    <Text className="dark" pdfMode={pdfMode}>
-                      {colonFormat(calculateTotalCost(element.labors))}
-                    </Text>
-                  </View>
-                  <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
-                    <Text className="dark" pdfMode={pdfMode}>
-                      {colonFormat(element.sumLabors)}
-                    </Text>
-                  </View>
-                  <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
-                    <Text className="dark" pdfMode={pdfMode}>
-                      {dolarFormat(element.sumLabors / budget.exchange)}
-                    </Text>
-                  </View>
-                </View>
-              </>
-            )}
-
-            {!!element.subcontracts?.length && (
-              <>
-                <View className="mt-30" pdfMode={pdfMode}>
-                  <Text className="fs-20 left bold" pdfMode={pdfMode}>
-                    {`Subcontracts`}
-                  </Text>
-                  <View className="bg-dark flex left" pdfMode={pdfMode}>
-                    <View className="w-48 p-4-8" pdfMode={pdfMode}>
-                      <Text className="white bold" pdfMode={pdfMode}>
-                        {`Description`}
-                      </Text>
-                    </View>
-                    <View className="w-10 p-4-8" pdfMode={pdfMode}>
-                      <Text className="white bold" pdfMode={pdfMode}>
-                        {`Qty.`}
-                      </Text>
-                    </View>
-                    <View className="w-20 p-4-8" pdfMode={pdfMode}>
-                      <Text className="white bold" pdfMode={pdfMode}>
-                        {` Unit Cost`}
-                      </Text>
-                    </View>
-                    <View className="w-20 p-4-8" pdfMode={pdfMode}>
-                      <Text className="white bold" pdfMode={pdfMode}>
-                        {`Subtotal`}
-                      </Text>
-                    </View>
-                    <View className="w-15 p-4-8" pdfMode={pdfMode}>
-                      <Text className="white bold" pdfMode={pdfMode}>
-                        {`Dolars`}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-                {element.subcontracts.map((labor, i) => {
-                  return (
-                    <View key={i} className="row flex left" pdfMode={pdfMode}>
-                      <View className="w-48 p-4-8 pb-10" pdfMode={pdfMode}>
-                        <Text className="dark" pdfMode={pdfMode}>
-                          {labor.name}
-                        </Text>
-                      </View>
-                      <View className="w-10 p-4-8 pb-10" pdfMode={pdfMode}>
-                        <Text className="dark" pdfMode={pdfMode}>
-                          {`${labor.quantity}`}
-                        </Text>
-                      </View>
-                      <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
-                        <Text className="dark" pdfMode={pdfMode}>
-                          {colonFormat(labor.cost)}
-                        </Text>
-                      </View>
-                      <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
-                        <Text className="dark" pdfMode={pdfMode}>
-                          {colonFormat(labor.quantity * labor.cost)}
-                        </Text>
-                      </View>
-                      <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
-                        <Text className="dark" pdfMode={pdfMode}>
-                          {dolarFormat(
-                            (labor.quantity * labor.cost) / budget.exchange,
-                          )}
-                        </Text>
-                      </View>
-                    </View>
-                  );
-                })}
-                <View className="flex left bg-gray p-5" pdfMode={pdfMode}>
-                  <View className="w-48 p-4-8 pb-10" pdfMode={pdfMode}>
-                    <Text className="bold" pdfMode={pdfMode}>
-                      {`TOTAL`}
-                    </Text>
-                  </View>
-                  <View className="w-10 p-4-8 pb-10" pdfMode={pdfMode}></View>
-                  <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
-                    <Text className="dark" pdfMode={pdfMode}>
-                      {colonFormat(calculateTotalCost(element.subcontracts))}
-                    </Text>
-                  </View>
-                  <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
-                    <Text className="dark" pdfMode={pdfMode}>
-                      {colonFormat(element.sumSubcontracts)}
-                    </Text>
-                  </View>
-                  <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
-                    <Text className="dark" pdfMode={pdfMode}>
-                      {dolarFormat(element.sumSubcontracts / budget.exchange)}
-                    </Text>
-                  </View>
-                </View>
-              </>
-            )}
-
-            {!!element.others?.length && (
-              <>
-                <View className="mt-30" pdfMode={pdfMode}>
-                  <Text className="fs-20 left bold" pdfMode={pdfMode}>
-                    {`Others Expenses`}
-                  </Text>
-                  <View className="bg-dark flex left" pdfMode={pdfMode}>
-                    <View className="w-48 p-4-8" pdfMode={pdfMode}>
-                      <Text className="white bold" pdfMode={pdfMode}>
-                        {`Description`}
-                      </Text>
-                    </View>
-                    <View className="w-10 p-4-8" pdfMode={pdfMode}>
-                      <Text className="white bold" pdfMode={pdfMode}>
-                        {`Qty.`}
-                      </Text>
-                    </View>
-                    <View className="w-20 p-4-8" pdfMode={pdfMode}>
-                      <Text className="white bold" pdfMode={pdfMode}>
-                        {` Unit Cost`}
-                      </Text>
-                    </View>
-                    <View className="w-20 p-4-8" pdfMode={pdfMode}>
-                      <Text className="white bold" pdfMode={pdfMode}>
-                        {`Subtotal`}
-                      </Text>
-                    </View>
-                    <View className="w-15 p-4-8" pdfMode={pdfMode}>
-                      <Text className="white bold" pdfMode={pdfMode}>
-                        {`Dolars`}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-                {element.others.map((other, i) => {
-                  return (
-                    <View key={i} className="row flex left" pdfMode={pdfMode}>
-                      <View className="w-48 p-4-8 pb-10" pdfMode={pdfMode}>
-                        <Text className="dark" pdfMode={pdfMode}>
-                          {other.name}
-                        </Text>
-                      </View>
-                      <View className="w-10 p-4-8 pb-10" pdfMode={pdfMode}>
-                        <Text className="dark" pdfMode={pdfMode}>
-                          {`${other.quantity}`}
-                        </Text>
-                      </View>
-                      <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
-                        <Text className="dark" pdfMode={pdfMode}>
-                          {colonFormat(other.cost)}
-                        </Text>
-                      </View>
-                      <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
-                        <Text className="dark" pdfMode={pdfMode}>
-                          {colonFormat(other.quantity * other.cost)}
-                        </Text>
-                      </View>
-                      <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
-                        <Text className="dark" pdfMode={pdfMode}>
-                          {dolarFormat(
-                            (other.quantity * other.cost) / budget.exchange,
-                          )}
-                        </Text>
-                      </View>
-                    </View>
-                  );
-                })}
-                <View className="flex left bg-gray p-5" pdfMode={pdfMode}>
-                  <View className="w-48 p-4-8 pb-10" pdfMode={pdfMode}>
-                    <Text className="bold" pdfMode={pdfMode}>
-                      {`TOTAL`}
-                    </Text>
-                  </View>
-                  <View className="w-10 p-4-8 pb-10" pdfMode={pdfMode}></View>
-                  <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
-                    <Text className="dark" pdfMode={pdfMode}>
-                      {colonFormat(calculateTotalCost(element.others))}
-                    </Text>
-                  </View>
-                  <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
-                    <Text className="dark" pdfMode={pdfMode}>
-                      {colonFormat(element.sumOthers)}
-                    </Text>
-                  </View>
-                  <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
-                    <Text className="dark" pdfMode={pdfMode}>
-                      {dolarFormat(element.sumOthers / budget.exchange)}
-                    </Text>
-                  </View>
-                </View>
-              </>
-            )}
-
+        {!!budget.labors?.length && (
+          <>
             <View className="mt-30" pdfMode={pdfMode}>
               <Text className="fs-20 left bold" pdfMode={pdfMode}>
-                {`Summary`}
+                {`Labors`}
               </Text>
-              <View className="bg-dark flex center" pdfMode={pdfMode}>
-                <View className="w-50 p-4-8 " pdfMode={pdfMode}>
+              <View className="bg-dark flex left" pdfMode={pdfMode}>
+                <View className="w-48 p-4-8" pdfMode={pdfMode}>
                   <Text className="white bold" pdfMode={pdfMode}>
                     {`Description`}
                   </Text>
                 </View>
-                <View className="w-50 p-4-8" pdfMode={pdfMode}>
+                <View className="w-10 p-4-8" pdfMode={pdfMode}>
+                  <Text className="white bold" pdfMode={pdfMode}>
+                    {`Qty.`}
+                  </Text>
+                </View>
+                <View className="w-10 p-4-8" pdfMode={pdfMode}>
+                  <Text className="white bold" pdfMode={pdfMode}>
+                    {`Unit`}
+                  </Text>
+                </View>
+                <View className="w-20 p-4-8" pdfMode={pdfMode}>
+                  <Text className="white bold" pdfMode={pdfMode}>
+                    {` Unit Cost`}
+                  </Text>
+                </View>
+                <View className="w-20 p-4-8" pdfMode={pdfMode}>
+                  <Text className="white bold" pdfMode={pdfMode}>
+                    {`Subtotal`}
+                  </Text>
+                </View>
+                <View className="w-15 p-4-8" pdfMode={pdfMode}>
                   <Text className="white bold" pdfMode={pdfMode}>
                     {`Dolars`}
                   </Text>
                 </View>
               </View>
             </View>
-
-            {!!element.materials?.length && (
-              <View className="row flex center" pdfMode={pdfMode}>
-                <View className="w-50 p-4-8 pb-10" pdfMode={pdfMode}>
-                  <Text className="dark" pdfMode={pdfMode}>
-                    {`Materials`}
-                  </Text>
+            {budget.labors.map((labor, i) => {
+              return (
+                <View key={i} className="row flex left" pdfMode={pdfMode}>
+                  <View className="w-48 p-4-8 pb-10" pdfMode={pdfMode}>
+                    <Text className="dark" pdfMode={pdfMode}>
+                      {labor.name}
+                    </Text>
+                  </View>
+                  <View className="w-10 p-4-8 pb-10" pdfMode={pdfMode}>
+                    <Text className="dark" pdfMode={pdfMode}>
+                      {`${labor.quantity}`}
+                    </Text>
+                  </View>
+                  <View className="w-10 p-4-8 pb-10" pdfMode={pdfMode}>
+                    <Text className="dark" pdfMode={pdfMode}>
+                      {labor.unit}
+                    </Text>
+                  </View>
+                  <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
+                    <Text className="dark" pdfMode={pdfMode}>
+                      {colonFormat(labor.cost)}
+                    </Text>
+                  </View>
+                  <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
+                    <Text className="dark" pdfMode={pdfMode}>
+                      {colonFormat(labor.quantity * labor.cost)}
+                    </Text>
+                  </View>
+                  <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
+                    <Text className="dark" pdfMode={pdfMode}>
+                      {dolarFormat(
+                        (labor.quantity * labor.cost) / budget.exchange,
+                      )}
+                    </Text>
+                  </View>
                 </View>
-                <View className="w-50 p-4-8 pb-10" pdfMode={pdfMode}>
-                  <Text className="dark" pdfMode={pdfMode}>
-                    {dolarFormat(element.sumMaterials / budget.exchange)}
-                  </Text>
-                </View>
-              </View>
-            )}
-            {!!element.labors?.length && (
-              <View className="row flex center" pdfMode={pdfMode}>
-                <View className="w-50 p-4-8 pb-10" pdfMode={pdfMode}>
-                  <Text className="dark" pdfMode={pdfMode}>
-                    {`Labors`}
-                  </Text>
-                </View>
-                <View className="w-50 p-4-8 pb-10" pdfMode={pdfMode}>
-                  <Text className="dark" pdfMode={pdfMode}>
-                    {dolarFormat(element.sumLabors / budget.exchange)}
-                  </Text>
-                </View>
-              </View>
-            )}
-            {!!element.subcontracts?.length && (
-              <View className="row flex center" pdfMode={pdfMode}>
-                <View className="w-50 p-4-8 pb-10" pdfMode={pdfMode}>
-                  <Text className="dark" pdfMode={pdfMode}>
-                    {`Subcontracts`}
-                  </Text>
-                </View>
-                <View className="w-50 p-4-8 pb-10" pdfMode={pdfMode}>
-                  <Text className="dark" pdfMode={pdfMode}>
-                    {dolarFormat(element.sumSubcontracts / budget.exchange)}
-                  </Text>
-                </View>
-              </View>
-            )}
-            {!!element.others?.length && (
-              <View className="row flex center" pdfMode={pdfMode}>
-                <View className="w-50 p-4-8 pb-10" pdfMode={pdfMode}>
-                  <Text className="dark" pdfMode={pdfMode}>
-                    {`Others Expenses`}
-                  </Text>
-                </View>
-                <View className="w-50 p-4-8 pb-10" pdfMode={pdfMode}>
-                  <Text className="dark" pdfMode={pdfMode}>
-                    {dolarFormat(element.sumOthers / budget.exchange)}
-                  </Text>
-                </View>
-              </View>
-            )}
-
-            <View className="row flex center bg-gray p-5" pdfMode={pdfMode}>
-              <View className="w-50 p-4-8 pb-10" pdfMode={pdfMode}>
+              );
+            })}
+            <View className="flex left bg-gray p-5" pdfMode={pdfMode}>
+              <View className="w-48 p-4-8 pb-10" pdfMode={pdfMode}>
                 <Text className="bold" pdfMode={pdfMode}>
-                  {`Subtotal`}
+                  {`TOTAL`}
                 </Text>
               </View>
-
-              <View className="w-50 p-4-8 pb-10" pdfMode={pdfMode}>
+              <View className="w-10 p-4-8 pb-10" pdfMode={pdfMode}></View>
+              <View className="w-10 p-4-8 pb-10" pdfMode={pdfMode}></View>
+              <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
                 <Text className="dark" pdfMode={pdfMode}>
-                  {dolarFormat(
-                    (element.sumMaterials +
-                      element.sumLabors +
-                      element.sumSubcontracts +
-                      element.sumOthers) /
-                      budget.exchange,
-                  )}
+                  {colonFormat(calculateTotalCost(budget.labors))}
+                </Text>
+              </View>
+              <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
+                <Text className="dark" pdfMode={pdfMode}>
+                  {colonFormat(budget.sumLabors)}
+                </Text>
+              </View>
+              <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
+                <Text className="dark" pdfMode={pdfMode}>
+                  {dolarFormat(budget.sumLabors / budget.exchange)}
                 </Text>
               </View>
             </View>
-          </Fragment>
-        ))}
+          </>
+        )}
 
-        <View className="mt-100" pdfMode={pdfMode}>
+        {!!budget.subcontracts?.length && (
+          <>
+            <View className="mt-30" pdfMode={pdfMode}>
+              <Text className="fs-20 left bold" pdfMode={pdfMode}>
+                {`Subcontracts`}
+              </Text>
+              <View className="bg-dark flex left" pdfMode={pdfMode}>
+                <View className="w-48 p-4-8" pdfMode={pdfMode}>
+                  <Text className="white bold" pdfMode={pdfMode}>
+                    {`Description`}
+                  </Text>
+                </View>
+                <View className="w-10 p-4-8" pdfMode={pdfMode}>
+                  <Text className="white bold" pdfMode={pdfMode}>
+                    {`Qty.`}
+                  </Text>
+                </View>
+                <View className="w-20 p-4-8" pdfMode={pdfMode}>
+                  <Text className="white bold" pdfMode={pdfMode}>
+                    {` Unit Cost`}
+                  </Text>
+                </View>
+                <View className="w-20 p-4-8" pdfMode={pdfMode}>
+                  <Text className="white bold" pdfMode={pdfMode}>
+                    {`Subtotal`}
+                  </Text>
+                </View>
+                <View className="w-15 p-4-8" pdfMode={pdfMode}>
+                  <Text className="white bold" pdfMode={pdfMode}>
+                    {`Dolars`}
+                  </Text>
+                </View>
+              </View>
+            </View>
+            {budget.subcontracts.map((labor, i) => {
+              return (
+                <View key={i} className="row flex left" pdfMode={pdfMode}>
+                  <View className="w-48 p-4-8 pb-10" pdfMode={pdfMode}>
+                    <Text className="dark" pdfMode={pdfMode}>
+                      {labor.name}
+                    </Text>
+                  </View>
+                  <View className="w-10 p-4-8 pb-10" pdfMode={pdfMode}>
+                    <Text className="dark" pdfMode={pdfMode}>
+                      {`${labor.quantity}`}
+                    </Text>
+                  </View>
+                  <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
+                    <Text className="dark" pdfMode={pdfMode}>
+                      {colonFormat(labor.cost)}
+                    </Text>
+                  </View>
+                  <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
+                    <Text className="dark" pdfMode={pdfMode}>
+                      {colonFormat(labor.quantity * labor.cost)}
+                    </Text>
+                  </View>
+                  <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
+                    <Text className="dark" pdfMode={pdfMode}>
+                      {dolarFormat(
+                        (labor.quantity * labor.cost) / budget.exchange,
+                      )}
+                    </Text>
+                  </View>
+                </View>
+              );
+            })}
+            <View className="flex left bg-gray p-5" pdfMode={pdfMode}>
+              <View className="w-48 p-4-8 pb-10" pdfMode={pdfMode}>
+                <Text className="bold" pdfMode={pdfMode}>
+                  {`TOTAL`}
+                </Text>
+              </View>
+              <View className="w-10 p-4-8 pb-10" pdfMode={pdfMode}></View>
+              <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
+                <Text className="dark" pdfMode={pdfMode}>
+                  {colonFormat(calculateTotalCost(budget.subcontracts))}
+                </Text>
+              </View>
+              <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
+                <Text className="dark" pdfMode={pdfMode}>
+                  {colonFormat(budget.sumSubcontracts)}
+                </Text>
+              </View>
+              <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
+                <Text className="dark" pdfMode={pdfMode}>
+                  {dolarFormat(budget.sumSubcontracts / budget.exchange)}
+                </Text>
+              </View>
+            </View>
+          </>
+        )}
+
+        {!!budget.others?.length && (
+          <>
+            <View className="mt-30" pdfMode={pdfMode}>
+              <Text className="fs-20 left bold" pdfMode={pdfMode}>
+                {`Others Expenses`}
+              </Text>
+              <View className="bg-dark flex left" pdfMode={pdfMode}>
+                <View className="w-48 p-4-8" pdfMode={pdfMode}>
+                  <Text className="white bold" pdfMode={pdfMode}>
+                    {`Description`}
+                  </Text>
+                </View>
+                <View className="w-10 p-4-8" pdfMode={pdfMode}>
+                  <Text className="white bold" pdfMode={pdfMode}>
+                    {`Qty.`}
+                  </Text>
+                </View>
+                <View className="w-20 p-4-8" pdfMode={pdfMode}>
+                  <Text className="white bold" pdfMode={pdfMode}>
+                    {` Unit Cost`}
+                  </Text>
+                </View>
+                <View className="w-20 p-4-8" pdfMode={pdfMode}>
+                  <Text className="white bold" pdfMode={pdfMode}>
+                    {`Subtotal`}
+                  </Text>
+                </View>
+                <View className="w-15 p-4-8" pdfMode={pdfMode}>
+                  <Text className="white bold" pdfMode={pdfMode}>
+                    {`Dolars`}
+                  </Text>
+                </View>
+              </View>
+            </View>
+            {budget.others.map((other, i) => {
+              return (
+                <View key={i} className="row flex left" pdfMode={pdfMode}>
+                  <View className="w-48 p-4-8 pb-10" pdfMode={pdfMode}>
+                    <Text className="dark" pdfMode={pdfMode}>
+                      {other.name}
+                    </Text>
+                  </View>
+                  <View className="w-10 p-4-8 pb-10" pdfMode={pdfMode}>
+                    <Text className="dark" pdfMode={pdfMode}>
+                      {`${other.quantity}`}
+                    </Text>
+                  </View>
+                  <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
+                    <Text className="dark" pdfMode={pdfMode}>
+                      {colonFormat(other.cost)}
+                    </Text>
+                  </View>
+                  <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
+                    <Text className="dark" pdfMode={pdfMode}>
+                      {colonFormat(other.quantity * other.cost)}
+                    </Text>
+                  </View>
+                  <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
+                    <Text className="dark" pdfMode={pdfMode}>
+                      {dolarFormat(
+                        (other.quantity * other.cost) / budget.exchange,
+                      )}
+                    </Text>
+                  </View>
+                </View>
+              );
+            })}
+            <View className="flex left bg-gray p-5" pdfMode={pdfMode}>
+              <View className="w-48 p-4-8 pb-10" pdfMode={pdfMode}>
+                <Text className="bold" pdfMode={pdfMode}>
+                  {`TOTAL`}
+                </Text>
+              </View>
+              <View className="w-10 p-4-8 pb-10" pdfMode={pdfMode}></View>
+              <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
+                <Text className="dark" pdfMode={pdfMode}>
+                  {colonFormat(calculateTotalCost(budget.others))}
+                </Text>
+              </View>
+              <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
+                <Text className="dark" pdfMode={pdfMode}>
+                  {colonFormat(budget.sumOthers)}
+                </Text>
+              </View>
+              <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
+                <Text className="dark" pdfMode={pdfMode}>
+                  {dolarFormat(budget.sumOthers / budget.exchange)}
+                </Text>
+              </View>
+            </View>
+          </>
+        )}
+
+        <View className="mt-40" pdfMode={pdfMode}>
           <View className="row" pdfMode={pdfMode}>
             <Text className="fs-20 bold" pdfMode={pdfMode}>
               {`Grand Total`}
