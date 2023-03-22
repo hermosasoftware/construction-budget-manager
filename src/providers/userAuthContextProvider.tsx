@@ -13,10 +13,15 @@ import { FirebaseError } from 'firebase/app';
 import { auth, db } from '../config/firebaseConfig';
 import { login, logout } from '../redux/reducers/sessionSlice';
 import { changeMaterials } from '../redux/reducers/materialsSlice';
-import { getMaterials } from '../services/materialsService';
+import { listenMaterials } from '../services/materialsService';
 import { IService } from '../types/service';
 import { toastError, toastSuccess } from '../utils/toast';
-import { IMaterialBreakdown } from '../types/collections';
+import { listenProjects } from '../services/ProjectService';
+import { changeProjects } from '../redux/reducers/projectsSlice';
+import { listenersList } from '../services/herperService';
+import { changeProjectOrders } from '../redux/reducers/projectOrdersSlice';
+import { changeProjectInvoices } from '../redux/reducers/projectInvoicesSlice';
+import { changeProjectExpenses } from '../redux/reducers/projectExpensesSlice';
 
 export const verifyEmail = async ({
   email,
@@ -159,7 +164,7 @@ export const logOut = async () => {
 };
 
 export const handleAuthChange = (dispatch: Function, appStrings: any) => {
-  onAuthStateChanged(auth, async userAuth => {
+  onAuthStateChanged(auth, userAuth => {
     if (userAuth) {
       // user is logged in, send the user's details to redux, store the current user in the state
       dispatch(
@@ -170,11 +175,36 @@ export const handleAuthChange = (dispatch: Function, appStrings: any) => {
           // photoUrl: userAuth.photoURL,
         }),
       );
-      const successCallback = (response: IMaterialBreakdown[]) =>
-        dispatch(changeMaterials(response));
-      await getMaterials({ appStrings, successCallback });
+      startListeners(appStrings);
     } else {
       dispatch(logout());
+      cleanListeners(dispatch);
     }
   });
+};
+
+const startListeners = async (appStrings: any) => {
+  const successCallbackMaterials = (response: Function) => {
+    listenersList.push({ name: 'globalMaterials', stop: response });
+  };
+  const successCallbackProjects = (response: Function) => {
+    listenersList.push({ name: 'projects', stop: response });
+  };
+  listenMaterials({
+    appStrings,
+    successCallback: successCallbackMaterials,
+  });
+  listenProjects({
+    appStrings,
+    successCallback: successCallbackProjects,
+  });
+};
+
+const cleanListeners = (dispatch: Function) => {
+  listenersList.splice(0, listenersList.length);
+  dispatch(changeMaterials([]));
+  dispatch(changeProjects([]));
+  dispatch(changeProjectOrders([]));
+  dispatch(changeProjectInvoices([]));
+  dispatch(changeProjectExpenses([]));
 };

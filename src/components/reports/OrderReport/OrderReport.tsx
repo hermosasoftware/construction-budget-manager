@@ -9,6 +9,7 @@ import EditableTextarea from '../../common/PDF/EditableTextarea';
 import { IProjectOrder } from '../../../types/projectOrder';
 import { IProject } from '../../../types/project';
 import { colonFormat } from '../../../utils/numbers';
+import { formatDate } from '../../../utils/dates';
 
 import styles from './OrderReport.module.css';
 
@@ -121,7 +122,9 @@ const OrderReport: FC<Props> = props => {
                 </Text>
               </View>
               <View className="w-60" pdfMode={pdfMode}>
-                <Text pdfMode={pdfMode}>{order.date.toLocaleDateString()}</Text>
+                <Text pdfMode={pdfMode}>
+                  {formatDate(new Date(order.date), 'MM/DD/YYYY')}
+                </Text>
               </View>
             </View>
             <View className="flex" pdfMode={pdfMode}>
@@ -132,7 +135,7 @@ const OrderReport: FC<Props> = props => {
               </View>
               <View className="w-60" pdfMode={pdfMode}>
                 <Text pdfMode={pdfMode}>
-                  {order.deliverDate.toLocaleDateString()}
+                  {formatDate(new Date(order.deliverDate), 'MM/DD/YYYY')}
                 </Text>
               </View>
             </View>

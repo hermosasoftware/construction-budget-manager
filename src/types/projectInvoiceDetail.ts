@@ -1,7 +1,7 @@
 export interface IProjectInvoiceDetail {
   id: string;
   order: number;
-  date: Date;
+  date: Date | string;
   activity: string;
   invoice: string;
   pdfURL?: string;

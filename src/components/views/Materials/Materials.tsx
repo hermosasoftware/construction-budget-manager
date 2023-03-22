@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   addMaterial,
   addSubmaterial,
   deleteMaterial,
   deleteSubMaterial,
-  getMaterials,
   updateMaterial,
   updateSubMaterial,
 } from '../../../services/materialsService';
@@ -49,9 +48,6 @@ const initialSelectedSubMaterialData = {
 };
 
 export default function Materials() {
-  const [materialsData, setMaterialsDataTable] = useState<
-    Array<IMaterialBreakdown>
-  >([]);
   const [selectedMaterial, setSelectedMaterial] = useState<IMaterialBreakdown>(
     initialSelectedMaterialData,
   );
@@ -65,6 +61,7 @@ export default function Materials() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubMaterialModalOpen, setIsSubMaterialModalOpen] = useState(false);
   const appStrings = useAppSelector(state => state.settings.appStrings);
+  const materials = useAppSelector(state => state.materials.materials);
 
   const tableHeader: TTableHeader[] = [
     { name: 'name', value: appStrings.name },
@@ -75,7 +72,7 @@ export default function Materials() {
   ];
 
   const formatTableData = () =>
-    materialsData.map(data => ({
+    materials.map(data => ({
       ...data,
       material: { ...data.material, quantity: 1 },
     }));
@@ -114,19 +111,9 @@ export default function Materials() {
     };
     const successAddCallback = (materialId: string) => {
       Object.assign(value, { id: materialId });
-      setMaterialsDataTable([
-        ...materialsData,
-        { id: materialId, material: value, subMaterials: [] },
-      ]);
       setIsModalOpen(false);
     };
     const successUpdateCallback = () => {
-      const materials = materialsData.map(breakDown => {
-        return breakDown.material.id === value.id
-          ? { ...breakDown, material: value }
-          : breakDown;
-      });
-      setMaterialsDataTable(materials);
       setIsModalOpen(false);
     };
     const serviceCallParameters = {
@@ -145,39 +132,11 @@ export default function Materials() {
   };
 
   const onSubmitSubmaterial = async (data: ISubMaterial) => {
-    const successAddCallback = (materialId: string, subMaterialId: string) => {
-      setMaterialsDataTable(
-        materialsData.map(m =>
-          m.material?.id === materialId
-            ? {
-                ...m,
-                subMaterials: [
-                  ...m.subMaterials,
-                  { ...data, id: subMaterialId },
-                ],
-              }
-            : m,
-        ),
-      );
+    const successAddCallback = () => {
       setIsSubMaterialModalOpen(false);
     };
 
-    const successUpdateCallback = (
-      materialId: string,
-      subMaterialId: string,
-    ) => {
-      setMaterialsDataTable(
-        materialsData.map(m =>
-          m.material?.id === materialId
-            ? {
-                ...m,
-                subMaterials: m.subMaterials.map(s =>
-                  s.id === subMaterialId ? data : s,
-                ),
-              }
-            : m,
-        ),
-      );
+    const successUpdateCallback = () => {
       setIsSubMaterialModalOpen(false);
     };
     const serviceCallParameters = {
@@ -192,23 +151,23 @@ export default function Materials() {
   };
 
   const editButton = async (materialId: string) => {
-    const materialBreakDown = materialsData.find(m => m.id === materialId);
+    const materialBreakDown = materials.find(m => m.id === materialId);
     setSelectedMaterial(materialBreakDown as IMaterialBreakdown);
     setIsModalOpen(true);
   };
 
   const addSubMaterial = async (materialId: string) => {
-    const materialBreakDown = materialsData.find(m => m.id === materialId);
+    const materialBreakDown = materials.find(m => m.id === materialId);
     setSelectedMaterial(materialBreakDown as IMaterialBreakdown);
     setIsSubMaterialModalOpen(true);
   };
 
   const editSubMaterial = async (materialId: string, submaterialId: string) => {
-    const submaterial = materialsData
+    const submaterial = materials
       .find(m => m.material?.id === materialId)
       ?.subMaterials?.find(s => s.id === submaterialId);
     if (submaterial) {
-      const materialBreakDown = materialsData.find(m => m.id === materialId);
+      const materialBreakDown = materials.find(m => m.id === materialId);
       setSelectedMaterial(materialBreakDown as IMaterialBreakdown);
       setSelectedSubMaterial(submaterial);
       setIsSubMaterialModalOpen(true);
@@ -227,9 +186,6 @@ export default function Materials() {
   const deleteButton = async () => {
     if (selectedMaterial.id && !selectedSubMaterial.id) {
       const successCallback = () => {
-        setMaterialsDataTable(
-          materialsData.filter(e => e.id !== selectedMaterial.id),
-        );
         setSelectedMaterial(initialSelectedMaterialData);
         setIsAlertDialogOpen(false);
       };
@@ -240,18 +196,6 @@ export default function Materials() {
       });
     } else if (selectedSubMaterial.id) {
       const successCallback = () => {
-        setMaterialsDataTable(
-          materialsData.map(e =>
-            e.id === selectedMaterial.id
-              ? {
-                  ...e,
-                  subMaterials: e.subMaterials?.filter(
-                    s => s.id !== selectedSubMaterial.id,
-                  ),
-                }
-              : e,
-          ),
-        );
         setSelectedMaterial(initialSelectedMaterialData);
         setSelectedSubMaterial(initialSelectedSubMaterialData);
         setIsAlertDialogOpen(false);
@@ -274,14 +218,6 @@ export default function Materials() {
       },
     });
   };
-
-  useEffect(() => {
-    (async function () {
-      const successCallback = (response: IMaterialBreakdown[]) =>
-        setMaterialsDataTable(response);
-      await getMaterials({ appStrings, successCallback });
-    })();
-  }, []);
 
   useEffect(() => {
     if (!isModalOpen) setSelectedMaterial(initialSelectedMaterialData);
@@ -467,6 +403,7 @@ export default function Materials() {
               exchangeRate={Number(exchange)}
               formatCurrency
             />
+            {!materials.length ? <h1>{appStrings.noRecords}</h1> : null}
           </Box>
         </div>
       </div>

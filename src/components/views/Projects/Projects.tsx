@@ -14,7 +14,6 @@ import {
   createProject,
   deleteProject,
   getProjectById,
-  getProjectsByStatus,
   updateProject,
 } from '../../../services/ProjectService';
 import { IProject } from '../../../types/project';
@@ -32,7 +31,6 @@ const initialSelectedItemData = {
 };
 
 export default function Projects() {
-  const [tableData, setTableData] = useState<IProject[]>([]);
   const [selectedTab, setSelectedTab] = useState('active');
   const [selectedItem, setSelectedItem] = useState<IProject>(
     initialSelectedItemData,
@@ -41,32 +39,17 @@ export default function Projects() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const appStrings = useAppSelector(state => state.settings.appStrings);
+  const projects = useAppSelector(state => state.projects.projects);
   const navigate = useNavigate();
+
   const tableHeader: TTableHeader[] = [
     { name: 'name', value: appStrings.name },
     { name: 'client', value: appStrings.client, isGreen: true },
     { name: 'location', value: appStrings.location },
   ];
 
-  const getProjects = async (status: string) => {
-    const successCallback = (response: IProject[]) => setTableData(response);
-    await getProjectsByStatus({ status, appStrings, successCallback });
-  };
-
-  const addItem = (item: IProject) => setTableData([item, ...tableData]);
-
-  const updateItem = (item: IProject) => {
-    const index = tableData.findIndex(e => e.id === item.id);
-    const data = [...tableData];
-    data.splice(index, 1, item);
-    setTableData(data);
-  };
-
-  const removeItem = (id: string) => {
-    const index = tableData.findIndex(e => e.id === id);
-    const data = [...tableData];
-    data.splice(index, 1);
-    setTableData(data);
+  const formatTableData = () => {
+    return projects.filter(project => project.status === selectedTab);
   };
 
   const handleSearch = async (event: { target: { value: string } }) => {
@@ -89,7 +72,6 @@ export default function Projects() {
 
   const deleteButton = async () => {
     const successCallback = () => {
-      removeItem(selectedItem.id);
       setSelectedItem(initialSelectedItemData);
       setIsAlertDialogOpen(false);
     };
@@ -101,14 +83,9 @@ export default function Projects() {
   };
 
   const handleOnSubmit = async (project: IProject) => {
-    const successCallback = (item: IProject) => {
+    const successCallback = () => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
-      project.id
-        ? selectedTab === item.status
-          ? updateItem(item)
-          : removeItem(item.id)
-        : selectedTab === item.status && addItem(item);
     };
     const serviceCallParameters = { project, appStrings, successCallback };
     project.id
@@ -126,12 +103,6 @@ export default function Projects() {
   useEffect(() => {
     !isModalOpen && setSelectedItem(initialSelectedItemData);
   }, [isModalOpen]);
-
-  useEffect(() => {
-    let abortController = new AbortController();
-    getProjects(selectedTab);
-    return () => abortController.abort();
-  }, [selectedTab]);
 
   return (
     <>
@@ -219,7 +190,7 @@ export default function Projects() {
             />
             <TableView
               headers={tableHeader}
-              items={tableData}
+              items={formatTableData()}
               filter={value =>
                 searchTerm === '' ||
                 value.name.toUpperCase().includes(searchTerm)
@@ -231,7 +202,7 @@ export default function Projects() {
                 setIsAlertDialogOpen(true);
               }}
             />
-            {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
+            {!projects.length ? <h1>{appStrings.noRecords}</h1> : null}
           </Box>
         </div>
       </div>

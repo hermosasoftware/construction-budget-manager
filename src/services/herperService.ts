@@ -1,5 +1,8 @@
 import { collection, doc, getDocs, writeBatch } from 'firebase/firestore';
 import { db } from '../config/firebaseConfig';
+import { IListener } from '../types/listener';
+
+export const listenersList: IListener[] = [];
 
 export const deleteCollect = async (
   collect: string,

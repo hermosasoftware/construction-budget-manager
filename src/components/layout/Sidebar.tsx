@@ -18,11 +18,10 @@ import { List } from 'phosphor-react';
 import { useBreakpointValue } from '@chakra-ui/react';
 import { useState } from 'react';
 import { ReactComponent as Logo } from '../../assets/img/coto-logo.svg';
+import { auth } from '../../config/firebaseConfig';
+import { listenersList } from '../../services/herperService';
 
 import styles from './Sidebar.module.css';
-import { useDispatch } from 'react-redux';
-import { auth } from '../../config/firebaseConfig';
-import { logout } from '../../redux/reducers/sessionSlice';
 
 const smVariant = { navigation: 'drawer', navigationButton: true };
 const mdVariant = { navigation: 'sidebar', navigationButton: false };
@@ -35,7 +34,6 @@ const Sidebar = () => {
     ...state.settings,
   }));
 
-  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -70,9 +68,11 @@ const Sidebar = () => {
 
   const shouldBeDisplayed = !blacklist.includes(location.pathname);
 
-  const singOut = () => {
-    dispatch(logout());
-    auth.signOut();
+  const singOut = async () => {
+    for await (const listener of listenersList) {
+      await listener.stop();
+    }
+    await auth.signOut();
     navigate('/login');
   };
 

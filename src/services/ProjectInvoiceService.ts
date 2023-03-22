@@ -9,6 +9,9 @@ import {
   query,
   updateDoc,
   orderBy,
+  onSnapshot,
+  FirestoreError,
+  writeBatch,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import {
@@ -24,7 +27,139 @@ import {
 } from '../types/projectInvoiceDetail';
 import { IService } from '../types/service';
 import { toastSuccess, toastError } from '../utils/toast';
-import { deleteCollect } from './herperService';
+import { deleteCollect, listenersList } from './herperService';
+import {
+  changeProjectInvoices,
+  insertProjectInvoice,
+  modifyProjectInvoice,
+  removeProjectInvoice,
+} from '../redux/reducers/projectInvoicesSlice';
+import { store } from '../redux/store';
+
+export const listenProjectInvoices = ({
+  projectId,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: { projectId: string } & IService) => {
+  try {
+    const invRef = collection(db, 'projects', projectId, 'projectInvoicing');
+    const InvoicesQuery = query(invRef, orderBy('order', 'desc'));
+    const { dispatch, getState } = store;
+
+    const unsubscribe = onSnapshot(
+      InvoicesQuery,
+      { includeMetadataChanges: true },
+      querySnapshot => {
+        let invoicesList = [...getState().projectInvoices.projectInvoices];
+
+        const projectInvoices: any = querySnapshot
+          .docChanges({ includeMetadataChanges: true })
+          .map(async change => {
+            const elem = {
+              ...change.doc.data(),
+              id: change.doc.id,
+              date: change.doc.data().date.toDate().toISOString(),
+            } as IProjectInvoiceDetail;
+
+            if (change.type === 'added') {
+              return changeTypeAdded(dispatch, invoicesList, invRef, elem);
+            }
+            if (change.type === 'modified') {
+              return changeTypeModified(dispatch, invRef, elem);
+            }
+            if (change.type === 'removed') {
+              return changeTypeRemoved(dispatch, elem);
+            }
+          });
+
+        Promise.all(projectInvoices).then(result => {
+          result.flat().length && dispatch(changeProjectInvoices(result));
+        });
+      },
+      error => {
+        const index = listenersList.findIndex(
+          e => e.name === 'projectInvoices',
+        );
+        if (index !== -1) {
+          listenersList.splice(index, 1);
+          dispatch(changeProjectInvoices([]));
+        }
+        throw error;
+      },
+    );
+    successCallback && successCallback(unsubscribe);
+  } catch (e) {
+    let errorMessage = appStrings.genericError;
+    if (e instanceof FirebaseError || e instanceof FirestoreError) {
+      errorMessage = e.message;
+    }
+    toastError(appStrings.getInformationError, errorMessage);
+    errorCallback && errorCallback();
+  }
+};
+
+const changeTypeAdded = async (
+  dispatch: any,
+  invoicesList: IProjectInvoiceDetail[],
+  invRef: any,
+  elem: IProjectInvoiceDetail,
+) => {
+  const productQ = query(collection(invRef, elem.id, 'products'));
+  const products = await getDocs(productQ);
+  const data = products.docs.map(doc => ({
+    ...doc.data(),
+    id: doc.id,
+  })) as IInvoiceProduct[];
+
+  if (invoicesList.length > 0) {
+    dispatch(
+      insertProjectInvoice({
+        ...elem,
+        products: data,
+      }),
+    );
+    return [];
+  } else {
+    return {
+      ...elem,
+      products: data,
+    };
+  }
+};
+
+const changeTypeModified = async (
+  dispatch: any,
+  invRef: any,
+  elem: IProjectInvoiceDetail,
+) => {
+  const productQ = query(collection(invRef, elem.id, 'products'));
+  const products = await getDocs(productQ);
+  const data = products.docs.map(doc => ({
+    ...doc.data(),
+    id: doc.id,
+  })) as IInvoiceProduct[];
+  dispatch(
+    modifyProjectInvoice({
+      ...elem,
+      products: data,
+    }),
+  );
+  return [];
+};
+
+const changeTypeRemoved = async (
+  dispatch: any,
+  elem: IProjectInvoiceDetail,
+) => {
+  dispatch(
+    removeProjectInvoice({
+      ...elem,
+      products: [],
+    }),
+  );
+  return [];
+};
 
 export const getProjectInvoicing = async ({
   projectId,
@@ -243,6 +378,13 @@ export const addInvoiceProduct = async ({
 } & IService) => {
   try {
     const { id, ...rest } = product;
+    const invRef = doc(
+      db,
+      'projects',
+      projectId,
+      'projectInvoicing',
+      invoiceId,
+    );
     const productRef = collection(
       db,
       'projects',
@@ -258,6 +400,7 @@ export const addInvoiceProduct = async ({
       ...rest,
       id: docRef.id,
     };
+    await updateDoc(invRef, {});
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
@@ -286,7 +429,14 @@ export const updateInvoiceProduct = async ({
 } & IService) => {
   try {
     const { id, ...rest } = product;
-    const matRef = doc(
+    const invRef = doc(
+      db,
+      'projects',
+      projectId,
+      'projectInvoicing',
+      invoiceId,
+    );
+    const productRef = doc(
       db,
       'projects',
       projectId,
@@ -295,7 +445,8 @@ export const updateInvoiceProduct = async ({
       'products',
       id,
     );
-    await setDoc(matRef, rest);
+    await setDoc(productRef, rest);
+    await updateDoc(invRef, {});
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
@@ -323,7 +474,14 @@ export const deleteInvoiceProduct = async ({
   invoiceProductId: string;
 } & IService) => {
   try {
-    const matRef = doc(
+    const invRef = doc(
+      db,
+      'projects',
+      projectId,
+      'projectInvoicing',
+      projectInvoiceId,
+    );
+    const productRef = doc(
       db,
       'projects',
       projectId,
@@ -332,7 +490,12 @@ export const deleteInvoiceProduct = async ({
       'products',
       invoiceProductId,
     );
-    await deleteDoc(matRef);
+    const batch = writeBatch(db);
+
+    batch.delete(productRef);
+    batch.update(invRef, {});
+
+    await batch.commit();
 
     toastSuccess(appStrings.success, appStrings.deleteSuccess);
 
