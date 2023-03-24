@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Flex, Heading } from '@chakra-ui/react';
 import * as yup from 'yup';
 import Button from '../../../../common/Button/Button';
@@ -11,7 +11,6 @@ import {
   createBudgetActivity,
   deleteBudgetActivity,
   getBudgetActivityById,
-  getBudgetActivity,
   updateBudgetActivity,
 } from '../../../../../services/BudgetActivityService';
 import { IBudgetActivity } from '../../../../../types/budgetActivity';
@@ -43,7 +42,6 @@ const initialSelectedItemData = {
 };
 
 const BudgetActivity: React.FC<IBudgetActivityView> = props => {
-  const [tableData, setTableData] = useState<IBudgetActivity[]>([]);
   const [selectedItem, setSelectedItem] = useState<IBudgetActivity>(
     initialSelectedItemData,
   );
@@ -52,6 +50,10 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
   const [searchTerm, setSearchTerm] = useState('');
   const { projectId, isBudgetOpen, getBudget, budget, setActivity } = props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
+  const budgetActivities = useAppSelector(
+    state => state.budgetActivities.budgetActivities,
+  );
+
   const tableHeader: TTableHeader[] = [
     { name: 'activity', value: appStrings.name },
     { name: 'date', value: appStrings.date },
@@ -60,38 +62,12 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
   ];
 
   const formatTableData = () =>
-    tableData.map(data => ({
+    budgetActivities.map(data => ({
       ...data,
-      date: formatDate(data.date, 'MM/DD/YYYY'),
+      date: formatDate(new Date(data.date), 'MM/DD/YYYY'),
       subtotal: colonFormat(data.sumMaterials),
       dollars: colonFormat(data.sumMaterials / budget.exchange),
     }));
-
-  const getActivities = async () => {
-    const successCallback = (response: IBudgetActivity[]) =>
-      setTableData(response);
-    await getBudgetActivity({
-      projectId,
-      appStrings,
-      successCallback,
-    });
-  };
-
-  const addItem = (item: IBudgetActivity) => setTableData([item, ...tableData]);
-
-  const updateItem = (item: IBudgetActivity) => {
-    const index = tableData.findIndex(e => e.id === item.id);
-    const data = [...tableData];
-    data.splice(index, 1, item);
-    setTableData(data);
-  };
-
-  const removeItem = (id: string) => {
-    const index = tableData.findIndex(e => e.id === id);
-    const data = [...tableData];
-    data.splice(index, 1);
-    setTableData(data);
-  };
 
   const editButton = async (budgetActivityId: string) => {
     const successCallback = (response: IBudgetActivity) => {
@@ -108,7 +84,6 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
 
   const deleteButton = async () => {
     const successCallback = () => {
-      removeItem(selectedItem.id);
       setSelectedItem(initialSelectedItemData);
       setIsAlertDialogOpen(false);
       getBudget();
@@ -128,15 +103,14 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
   const handleRowClick = (event: MouseEvent) => {
     const row = event.target as HTMLInputElement;
     const projectId = row.id;
-    const activity = tableData.find(row => row.id === projectId);
-    setActivity(activity);
+    const activity = budgetActivities.find(row => row.id === projectId);
+    setActivity({ ...activity, date: new Date(activity!.date) });
   };
 
   const handleOnSubmit = async (budgetActivity: IBudgetActivity) => {
     const successCallback = (item: IBudgetActivity) => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
-      budgetActivity.id ? updateItem(item) : addItem(item);
       getBudget();
     };
     const serviceCallParameters = {
@@ -154,12 +128,6 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
     activity: yup.string().required(appStrings?.requiredField),
     date: yup.date().required(appStrings?.requiredField),
   });
-
-  useEffect(() => {
-    let abortController = new AbortController();
-    getActivities();
-    return () => abortController.abort();
-  }, []);
 
   return (
     <div className={styles.operations_container}>
@@ -231,7 +199,7 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
         }}
         hideOptions={!isBudgetOpen}
       />
-      {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
+      {!budgetActivities.length ? <h1>{appStrings.noRecords}</h1> : null}
     </div>
   );
 };

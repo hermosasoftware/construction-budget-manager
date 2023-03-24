@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Flex, Heading } from '@chakra-ui/react';
 import * as yup from 'yup';
 import { useNavigate } from 'react-router-dom';
@@ -15,20 +15,17 @@ import {
   updateExtraBudgetActivity,
 } from '../../../../../services/ExtraBudgetActivityService';
 import { IBudgetActivity } from '../../../../../types/budgetActivity';
-import { IProjectExtraBudget } from '../../../../../types/projectExtraBudget';
 import Form, { DatePicker, Input } from '../../../../common/Form';
 import AlertDialog from '../../../../common/AlertDialog/AlertDialog';
 import { useAppSelector } from '../../../../../redux/hooks';
 import { colonFormat } from '../../../../../utils/numbers';
+import { formatDate } from '../../../../../utils/dates';
 
 import styles from './BudgetActivity.module.css';
-import { formatDate } from '../../../../../utils/dates';
 
 interface IBudgetActivityView {
   projectId: string;
   getExtraBudget: Function;
-  budget: IProjectExtraBudget;
-  activityList: IBudgetActivity[];
   setActivity: Function;
 }
 
@@ -45,17 +42,19 @@ const initialSelectedItemData = {
 };
 
 const BudgetActivity: React.FC<IBudgetActivityView> = props => {
-  const [tableData, setTableData] = useState<IBudgetActivity[]>([]);
   const [selectedItem, setSelectedItem] = useState<IBudgetActivity>(
     initialSelectedItemData,
   );
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const { projectId, getExtraBudget, budget, activityList, setActivity } =
-    props;
+  const { projectId, getExtraBudget, setActivity } = props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
+  const extraActivities = useAppSelector(
+    state => state.extraActivities.extraActivities,
+  );
   const navigate = useNavigate();
+
   const tableHeader: TTableHeader[] = [
     { name: 'activity', value: appStrings.name },
     { name: 'date', value: appStrings.date },
@@ -72,9 +71,9 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
   ];
 
   const formatTableData = () =>
-    tableData.map(data => ({
+    extraActivities.map(data => ({
       ...data,
-      date: formatDate(data.date, 'MM/DD/YYYY'),
+      date: formatDate(new Date(data.date), 'MM/DD/YYYY'),
       exchange: colonFormat(Number(data.exchange)),
       adminFee: `${data.adminFee}%`,
       sumMaterials: colonFormat(data.sumMaterials),
@@ -82,22 +81,6 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
       sumSubcontracts: colonFormat(data.sumSubcontracts),
       sumOthers: colonFormat(data.sumOthers),
     }));
-
-  const addItem = (item: IBudgetActivity) => setTableData([item, ...tableData]);
-
-  const updateItem = (item: IBudgetActivity) => {
-    const index = tableData.findIndex(e => e.id === item.id);
-    const data = [...tableData];
-    data.splice(index, 1, item);
-    setTableData(data);
-  };
-
-  const removeItem = (id: string) => {
-    const index = tableData.findIndex(e => e.id === id);
-    const data = [...tableData];
-    data.splice(index, 1);
-    setTableData(data);
-  };
 
   const editButton = async (extraBudgetActivityId: string) => {
     const successCallback = (response: IBudgetActivity) => {
@@ -114,7 +97,6 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
 
   const deleteButton = async () => {
     const successCallback = () => {
-      removeItem(selectedItem.id);
       setSelectedItem(initialSelectedItemData);
       setIsAlertDialogOpen(false);
       getExtraBudget();
@@ -128,7 +110,7 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
   };
 
   const exportPDFButton = (id: string) => {
-    const activity = tableData.find(e => e.id === id);
+    const activity = extraActivities.find(e => e.id === id);
     activity &&
       navigate(`/project-detail/${projectId}/extra-pdf-preview/${activity.id}`);
   };
@@ -140,15 +122,14 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
   const handleRowClick = (event: MouseEvent) => {
     const row = event.target as HTMLInputElement;
     const projectId = row.id;
-    const activity = tableData.find(row => row.id === projectId);
-    setActivity(activity);
+    const activity = extraActivities.find(row => row.id === projectId);
+    setActivity({ ...activity, date: new Date(activity!.date) });
   };
 
   const handleOnSubmit = async (extraBudgetActivity: IBudgetActivity) => {
     const successCallback = (item: IBudgetActivity) => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
-      extraBudgetActivity.id ? updateItem(item) : addItem(item);
       getExtraBudget();
     };
     const serviceCallParameters = {
@@ -172,12 +153,6 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
     adminFee: yup.number().min(0).max(100).required(appStrings?.requiredField),
     date: yup.date().required(appStrings?.requiredField),
   });
-
-  useEffect(() => {
-    let abortController = new AbortController();
-    setTableData(activityList);
-    return () => abortController.abort();
-  }, []);
 
   return (
     <div className={styles.operations_container}>
@@ -258,7 +233,7 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
         }}
         onClickExportPDF={id => exportPDFButton(id)}
       />
-      {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
+      {!extraActivities.length ? <h1>{appStrings.noRecords}</h1> : null}
     </div>
   );
 };

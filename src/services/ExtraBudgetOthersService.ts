@@ -5,12 +5,115 @@ import {
   doc,
   runTransaction,
   writeBatch,
+  FirestoreError,
+  onSnapshot,
+  orderBy,
+  query,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
 import { IBudgetOther } from '../types/budgetOther';
 import { IService } from '../types/service';
 import { toastSuccess, toastError } from '../utils/toast';
+import {
+  changeExtraOthers,
+  insertExtraOther,
+  modifyExtraOther,
+  removeExtraOther,
+} from '../redux/reducers/extraOthersSlice';
+import { store } from '../redux/store';
+import { listenersList } from './herperService';
+
+export const listenExtraOthers = ({
+  projectId,
+  activityId,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: { projectId: string; activityId: string } & IService) => {
+  try {
+    const otherRef = collection(
+      db,
+      'projects',
+      projectId,
+      'projectExtraBudget',
+      activityId,
+      'budgetOthers',
+    );
+    const extraOthersQuery = query(otherRef, orderBy('name'));
+    const { dispatch, getState } = store;
+
+    const unsubscribe = onSnapshot(
+      extraOthersQuery,
+      querySnapshot => {
+        let othersList = [...getState().extraOthers.extraOthers];
+
+        const extraOthers: any = querySnapshot
+          .docChanges()
+          .map(async change => {
+            const elem = {
+              ...change.doc.data(),
+              id: change.doc.id,
+              subtotal: change.doc.data().cost * change.doc.data().quantity,
+            } as IBudgetOther;
+
+            if (change.type === 'added') {
+              return changeTypeAdded(dispatch, othersList, elem);
+            }
+            if (change.type === 'modified') {
+              return changeTypeModified(dispatch, elem);
+            }
+            if (change.type === 'removed') {
+              return changeTypeRemoved(dispatch, elem);
+            }
+          });
+
+        Promise.all(extraOthers).then(result => {
+          result.flat().length && dispatch(changeExtraOthers(result));
+        });
+      },
+      error => {
+        const index = listenersList.findIndex(e => e.name === 'extraOthers');
+        if (index !== -1) {
+          listenersList.splice(index, 1);
+          dispatch(changeExtraOthers([]));
+        }
+        throw error;
+      },
+    );
+    successCallback && successCallback(unsubscribe);
+  } catch (error) {
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError || error instanceof FirestoreError) {
+      errorMessage = error.message;
+    }
+    toastError(appStrings.getInformationError, errorMessage);
+    errorCallback && errorCallback();
+  }
+};
+
+const changeTypeAdded = async (
+  dispatch: any,
+  othersList: IBudgetOther[],
+  elem: IBudgetOther,
+) => {
+  if (othersList.length > 0) {
+    dispatch(insertExtraOther(elem));
+    return [];
+  } else {
+    return elem;
+  }
+};
+
+const changeTypeModified = async (dispatch: any, elem: IBudgetOther) => {
+  dispatch(modifyExtraOther(elem));
+  return [];
+};
+
+const changeTypeRemoved = async (dispatch: any, elem: IBudgetOther) => {
+  dispatch(removeExtraOther(elem));
+  return [];
+};
 
 export const getExtraBudgetOthers = async ({
   projectId,

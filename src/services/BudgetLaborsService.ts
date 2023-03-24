@@ -5,12 +5,114 @@ import {
   doc,
   runTransaction,
   writeBatch,
+  onSnapshot,
+  FirestoreError,
+  query,
+  orderBy,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
 import { IBudgetLabor } from '../types/budgetLabor';
 import { IService } from '../types/service';
 import { toastSuccess, toastError } from '../utils/toast';
+import { store } from '../redux/store';
+import {
+  changeBudgetLabors,
+  insertBudgetLabor,
+  modifyBudgetLabor,
+  removeBudgetLabor,
+} from '../redux/reducers/budgetLaborsSlice';
+import { listenersList } from './herperService';
+
+export const listenBudgetLabors = ({
+  projectId,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: { projectId: string } & IService) => {
+  try {
+    const laborRef = collection(
+      db,
+      'projects',
+      projectId,
+      'projectBudget',
+      'summary',
+      'budgetLabors',
+    );
+    const budgetLaborsQuery = query(laborRef, orderBy('name'));
+    const { dispatch, getState } = store;
+
+    const unsubscribe = onSnapshot(
+      budgetLaborsQuery,
+      querySnapshot => {
+        let laborsList = [...getState().budgetLabors.budgetLabors];
+
+        const budgetLabors: any = querySnapshot
+          .docChanges()
+          .map(async change => {
+            const elem = {
+              ...change.doc.data(),
+              id: change.doc.id,
+              subtotal: change.doc.data().cost * change.doc.data().quantity,
+            } as IBudgetLabor;
+
+            if (change.type === 'added') {
+              return changeTypeAdded(dispatch, laborsList, elem);
+            }
+            if (change.type === 'modified') {
+              return changeTypeModified(dispatch, elem);
+            }
+            if (change.type === 'removed') {
+              return changeTypeRemoved(dispatch, elem);
+            }
+          });
+
+        Promise.all(budgetLabors).then(result => {
+          result.flat().length && dispatch(changeBudgetLabors(result));
+        });
+      },
+      error => {
+        const index = listenersList.findIndex(e => e.name === 'budgetLabors');
+        if (index !== -1) {
+          listenersList.splice(index, 1);
+          dispatch(changeBudgetLabors([]));
+        }
+        throw error;
+      },
+    );
+    successCallback && successCallback(unsubscribe);
+  } catch (error) {
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError || error instanceof FirestoreError) {
+      errorMessage = error.message;
+    }
+    toastError(appStrings.getInformationError, errorMessage);
+    errorCallback && errorCallback();
+  }
+};
+
+const changeTypeAdded = async (
+  dispatch: any,
+  laborsList: IBudgetLabor[],
+  elem: IBudgetLabor,
+) => {
+  if (laborsList.length > 0) {
+    dispatch(insertBudgetLabor(elem));
+    return [];
+  } else {
+    return elem;
+  }
+};
+
+const changeTypeModified = async (dispatch: any, elem: IBudgetLabor) => {
+  dispatch(modifyBudgetLabor(elem));
+  return [];
+};
+
+const changeTypeRemoved = async (dispatch: any, elem: IBudgetLabor) => {
+  dispatch(removeBudgetLabor(elem));
+  return [];
+};
 
 export const getBudgetLabors = async ({
   projectId,

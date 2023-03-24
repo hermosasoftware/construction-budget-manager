@@ -3,7 +3,7 @@ import { Box, Divider, Text } from '@chakra-ui/react';
 import * as yup from 'yup';
 import { CaretLeft, FilePdf } from 'phosphor-react';
 import { useNavigate } from 'react-router-dom';
-import { useAppSelector } from '../../../../redux/hooks';
+import { useAppDispatch, useAppSelector } from '../../../../redux/hooks';
 import TabGroup from '../../../common/TabGroup/TabGroup';
 import BudgetMaterial from './BudgetMaterial/BudgetMaterial';
 import BudgetLabor from './BudgetLabor/BudgetLabor';
@@ -25,6 +25,13 @@ import BudgetActivity from './BudgetActivity/BudgetActivity';
 import ActivitySummary from './BudgetActivity/ActivitySummary/ActivitySummary';
 import Button from '../../../common/Button/Button';
 import AdminFeeInput from '../../../common/AdminFeeInput';
+import { listenExtraLabors } from '../../../../services/ExtraBudgetLaborsService';
+import { listenersList } from '../../../../services/herperService';
+import { listenExtraSubcontracts } from '../../../../services/ExtraBudgetSubcontractsService';
+import { listenExtraOthers } from '../../../../services/ExtraBudgetOthersService';
+import { changeExtraLabors } from '../../../../redux/reducers/extraLaborsSlice';
+import { changeExtraSubcontracts } from '../../../../redux/reducers/extraSubcontractsSlice';
+import { changeExtraOthers } from '../../../../redux/reducers/extraOthersSlice';
 
 import styles from './ExtraBudget.module.css';
 
@@ -35,12 +42,17 @@ interface IExtraBudgetView {
 const ExtraBudget: React.FC<IExtraBudgetView> = props => {
   const { projectId } = props;
   const [selectedTab, setSelectedTab] = useState('summary');
+  const [selectedActivityTab, setSelectedActivityTab] = useState(false);
   const [editExchange, setEditExchange] = useState(false);
   const [editAdminFee, setEditAdminFee] = useState(false);
   const [budget, setBudget] = useState<IProjectExtraBudget>();
-  const [activityList, setActivityList] = useState<IBudgetActivity[]>([]);
+  // const [activityList, setActivityList] = useState<IBudgetActivity[]>([]);
   const [activity, setActivity] = useState<IBudgetActivity>();
   const appStrings = useAppSelector(state => state.settings.appStrings);
+  const extraActivities = useAppSelector(
+    state => state.extraActivities.extraActivities,
+  );
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
   const getExtraBudget = async () => {
@@ -54,30 +66,141 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
     });
   };
 
-  const getActivities = async () => {
-    const successCallback = (response: IBudgetActivity[]) =>
-      setActivityList(response);
-    await getExtraBudgetActivity({
+  const extraLaborsListener = (activityId: string) => {
+    const successCallback = (response: Function) => {
+      listenersList.push({
+        id: activityId,
+        name: 'extraLabors',
+        stop: response,
+      });
+    };
+    listenExtraLabors({
       projectId,
+      activityId,
       appStrings,
       successCallback,
     });
   };
 
-  const getActivity = async (extraBudgetActivityId: string) => {
-    const successCallback = (response: IBudgetActivity) => {
-      setActivity(response);
-      const index = activityList.findIndex(e => e.id === response.id);
-      const data = [...activityList];
-      data.splice(index, 1, response);
-      setActivityList(data);
+  const extraSubcontractsListener = (activityId: string) => {
+    const successCallback = (response: Function) => {
+      listenersList.push({
+        id: activityId,
+        name: 'extraSubcontracts',
+        stop: response,
+      });
     };
-    await getExtraBudgetActivityById({
+    listenExtraSubcontracts({
       projectId,
-      extraBudgetActivityId,
+      activityId,
       appStrings,
       successCallback,
     });
+  };
+
+  const extraOthersListener = (activityId: string) => {
+    const successCallback = (response: Function) => {
+      listenersList.push({
+        id: activityId,
+        name: 'extraOthers',
+        stop: response,
+      });
+    };
+    listenExtraOthers({
+      projectId,
+      activityId,
+      appStrings,
+      successCallback,
+    });
+  };
+
+  const checkListeners = (activityId: string) => {
+    const band = startListeners(activityId);
+    !band && replaceListeners(activityId);
+  };
+
+  const startListeners = (activityId: string) => {
+    if (
+      !listenersList.some(
+        listener =>
+          listener.name === 'extraLabors' ||
+          listener.name === 'extraSubcontracts' ||
+          listener.name === 'extratOthers',
+      )
+    ) {
+      extraLaborsListener(activityId);
+      extraSubcontractsListener(activityId);
+      extraOthersListener(activityId);
+      return true;
+    }
+    return false;
+  };
+
+  const replaceListeners = (activityId: string) => {
+    const listeners = [...listenersList];
+    listeners.forEach(listener => {
+      if (listener.id && listener.id !== activityId) {
+        switch (listener.name) {
+          case 'extraLabors':
+            listener.stop();
+            removeListenerItem(listener.id);
+            dispatch(changeExtraLabors([]));
+            extraLaborsListener(activityId);
+            break;
+          case 'extraSubcontracts':
+            listener.stop();
+            removeListenerItem(listener.id);
+            dispatch(changeExtraSubcontracts([]));
+            extraSubcontractsListener(activityId);
+            break;
+          case 'extraOthers':
+            listener.stop();
+            removeListenerItem(listener.id);
+            dispatch(changeExtraOthers([]));
+            extraOthersListener(activityId);
+            break;
+          default:
+            break;
+        }
+      }
+    });
+  };
+
+  const removeListenerItem = (id: string) => {
+    const index = listenersList.findIndex(e => e.id === id);
+    listenersList.splice(index, 1);
+  };
+
+  useEffect(() => {
+    activity && checkListeners(activity.id);
+  }, [activity]);
+
+  // const getActivities = async () => {
+  //   const successCallback = (response: IBudgetActivity[]) =>
+  //     setActivityList(response);
+  //   await getExtraBudgetActivity({
+  //     projectId,
+  //     appStrings,
+  //     successCallback,
+  //   });
+  // };
+
+  const getActivity = async (extraBudgetActivityId: string) => {
+    const elem = extraActivities.find(e => e.id === extraBudgetActivityId);
+    setActivity({ ...elem!, date: new Date(elem!.date) });
+    // const successCallback = (response: IBudgetActivity) => {
+    //   setActivity(response);
+    //   const index = activityList.findIndex(e => e.id === response.id);
+    //   const data = [...activityList];
+    //   data.splice(index, 1, response);
+    //   setActivityList(data);
+    // };
+    // await getExtraBudgetActivityById({
+    //   projectId,
+    //   extraBudgetActivityId,
+    //   appStrings,
+    //   successCallback,
+    // });
   };
 
   const handleOnSubmitExchange = async (
@@ -125,7 +248,7 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
   useEffect(() => {
     let abortController = new AbortController();
     getExtraBudget();
-    getActivities();
+    // getActivities();
     return () => abortController.abort();
   }, []);
 
@@ -180,7 +303,7 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
           summary: (
             <BudgetSummary
               budget={budget!}
-              activityList={activityList}
+              activityList={extraActivities}
               projectId={projectId}
             />
           ),
@@ -188,8 +311,8 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
             <BudgetActivity
               projectId={projectId}
               getExtraBudget={getExtraBudget}
-              budget={budget!}
-              activityList={activityList}
+              // budget={budget!}
+              // activityList={activityList}
               setActivity={setActivity}
             />
           ),
@@ -207,6 +330,7 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
                 <Button
                   onClick={() => {
                     setActivity(undefined);
+                    setSelectedActivityTab(true);
                   }}
                   variant={'ghost'}
                 >
@@ -273,8 +397,16 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
             <TabGroup
               className={styles.tabs}
               tabs={[
-                { id: 'summary', name: appStrings.summary, selected: true },
-                { id: 'activity', name: appStrings.activities },
+                {
+                  id: 'summary',
+                  name: appStrings.summary,
+                  selected: !selectedActivityTab,
+                },
+                {
+                  id: 'activity',
+                  name: appStrings.activities,
+                  selected: selectedActivityTab,
+                },
               ]}
               variant="rounded"
               onSelectedTabChange={activeTabs => setSelectedTab(activeTabs[0])}

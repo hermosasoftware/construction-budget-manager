@@ -5,12 +5,115 @@ import {
   doc,
   runTransaction,
   writeBatch,
+  onSnapshot,
+  query,
+  FirestoreError,
+  orderBy,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
 import { IBudgetLabor } from '../types/budgetLabor';
 import { IService } from '../types/service';
 import { toastSuccess, toastError } from '../utils/toast';
+import {
+  changeExtraLabors,
+  insertExtraLabor,
+  modifyExtraLabor,
+  removeExtraLabor,
+} from '../redux/reducers/extraLaborsSlice';
+import { store } from '../redux/store';
+import { listenersList } from './herperService';
+
+export const listenExtraLabors = ({
+  projectId,
+  activityId,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: { projectId: string; activityId: string } & IService) => {
+  try {
+    const laborRef = collection(
+      db,
+      'projects',
+      projectId,
+      'projectExtraBudget',
+      activityId,
+      'budgetLabors',
+    );
+    const extraLaborsQuery = query(laborRef, orderBy('name'));
+    const { dispatch, getState } = store;
+
+    const unsubscribe = onSnapshot(
+      extraLaborsQuery,
+      querySnapshot => {
+        let laborsList = [...getState().extraLabors.extraLabors];
+
+        const extraLabors: any = querySnapshot
+          .docChanges()
+          .map(async change => {
+            const elem = {
+              ...change.doc.data(),
+              id: change.doc.id,
+              subtotal: change.doc.data().cost * change.doc.data().quantity,
+            } as IBudgetLabor;
+
+            if (change.type === 'added') {
+              return changeTypeAdded(dispatch, laborsList, elem);
+            }
+            if (change.type === 'modified') {
+              return changeTypeModified(dispatch, elem);
+            }
+            if (change.type === 'removed') {
+              return changeTypeRemoved(dispatch, elem);
+            }
+          });
+
+        Promise.all(extraLabors).then(result => {
+          result.flat().length && dispatch(changeExtraLabors(result));
+        });
+      },
+      error => {
+        const index = listenersList.findIndex(e => e.name === 'extraLabors');
+        if (index !== -1) {
+          listenersList.splice(index, 1);
+          dispatch(changeExtraLabors([]));
+        }
+        throw error;
+      },
+    );
+    successCallback && successCallback(unsubscribe);
+  } catch (error) {
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError || error instanceof FirestoreError) {
+      errorMessage = error.message;
+    }
+    toastError(appStrings.getInformationError, errorMessage);
+    errorCallback && errorCallback();
+  }
+};
+
+const changeTypeAdded = async (
+  dispatch: any,
+  laborsList: IBudgetLabor[],
+  elem: IBudgetLabor,
+) => {
+  if (laborsList.length > 0) {
+    dispatch(insertExtraLabor(elem));
+    return [];
+  } else {
+    return elem;
+  }
+};
+
+const changeTypeModified = async (dispatch: any, elem: IBudgetLabor) => {
+  dispatch(modifyExtraLabor(elem));
+  return [];
+};
+
+const changeTypeRemoved = async (dispatch: any, elem: IBudgetLabor) => {
+  dispatch(removeExtraLabor(elem));
+  return [];
+};
 
 export const getExtraBudgetLabors = async ({
   projectId,

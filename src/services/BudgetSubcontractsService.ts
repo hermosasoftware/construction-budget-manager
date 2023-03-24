@@ -5,12 +5,118 @@ import {
   doc,
   runTransaction,
   writeBatch,
+  query,
+  orderBy,
+  onSnapshot,
+  FirestoreError,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
 import { IBudgetSubcontract } from '../types/budgetSubcontract';
 import { IService } from '../types/service';
 import { toastSuccess, toastError } from '../utils/toast';
+import { store } from '../redux/store';
+import {
+  changeBudgetSubcontracts,
+  insertBudgetSubcontract,
+  modifyBudgetSubcontract,
+  removeBudgetSubcontract,
+} from '../redux/reducers/budgetSubcontractsSlice';
+import { listenersList } from './herperService';
+
+export const listenBudgetSubcontracts = ({
+  projectId,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: { projectId: string } & IService) => {
+  try {
+    const subCtRef = collection(
+      db,
+      'projects',
+      projectId,
+      'projectBudget',
+      'summary',
+      'budgetSubcontracts',
+    );
+    const budgetSubcontractsQuery = query(subCtRef, orderBy('name'));
+    const { dispatch, getState } = store;
+
+    const unsubscribe = onSnapshot(
+      budgetSubcontractsQuery,
+      querySnapshot => {
+        let subcontractsList = [
+          ...getState().budgetSubcontracts.budgetSubcontracts,
+        ];
+
+        const budgetSubcontracts: any = querySnapshot
+          .docChanges()
+          .map(async change => {
+            const elem = {
+              ...change.doc.data(),
+              id: change.doc.id,
+              subtotal: change.doc.data().cost * change.doc.data().quantity,
+            } as IBudgetSubcontract;
+
+            if (change.type === 'added') {
+              return changeTypeAdded(dispatch, subcontractsList, elem);
+            }
+            if (change.type === 'modified') {
+              return changeTypeModified(dispatch, elem);
+            }
+            if (change.type === 'removed') {
+              return changeTypeRemoved(dispatch, elem);
+            }
+          });
+
+        Promise.all(budgetSubcontracts).then(result => {
+          result.flat().length && dispatch(changeBudgetSubcontracts(result));
+        });
+      },
+      error => {
+        const index = listenersList.findIndex(
+          e => e.name === 'budgetSubcontracts',
+        );
+        if (index !== -1) {
+          listenersList.splice(index, 1);
+          dispatch(changeBudgetSubcontracts([]));
+        }
+        throw error;
+      },
+    );
+    successCallback && successCallback(unsubscribe);
+  } catch (error) {
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError || error instanceof FirestoreError) {
+      errorMessage = error.message;
+    }
+    toastError(appStrings.getInformationError, errorMessage);
+    errorCallback && errorCallback();
+  }
+};
+
+const changeTypeAdded = async (
+  dispatch: any,
+  subcontractsList: IBudgetSubcontract[],
+  elem: IBudgetSubcontract,
+) => {
+  if (subcontractsList.length > 0) {
+    dispatch(insertBudgetSubcontract(elem));
+    return [];
+  } else {
+    return elem;
+  }
+};
+
+const changeTypeModified = async (dispatch: any, elem: IBudgetSubcontract) => {
+  dispatch(modifyBudgetSubcontract(elem));
+  return [];
+};
+
+const changeTypeRemoved = async (dispatch: any, elem: IBudgetSubcontract) => {
+  dispatch(removeBudgetSubcontract(elem));
+  return [];
+};
 
 export const getBudgetSubcontracts = async ({
   projectId,
