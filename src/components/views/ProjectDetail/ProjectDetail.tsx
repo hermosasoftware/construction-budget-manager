@@ -16,12 +16,16 @@ import { changeProjectExpenses } from '../../../redux/reducers/projectExpensesSl
 import { listenProjectInvoices } from '../../../services/ProjectInvoiceService';
 import { changeProjectInvoices } from '../../../redux/reducers/projectInvoicesSlice';
 import { changeProjectOrders } from '../../../redux/reducers/projectOrdersSlice';
+import { listenProjectExtraBudget } from '../../../services/ProjectExtraBudgetService';
+import { listenProjectBudget } from '../../../services/ProjectBudgetService';
 import { listenProjectOrders } from '../../../services/ProjectOrderService';
 import { listenBudgetActivities } from '../../../services/BudgetActivityService';
 import { listenBudgetLabors } from '../../../services/BudgetLaborsService';
 import { listenBudgetSubcontracts } from '../../../services/BudgetSubcontractsService';
 import { listenExtraActivities } from '../../../services/ExtraBudgetActivityService';
 import { listenBudgetOthers } from '../../../services/BudgetOthersService';
+import { clearProjectBudget } from '../../../redux/reducers/projectBudgetSlice';
+import { clearProjectExtraBudget } from '../../../redux/reducers/projectExtraBudgetSlice';
 import { changeBudgetOthers } from '../../../redux/reducers/budgetOthersSlice';
 import { changeBudgetSubcontracts } from '../../../redux/reducers/budgetSubcontractsSlice';
 import { changeBudgetLabors } from '../../../redux/reducers/budgetLaborsSlice';
@@ -50,6 +54,36 @@ export default function Projects() {
   const getProjectbyId = async () => {
     const elem = projects.find(project => project.id === projectId)!;
     setProject(elem);
+  };
+
+  const projectBudgetListener = () => {
+    const successCallback = (response: Function) => {
+      listenersList.push({
+        id: projectId,
+        name: 'projectBudget',
+        stop: response,
+      });
+    };
+    listenProjectBudget({
+      projectId,
+      appStrings,
+      successCallback,
+    });
+  };
+
+  const projectExtraBudgetListener = () => {
+    const successCallback = (response: Function) => {
+      listenersList.push({
+        id: projectId,
+        name: 'projectExtraBudget',
+        stop: response,
+      });
+    };
+    listenProjectExtraBudget({
+      projectId,
+      appStrings,
+      successCallback,
+    });
   };
 
   const projectOrdersListener = () => {
@@ -181,6 +215,8 @@ export default function Projects() {
     if (
       !listenersList.some(
         listener =>
+          listener.name === 'projectBudget' ||
+          listener.name === 'projectExtraBudget' ||
           listener.name === 'projectOrders' ||
           listener.name === 'projectInvoices' ||
           listener.name === 'projectExpenses' ||
@@ -191,6 +227,8 @@ export default function Projects() {
           listener.name === 'extraActivities',
       )
     ) {
+      projectBudgetListener();
+      projectExtraBudgetListener();
       projectOrdersListener();
       projectInvoicesListener();
       projectExpensesListener();
@@ -209,6 +247,18 @@ export default function Projects() {
     listeners.forEach(listener => {
       if (listener.id && listener.id !== projectId) {
         switch (listener.name) {
+          case 'projectBudget':
+            listener.stop();
+            removeListenerItem(listener.id);
+            dispatch(clearProjectBudget());
+            projectBudgetListener();
+            break;
+          case 'projectExtraBudget':
+            listener.stop();
+            removeListenerItem(listener.id);
+            dispatch(clearProjectExtraBudget());
+            projectExtraBudgetListener();
+            break;
           case 'projectOrders':
             listener.stop();
             removeListenerItem(listener.id);

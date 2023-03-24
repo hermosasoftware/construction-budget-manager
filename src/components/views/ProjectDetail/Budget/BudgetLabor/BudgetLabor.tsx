@@ -25,7 +25,6 @@ import styles from './BudgetLabor.module.css';
 interface IBudgetLaborView {
   projectId: string;
   isBudgetOpen: boolean;
-  getBudget: Function;
   budget: IProjectBudget;
 }
 
@@ -39,7 +38,7 @@ const initialSelectedItemData = {
 };
 
 const BudgetLabor: React.FC<IBudgetLaborView> = props => {
-  const { projectId, isBudgetOpen, getBudget, budget } = props;
+  const { projectId, isBudgetOpen, budget } = props;
   const [selectedItem, setSelectedItem] = useState<IBudgetLabor>(
     initialSelectedItemData,
   );
@@ -83,7 +82,6 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
     const successCallback = () => {
       setSelectedItem(initialSelectedItemData);
       setIsAlertDialogOpen(false);
-      getBudget();
     };
     await deleteBudgetLabor({
       projectId,
@@ -101,7 +99,6 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
     const successCallback = (item: IBudgetLabor) => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
-      getBudget();
     };
     const serviceCallParameters = {
       projectId,

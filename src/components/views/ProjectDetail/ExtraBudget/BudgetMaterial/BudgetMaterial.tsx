@@ -32,9 +32,7 @@ import styles from './BudgetMaterial.module.css';
 
 interface IBudgetMaterialView {
   projectId: string;
-  getExtraBudget: Function;
   budget: IProjectExtraBudget;
-  getActivity: Function;
   activity: IBudgetActivity;
 }
 
@@ -57,7 +55,7 @@ const initialSelectedSubMaterialData = {
 };
 
 const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
-  const { projectId, getExtraBudget, getActivity, activity } = props;
+  const { projectId, activity } = props;
   const [tableData, setTableData] = useState<IMaterialBreakdown[]>([]);
   const [selectedItem, setSelectedItem] = useState<IBudgetMaterial>(
     initialSelectedItemData,
@@ -130,8 +128,6 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
       removeItem(selectedItem.id);
       setSelectedItem(initialSelectedItemData);
       setIsAlertDialogOpen(false);
-      getExtraBudget();
-      getActivity(activity.id);
     };
     await deleteExtraBudgetMaterial({
       projectId,
@@ -178,8 +174,6 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
       );
       setSelectedSubMaterial(initialSelectedSubMaterialData);
       setIsSubMaterialModalOpen(false);
-      getExtraBudget();
-      getActivity(activity.id);
     };
 
     const successUpdateCallback = (
@@ -200,8 +194,6 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
       );
       setSelectedSubMaterial(initialSelectedSubMaterialData);
       setIsSubMaterialModalOpen(false);
-      getExtraBudget();
-      getActivity(activity.id);
     };
     const serviceCallParameters = {
       materialId: selectedMaterial,
@@ -261,8 +253,6 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
       setSelectedMaterial('');
       setSelectedSubMaterial(initialSelectedSubMaterialData);
       setSubMatAlertDialogOpen(false);
-      getExtraBudget();
-      getActivity(activity.id);
     };
     await deleteExtraBudgetSubMaterial({
       projectId,
@@ -294,8 +284,6 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
         subMaterials: item?.subMaterials || [],
       };
       extraBudgetMaterial.id ? updateItem(MatBreakdown) : addItem(MatBreakdown);
-      getExtraBudget();
-      getActivity(activity.id);
     };
     const serviceCallParameters = {
       projectId,

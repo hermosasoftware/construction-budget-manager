@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Flex, Heading } from '@chakra-ui/react';
 import * as yup from 'yup';
 import Button from '../../../../common/Button/Button';
@@ -11,11 +11,9 @@ import {
   createExtraBudgetSubcontract,
   deleteExtraBudgetSubcontract,
   getExtraBudgetSubcontractById,
-  getExtraBudgetSubcontracts,
   updateExtraBudgetSubcontract,
 } from '../../../../../services/ExtraBudgetSubcontractsService';
 import { IBudgetSubcontract } from '../../../../../types/budgetSubcontract';
-import { IProjectExtraBudget } from '../../../../../types/projectExtraBudget';
 import { IBudgetActivity } from '../../../../../types/budgetActivity';
 import Form, { Input } from '../../../../common/Form';
 import AlertDialog from '../../../../common/AlertDialog/AlertDialog';
@@ -26,9 +24,6 @@ import styles from './BudgetSubcontract.module.css';
 
 interface IBudgetSubcontractView {
   projectId: string;
-  getExtraBudget: Function;
-  budget: IProjectExtraBudget;
-  getActivity: Function;
   activity: IBudgetActivity;
 }
 
@@ -41,8 +36,7 @@ const initialSelectedItemData = {
 };
 
 const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
-  const { projectId, getExtraBudget, budget, getActivity, activity } = props;
-  const [tableData, setTableData] = useState<IBudgetSubcontract[]>([]);
+  const { projectId, activity } = props;
   const [selectedItem, setSelectedItem] = useState<IBudgetSubcontract>(
     initialSelectedItemData,
   );
@@ -51,6 +45,9 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
   const [searchTerm, setSearchTerm] = useState('');
 
   const appStrings = useAppSelector(state => state.settings.appStrings);
+  const extraSubcontracts = useAppSelector(
+    state => state.extraSubcontracts.extraSubcontracts,
+  );
 
   const tableHeader: TTableHeader[] = [
     { name: 'name', value: appStrings.name },
@@ -61,40 +58,12 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
   ];
 
   const formatTableData = () =>
-    tableData.map(data => ({
+    extraSubcontracts.map(data => ({
       ...data,
       cost: colonFormat(data.cost),
       subtotal: colonFormat(data.subtotal),
       dollars: dolarFormat(data.subtotal / Number(activity.exchange)),
     }));
-
-  const getSubcontracts = async () => {
-    const successCallback = (response: IBudgetSubcontract[]) =>
-      setTableData(response);
-    await getExtraBudgetSubcontracts({
-      projectId,
-      activityId: activity.id,
-      appStrings,
-      successCallback,
-    });
-  };
-
-  const addItem = (item: IBudgetSubcontract) =>
-    setTableData([item, ...tableData]);
-
-  const updateItem = (item: IBudgetSubcontract) => {
-    const index = tableData.findIndex(e => e.id === item.id);
-    const data = [...tableData];
-    data.splice(index, 1, item);
-    setTableData(data);
-  };
-
-  const removeItem = (id: string) => {
-    const index = tableData.findIndex(e => e.id === id);
-    const data = [...tableData];
-    data.splice(index, 1);
-    setTableData(data);
-  };
 
   const editButton = async (extraBudgetSubcontractId: string) => {
     const successCallback = (response: IBudgetSubcontract) => {
@@ -112,11 +81,8 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
 
   const deleteButton = async () => {
     const successCallback = () => {
-      removeItem(selectedItem.id);
       setSelectedItem(initialSelectedItemData);
       setIsAlertDialogOpen(false);
-      getExtraBudget();
-      getActivity(activity.id);
     };
     await deleteExtraBudgetSubcontract({
       projectId,
@@ -135,9 +101,6 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
     const successCallback = (item: IBudgetSubcontract) => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
-      extraBudgetSubcontract.id ? updateItem(item) : addItem(item);
-      getExtraBudget();
-      getActivity(activity.id);
     };
     const serviceCallParameters = {
       projectId,
@@ -161,12 +124,6 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
     quantity: yup.number().positive().required(appStrings?.requiredField),
     cost: yup.number().positive().required(appStrings?.requiredField),
   });
-
-  useEffect(() => {
-    let abortController = new AbortController();
-    getSubcontracts();
-    return () => abortController.abort();
-  }, []);
 
   return (
     <div className={styles.operations_container}>
@@ -239,7 +196,7 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
           setIsAlertDialogOpen(true);
         }}
       />
-      {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
+      {!extraSubcontracts.length ? <h1>{appStrings.noRecords}</h1> : null}
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Flex, Heading } from '@chakra-ui/react';
 import * as yup from 'yup';
 import Button from '../../../../common/Button/Button';
@@ -11,11 +11,9 @@ import {
   createExtraBudgetOther,
   deleteExtraBudgetOther,
   getExtraBudgetOtherById,
-  getExtraBudgetOthers,
   updateExtraBudgetOther,
 } from '../../../../../services/ExtraBudgetOthersService';
 import { IBudgetOther } from '../../../../../types/budgetOther';
-import { IProjectExtraBudget } from '../../../../../types/projectExtraBudget';
 import { IBudgetActivity } from '../../../../../types/budgetActivity';
 import Form, { Input } from '../../../../common/Form';
 import AlertDialog from '../../../../common/AlertDialog/AlertDialog';
@@ -26,9 +24,6 @@ import styles from './BudgetOther.module.css';
 
 interface IBudgetOtherView {
   projectId: string;
-  getExtraBudget: Function;
-  budget: IProjectExtraBudget;
-  getActivity: Function;
   activity: IBudgetActivity;
 }
 
@@ -41,16 +36,15 @@ const initialSelectedItemData = {
 };
 
 const BudgetOther: React.FC<IBudgetOtherView> = props => {
-  const { projectId, getExtraBudget, budget, getActivity, activity } = props;
-  const [tableData, setTableData] = useState<IBudgetOther[]>([]);
+  const { projectId, activity } = props;
   const [selectedItem, setSelectedItem] = useState<IBudgetOther>(
     initialSelectedItemData,
   );
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-
   const appStrings = useAppSelector(state => state.settings.appStrings);
+  const extraOthers = useAppSelector(state => state.extraOthers.extraOthers);
 
   const tableHeader: TTableHeader[] = [
     { name: 'name', value: appStrings.name },
@@ -61,39 +55,12 @@ const BudgetOther: React.FC<IBudgetOtherView> = props => {
   ];
 
   const formatTableData = () =>
-    tableData.map(data => ({
+    extraOthers.map(data => ({
       ...data,
       cost: colonFormat(data.cost),
       subtotal: colonFormat(data.subtotal),
       dollars: dolarFormat(data.subtotal / Number(activity.exchange)),
     }));
-
-  const getOthers = async () => {
-    const successCallback = (response: IBudgetOther[]) =>
-      setTableData(response);
-    await getExtraBudgetOthers({
-      projectId,
-      activityId: activity.id,
-      appStrings,
-      successCallback,
-    });
-  };
-
-  const addItem = (item: IBudgetOther) => setTableData([item, ...tableData]);
-
-  const updateItem = (item: IBudgetOther) => {
-    const index = tableData.findIndex(e => e.id === item.id);
-    const data = [...tableData];
-    data.splice(index, 1, item);
-    setTableData(data);
-  };
-
-  const removeItem = (id: string) => {
-    const index = tableData.findIndex(e => e.id === id);
-    const data = [...tableData];
-    data.splice(index, 1);
-    setTableData(data);
-  };
 
   const editButton = async (extraBudgetOtherId: string) => {
     const successCallback = (response: IBudgetOther) => {
@@ -111,11 +78,8 @@ const BudgetOther: React.FC<IBudgetOtherView> = props => {
 
   const deleteButton = async () => {
     const successCallback = () => {
-      removeItem(selectedItem.id);
       setSelectedItem(initialSelectedItemData);
       setIsAlertDialogOpen(false);
-      getExtraBudget();
-      getActivity(activity.id);
     };
     await deleteExtraBudgetOther({
       projectId,
@@ -134,9 +98,6 @@ const BudgetOther: React.FC<IBudgetOtherView> = props => {
     const successCallback = (item: IBudgetOther) => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
-      extraBudgetOther.id ? updateItem(item) : addItem(item);
-      getExtraBudget();
-      getActivity(activity.id);
     };
     const serviceCallParameters = {
       projectId,
@@ -160,12 +121,6 @@ const BudgetOther: React.FC<IBudgetOtherView> = props => {
     quantity: yup.number().positive().required(appStrings?.requiredField),
     cost: yup.number().positive().required(appStrings?.requiredField),
   });
-
-  useEffect(() => {
-    let abortController = new AbortController();
-    getOthers();
-    return () => abortController.abort();
-  }, []);
 
   return (
     <div className={styles.operations_container}>
@@ -236,7 +191,7 @@ const BudgetOther: React.FC<IBudgetOtherView> = props => {
           setIsAlertDialogOpen(true);
         }}
       />
-      {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
+      {!extraOthers.length ? <h1>{appStrings.noRecords}</h1> : null}
     </div>
   );
 };

@@ -25,7 +25,6 @@ import styles from './BudgetActivity.module.css';
 
 interface IBudgetActivityView {
   projectId: string;
-  getExtraBudget: Function;
   setActivity: Function;
 }
 
@@ -48,7 +47,7 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const { projectId, getExtraBudget, setActivity } = props;
+  const { projectId, setActivity } = props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
   const extraActivities = useAppSelector(
     state => state.extraActivities.extraActivities,
@@ -99,7 +98,6 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
     const successCallback = () => {
       setSelectedItem(initialSelectedItemData);
       setIsAlertDialogOpen(false);
-      getExtraBudget();
     };
     await deleteExtraBudgetActivity({
       projectId,
@@ -130,7 +128,6 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
     const successCallback = (item: IBudgetActivity) => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
-      getExtraBudget();
     };
     const serviceCallParameters = {
       projectId,

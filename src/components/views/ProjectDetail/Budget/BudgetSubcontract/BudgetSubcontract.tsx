@@ -25,7 +25,6 @@ import styles from './BudgetSubcontract.module.css';
 interface IBudgetSubcontractView {
   projectId: string;
   isBudgetOpen: boolean;
-  getBudget: Function;
   budget: IProjectBudget;
 }
 
@@ -38,7 +37,7 @@ const initialSelectedItemData = {
 };
 
 const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
-  const { projectId, isBudgetOpen, getBudget, budget } = props;
+  const { projectId, isBudgetOpen, budget } = props;
   const [selectedItem, setSelectedItem] = useState<IBudgetSubcontract>(
     initialSelectedItemData,
   );
@@ -83,7 +82,6 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
     const successCallback = () => {
       setSelectedItem(initialSelectedItemData);
       setIsAlertDialogOpen(false);
-      getBudget();
     };
     await deleteBudgetSubcontract({
       projectId,
@@ -101,7 +99,6 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
     const successCallback = (item: IBudgetSubcontract) => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
-      getBudget();
     };
     const serviceCallParameters = {
       projectId,

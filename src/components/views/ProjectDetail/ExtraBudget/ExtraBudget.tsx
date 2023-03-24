@@ -12,12 +12,8 @@ import BudgetOther from './BudgetOther/BudgetOther';
 import BudgetSummary from './BudgetSummary/BudgetSummary';
 import Form from '../../../common/Form/Form';
 import ExchangeInput from '../../../common/ExchangeInput/ExchangeInput';
-import { getProjectExtraBudget } from '../../../../services/ProjectExtraBudgetService';
-import { IProjectExtraBudget } from '../../../../types/projectExtraBudget';
 import { IBudgetActivity } from '../../../../types/budgetActivity';
 import {
-  getExtraBudgetActivity,
-  getExtraBudgetActivityById,
   updateExtraBudgetActivityAdminFee,
   updateExtraBudgetActivityExchange,
 } from '../../../../services/ExtraBudgetActivityService';
@@ -45,26 +41,16 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
   const [selectedActivityTab, setSelectedActivityTab] = useState(false);
   const [editExchange, setEditExchange] = useState(false);
   const [editAdminFee, setEditAdminFee] = useState(false);
-  const [budget, setBudget] = useState<IProjectExtraBudget>();
-  // const [activityList, setActivityList] = useState<IBudgetActivity[]>([]);
   const [activity, setActivity] = useState<IBudgetActivity>();
   const appStrings = useAppSelector(state => state.settings.appStrings);
+  const projectExtraBudget = useAppSelector(
+    state => state.projectExtraBudget.projectExtraBudget,
+  );
   const extraActivities = useAppSelector(
     state => state.extraActivities.extraActivities,
   );
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-
-  const getExtraBudget = async () => {
-    const successCallback = (response: IProjectExtraBudget) =>
-      setBudget(response);
-
-    await getProjectExtraBudget({
-      projectId,
-      appStrings,
-      successCallback,
-    });
-  };
 
   const extraLaborsListener = (activityId: string) => {
     const successCallback = (response: Function) => {
@@ -171,44 +157,11 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
     listenersList.splice(index, 1);
   };
 
-  useEffect(() => {
-    activity && checkListeners(activity.id);
-  }, [activity]);
-
-  // const getActivities = async () => {
-  //   const successCallback = (response: IBudgetActivity[]) =>
-  //     setActivityList(response);
-  //   await getExtraBudgetActivity({
-  //     projectId,
-  //     appStrings,
-  //     successCallback,
-  //   });
-  // };
-
-  const getActivity = async (extraBudgetActivityId: string) => {
-    const elem = extraActivities.find(e => e.id === extraBudgetActivityId);
-    setActivity({ ...elem!, date: new Date(elem!.date) });
-    // const successCallback = (response: IBudgetActivity) => {
-    //   setActivity(response);
-    //   const index = activityList.findIndex(e => e.id === response.id);
-    //   const data = [...activityList];
-    //   data.splice(index, 1, response);
-    //   setActivityList(data);
-    // };
-    // await getExtraBudgetActivityById({
-    //   projectId,
-    //   extraBudgetActivityId,
-    //   appStrings,
-    //   successCallback,
-    // });
-  };
-
   const handleOnSubmitExchange = async (
     extraBudgetActivity: IBudgetActivity,
   ) => {
     const successCallback = () => {
       setEditExchange(false);
-      getActivity(extraBudgetActivity.id);
     };
 
     await updateExtraBudgetActivityExchange({
@@ -225,7 +178,6 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
   ) => {
     const successCallback = () => {
       setEditAdminFee(false);
-      getActivity(extraBudgetActivity.id);
     };
     const serviceCallParameters = {
       projectId,
@@ -246,11 +198,12 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
   });
 
   useEffect(() => {
-    let abortController = new AbortController();
-    getExtraBudget();
-    // getActivities();
-    return () => abortController.abort();
-  }, []);
+    activity && checkListeners(activity.id);
+  }, [activity]);
+
+  useEffect(() => {
+    activity && setActivity(extraActivities.find(a => a.id === activity.id));
+  }, [extraActivities]);
 
   const contentToDisplay = (option: string) => {
     const contentOptions: any = activity
@@ -258,63 +211,29 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
           summary: (
             <ActivitySummary
               projectId={projectId}
-              budget={budget!}
+              budget={projectExtraBudget!}
               activity={activity}
             />
           ),
           materials: (
             <BudgetMaterial
               projectId={projectId}
-              getExtraBudget={getExtraBudget}
-              budget={budget!}
-              getActivity={getActivity}
+              budget={projectExtraBudget!}
               activity={activity}
             />
           ),
-          labors: (
-            <BudgetLabor
-              projectId={projectId}
-              getExtraBudget={getExtraBudget}
-              budget={budget!}
-              getActivity={getActivity}
-              activity={activity}
-            />
-          ),
+          labors: <BudgetLabor projectId={projectId} activity={activity} />,
           subcontracts: (
-            <BudgetSubcontract
-              projectId={projectId}
-              getExtraBudget={getExtraBudget}
-              budget={budget!}
-              getActivity={getActivity}
-              activity={activity}
-            />
+            <BudgetSubcontract projectId={projectId} activity={activity} />
           ),
-          others: (
-            <BudgetOther
-              projectId={projectId}
-              getExtraBudget={getExtraBudget}
-              budget={budget!}
-              getActivity={getActivity}
-              activity={activity}
-            />
-          ),
+          others: <BudgetOther projectId={projectId} activity={activity} />,
         }
       : {
           summary: (
-            <BudgetSummary
-              budget={budget!}
-              activityList={extraActivities}
-              projectId={projectId}
-            />
+            <BudgetSummary budget={projectExtraBudget!} projectId={projectId} />
           ),
           activity: (
-            <BudgetActivity
-              projectId={projectId}
-              getExtraBudget={getExtraBudget}
-              // budget={budget!}
-              // activityList={activityList}
-              setActivity={setActivity}
-            />
+            <BudgetActivity projectId={projectId} setActivity={setActivity} />
           ),
         };
     return contentOptions[option];
@@ -413,7 +332,7 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
             />
           )}
         </div>
-        {budget ? contentToDisplay(selectedTab) : null}
+        {projectExtraBudget ? contentToDisplay(selectedTab) : null}
       </Box>
     </div>
   );

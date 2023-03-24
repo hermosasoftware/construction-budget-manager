@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Flex, Heading } from '@chakra-ui/react';
 import * as yup from 'yup';
 import Button from '../../../../common/Button/Button';
@@ -11,11 +11,9 @@ import {
   createExtraBudgetLabor,
   deleteExtraBudgetLabor,
   getExtraBudgetLaborById,
-  getExtraBudgetLabors,
   updateExtraBudgetLabor,
 } from '../../../../../services/ExtraBudgetLaborsService';
 import { IBudgetLabor } from '../../../../../types/budgetLabor';
-import { IProjectExtraBudget } from '../../../../../types/projectExtraBudget';
 import { IBudgetActivity } from '../../../../../types/budgetActivity';
 import Form, { Input } from '../../../../common/Form';
 import AlertDialog from '../../../../common/AlertDialog/AlertDialog';
@@ -26,9 +24,6 @@ import styles from './BudgetLabor.module.css';
 
 interface IBudgetLaborView {
   projectId: string;
-  getExtraBudget: Function;
-  budget: IProjectExtraBudget;
-  getActivity: Function;
   activity: IBudgetActivity;
 }
 
@@ -42,8 +37,7 @@ const initialSelectedItemData = {
 };
 
 const BudgetLabor: React.FC<IBudgetLaborView> = props => {
-  const { projectId, getExtraBudget, budget, getActivity, activity } = props;
-  const [tableData, setTableData] = useState<IBudgetLabor[]>([]);
+  const { projectId, activity } = props;
   const [selectedItem, setSelectedItem] = useState<IBudgetLabor>(
     initialSelectedItemData,
   );
@@ -51,6 +45,7 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const appStrings = useAppSelector(state => state.settings.appStrings);
+  const extraLabors = useAppSelector(state => state.extraLabors.extraLabors);
 
   const tableHeader: TTableHeader[] = [
     { name: 'name', value: appStrings.name },
@@ -62,39 +57,12 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
   ];
 
   const formatTableData = () =>
-    tableData.map(data => ({
+    extraLabors.map(data => ({
       ...data,
       cost: colonFormat(data.cost),
       subtotal: colonFormat(data.subtotal),
       dollars: dolarFormat(data.subtotal / Number(activity.exchange)),
     }));
-
-  const getLabors = async () => {
-    const successCallback = (response: IBudgetLabor[]) =>
-      setTableData(response);
-    await getExtraBudgetLabors({
-      projectId,
-      activityId: activity.id,
-      appStrings,
-      successCallback,
-    });
-  };
-
-  const addItem = (item: IBudgetLabor) => setTableData([item, ...tableData]);
-
-  const updateItem = (item: IBudgetLabor) => {
-    const index = tableData.findIndex(e => e.id === item.id);
-    const data = [...tableData];
-    data.splice(index, 1, item);
-    setTableData(data);
-  };
-
-  const removeItem = (id: string) => {
-    const index = tableData.findIndex(e => e.id === id);
-    const data = [...tableData];
-    data.splice(index, 1);
-    setTableData(data);
-  };
 
   const editButton = async (extraBudgetLaborId: string) => {
     const successCallback = (response: IBudgetLabor) => {
@@ -112,11 +80,8 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
 
   const deleteButton = async () => {
     const successCallback = () => {
-      removeItem(selectedItem.id);
       setSelectedItem(initialSelectedItemData);
       setIsAlertDialogOpen(false);
-      getExtraBudget();
-      getActivity(activity.id);
     };
     await deleteExtraBudgetLabor({
       projectId,
@@ -135,9 +100,6 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
     const successCallback = (item: IBudgetLabor) => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
-      extraBudgetLabor.id ? updateItem(item) : addItem(item);
-      getExtraBudget();
-      getActivity(activity.id);
     };
     const serviceCallParameters = {
       projectId,
@@ -162,12 +124,6 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
     quantity: yup.number().positive().required(appStrings?.requiredField),
     cost: yup.number().positive().required(appStrings?.requiredField),
   });
-
-  useEffect(() => {
-    let abortController = new AbortController();
-    getLabors();
-    return () => abortController.abort();
-  }, []);
 
   return (
     <div className={styles.operations_container}>
@@ -243,7 +199,7 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
           setIsAlertDialogOpen(true);
         }}
       />
-      {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
+      {!extraLabors.length ? <h1>{appStrings.noRecords}</h1> : null}
     </div>
   );
 };

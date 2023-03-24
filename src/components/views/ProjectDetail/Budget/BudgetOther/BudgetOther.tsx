@@ -25,7 +25,6 @@ import styles from './BudgetOther.module.css';
 interface IBudgetOtherView {
   projectId: string;
   isBudgetOpen: boolean;
-  getBudget: Function;
   budget: IProjectBudget;
 }
 
@@ -38,7 +37,7 @@ const initialSelectedItemData = {
 };
 
 const BudgetOther: React.FC<IBudgetOtherView> = props => {
-  const { projectId, isBudgetOpen, getBudget, budget } = props;
+  const { projectId, isBudgetOpen, budget } = props;
   const [selectedItem, setSelectedItem] = useState<IBudgetOther>(
     initialSelectedItemData,
   );
@@ -81,7 +80,6 @@ const BudgetOther: React.FC<IBudgetOtherView> = props => {
     const successCallback = () => {
       setSelectedItem(initialSelectedItemData);
       setIsAlertDialogOpen(false);
-      getBudget();
     };
     await deleteBudgetOther({
       projectId,
@@ -99,7 +97,6 @@ const BudgetOther: React.FC<IBudgetOtherView> = props => {
     const successCallback = (item: IBudgetOther) => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
-      getBudget();
     };
     const serviceCallParameters = {
       projectId,
