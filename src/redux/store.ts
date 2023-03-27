@@ -15,6 +15,7 @@ import budgetLabors from './reducers/budgetLaborsSlice';
 import budgetSubcontracts from './reducers/budgetSubcontractsSlice';
 import budgetOthers from './reducers/budgetOthersSlice';
 import extraActivities from './reducers/extraActivitiesSlice';
+import extraMaterials from './reducers/extraMaterialsSlice';
 import extraLabors from './reducers/extraLaborsSlice';
 import extraSubcontracts from './reducers/extraSubcontractsSlice';
 import extraOthers from './reducers/extraOthersSlice';
@@ -38,6 +39,7 @@ export const store = configureStore({
     budgetSubcontracts,
     budgetOthers,
     extraActivities,
+    extraMaterials,
     extraLabors,
     extraSubcontracts,
     extraOthers,

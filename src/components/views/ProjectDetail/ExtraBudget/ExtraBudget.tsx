@@ -21,13 +21,15 @@ import BudgetActivity from './BudgetActivity/BudgetActivity';
 import ActivitySummary from './BudgetActivity/ActivitySummary/ActivitySummary';
 import Button from '../../../common/Button/Button';
 import AdminFeeInput from '../../../common/AdminFeeInput';
+import { listenExtraMaterials } from '../../../../services/ExtraBudgetMaterialsService';
 import { listenExtraLabors } from '../../../../services/ExtraBudgetLaborsService';
-import { listenersList } from '../../../../services/herperService';
 import { listenExtraSubcontracts } from '../../../../services/ExtraBudgetSubcontractsService';
 import { listenExtraOthers } from '../../../../services/ExtraBudgetOthersService';
+import { changeExtraMaterials } from '../../../../redux/reducers/extraMaterialsSlice';
 import { changeExtraLabors } from '../../../../redux/reducers/extraLaborsSlice';
 import { changeExtraSubcontracts } from '../../../../redux/reducers/extraSubcontractsSlice';
 import { changeExtraOthers } from '../../../../redux/reducers/extraOthersSlice';
+import { listenersList } from '../../../../services/herperService';
 
 import styles from './ExtraBudget.module.css';
 
@@ -51,6 +53,22 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
   );
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+
+  const extraMaterialsListener = (activityId: string) => {
+    const successCallback = (response: Function) => {
+      listenersList.push({
+        id: activityId,
+        name: 'extraMaterials',
+        stop: response,
+      });
+    };
+    listenExtraMaterials({
+      projectId,
+      activityId,
+      appStrings,
+      successCallback,
+    });
+  };
 
   const extraLaborsListener = (activityId: string) => {
     const successCallback = (response: Function) => {
@@ -109,11 +127,13 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
     if (
       !listenersList.some(
         listener =>
+          listener.name === 'extraMaterials' ||
           listener.name === 'extraLabors' ||
           listener.name === 'extraSubcontracts' ||
           listener.name === 'extratOthers',
       )
     ) {
+      extraMaterialsListener(activityId);
       extraLaborsListener(activityId);
       extraSubcontractsListener(activityId);
       extraOthersListener(activityId);
@@ -127,6 +147,12 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
     listeners.forEach(listener => {
       if (listener.id && listener.id !== activityId) {
         switch (listener.name) {
+          case 'extraMaterials':
+            listener.stop();
+            removeListenerItem(listener.id);
+            dispatch(changeExtraMaterials([]));
+            extraMaterialsListener(activityId);
+            break;
           case 'extraLabors':
             listener.stop();
             removeListenerItem(listener.id);

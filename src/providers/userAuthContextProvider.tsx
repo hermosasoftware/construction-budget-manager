@@ -29,6 +29,7 @@ import { changeBudgetSubcontracts } from '../redux/reducers/budgetSubcontractsSl
 import { changeBudgetOthers } from '../redux/reducers/budgetOthersSlice';
 import { changeExtraActivities } from '../redux/reducers/extraActivitiesSlice';
 import { changeBudgetActivities } from '../redux/reducers/budgetActivitiesSlice';
+import { changeExtraMaterials } from '../redux/reducers/extraMaterialsSlice';
 import { changeExtraLabors } from '../redux/reducers/extraLaborsSlice';
 import { changeExtraSubcontracts } from '../redux/reducers/extraSubcontractsSlice';
 import { changeExtraOthers } from '../redux/reducers/extraOthersSlice';
@@ -224,6 +225,7 @@ const cleanListeners = (dispatch: Function) => {
   dispatch(changeBudgetSubcontracts([]));
   dispatch(changeBudgetOthers([]));
   dispatch(changeExtraActivities([]));
+  dispatch(changeExtraMaterials([]));
   dispatch(changeExtraLabors([]));
   dispatch(changeExtraSubcontracts([]));
   dispatch(changeExtraOthers([]));

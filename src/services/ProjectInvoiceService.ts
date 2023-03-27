@@ -11,7 +11,6 @@ import {
   orderBy,
   onSnapshot,
   FirestoreError,
-  writeBatch,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import {
@@ -490,12 +489,9 @@ export const deleteInvoiceProduct = async ({
       'products',
       invoiceProductId,
     );
-    const batch = writeBatch(db);
 
-    batch.delete(productRef);
-    batch.update(invRef, {});
-
-    await batch.commit();
+    await deleteDoc(productRef);
+    await updateDoc(invRef, {});
 
     toastSuccess(appStrings.success, appStrings.deleteSuccess);
 

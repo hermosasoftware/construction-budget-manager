@@ -15,7 +15,6 @@ import {
   updateInvoiceProduct,
   updateProjectInvoiceDetail,
 } from '../../../../services/ProjectInvoiceService';
-import { getProjectActivities } from '../../../../services/ProjectService';
 import {
   IInvoiceProduct,
   IProjectInvoiceDetail,
@@ -106,6 +105,12 @@ const Invoicing: React.FC<IInvoicing> = props => {
     state => state.projectInvoices.projectInvoices,
   );
   const orders = useAppSelector(state => state.projectOrders.projectOrders);
+  const budgetActivities = useAppSelector(
+    state => state.budgetActivities.budgetActivities,
+  );
+  const extraActivities = useAppSelector(
+    state => state.extraActivities.extraActivities,
+  );
 
   const tableHeader: TTableHeader[] = [
     { name: 'invoice', value: appStrings.invoice },
@@ -359,16 +364,13 @@ const Invoicing: React.FC<IInvoicing> = props => {
     );
   };
 
-  const getActivities = async () => {
-    const successCallback = (data: IActivity[]) => setAllActivities(data);
-    await getProjectActivities({ projectId, appStrings, successCallback });
-  };
-
   useEffect(() => {
-    let abortController = new AbortController();
-    getActivities();
-    return () => abortController.abort();
-  }, []);
+    const extrasAct = extraActivities.map(activity => ({
+      ...activity,
+      isExtra: true,
+    }));
+    setAllActivities([...budgetActivities, ...extrasAct]);
+  }, [budgetActivities, extraActivities]);
 
   return (
     <div className={`${styles.operations_container}`}>
