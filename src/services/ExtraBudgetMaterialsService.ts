@@ -494,24 +494,24 @@ export const createExtraBudgetSubMaterial = async ({
   budgetSubMaterial: ISubMaterial;
 } & IService) => {
   try {
+    const { id, ...rest } = budgetSubMaterial;
+    const budgetRef = collection(
+      db,
+      'projects',
+      projectId,
+      'projectExtraBudget',
+    );
+    const matRef = doc(budgetRef, activityId, 'budgetMaterials', materialId);
+    const subMatRef = doc(
+      collection(
+        budgetRef,
+        activityId,
+        'budgetMaterials',
+        materialId,
+        'subMaterials',
+      ),
+    );
     const data = await runTransaction(db, async transaction => {
-      const { id, ...rest } = budgetSubMaterial;
-      const budgetRef = collection(
-        db,
-        'projects',
-        projectId,
-        'projectExtraBudget',
-      );
-      const matRef = doc(budgetRef, activityId, 'budgetMaterials', materialId);
-      const subMatRef = doc(
-        collection(
-          budgetRef,
-          activityId,
-          'budgetMaterials',
-          materialId,
-          'subMaterials',
-        ),
-      );
       const summaryRef = doc(budgetRef, 'summary');
       const activityRef = doc(budgetRef, activityId);
       const matDoc = await transaction.get(matRef);
@@ -528,12 +528,13 @@ export const createExtraBudgetSubMaterial = async ({
       transaction.update(summaryRef, { sumMaterials: summaryTotal });
       transaction.update(activityRef, { sumMaterials: activityTotal });
       transaction.set(subMatRef, rest);
-      await updateDoc(matRef, {});
+
       return {
         ...budgetSubMaterial,
         id: subMatRef.id,
       } as ISubMaterial;
     });
+    await updateDoc(matRef, {});
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
@@ -563,23 +564,23 @@ export const updateExtraBudgetSubMaterial = async ({
   budgetSubMaterial: ISubMaterial;
 } & IService) => {
   try {
+    const { id, ...rest } = budgetSubMaterial;
+    const budgetRef = collection(
+      db,
+      'projects',
+      projectId,
+      'projectExtraBudget',
+    );
+    const matRef = doc(budgetRef, activityId, 'budgetMaterials', materialId);
+    const subMatRef = doc(
+      budgetRef,
+      activityId,
+      'budgetMaterials',
+      materialId,
+      'subMaterials',
+      id,
+    );
     await runTransaction(db, async transaction => {
-      const { id, ...rest } = budgetSubMaterial;
-      const budgetRef = collection(
-        db,
-        'projects',
-        projectId,
-        'projectExtraBudget',
-      );
-      const matRef = doc(budgetRef, activityId, 'budgetMaterials', materialId);
-      const subMatRef = doc(
-        budgetRef,
-        activityId,
-        'budgetMaterials',
-        materialId,
-        'subMaterials',
-        id,
-      );
       const summaryRef = doc(budgetRef, 'summary');
       const activityRef = doc(budgetRef, activityId);
       const matDoc = await transaction.get(matRef);
@@ -608,8 +609,8 @@ export const updateExtraBudgetSubMaterial = async ({
       transaction.update(summaryRef, { sumMaterials: summaryTotal });
       transaction.update(activityRef, { sumMaterials: activityTotal });
       transaction.set(subMatRef, rest);
-      await updateDoc(matRef, {});
     });
+    await updateDoc(matRef, {});
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 

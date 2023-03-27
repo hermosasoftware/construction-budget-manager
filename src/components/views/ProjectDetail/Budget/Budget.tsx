@@ -17,7 +17,6 @@ import {
   updateProjectBudgetAdminFee,
   updateProjectBudgetExchange,
 } from '../../../../services/ProjectBudgetService';
-import { getBudgetActivityById } from '../../../../services/BudgetActivityService';
 import { updateProject } from '../../../../services/ProjectService';
 import { IProjectBudget } from '../../../../types/projectBudget';
 import { IBudgetActivity } from '../../../../types/budgetActivity';
@@ -48,17 +47,6 @@ const Budget: React.FC<IBudgetView> = props => {
     state => state.projectBudget.projectBudget,
   );
   const navigate = useNavigate();
-
-  const getActivity = async (budgetActivityId: string) => {
-    const successCallback = (response: IBudgetActivity) =>
-      setActivity(response);
-    await getBudgetActivityById({
-      projectId,
-      budgetActivityId,
-      appStrings,
-      successCallback,
-    });
-  };
 
   const handleOnSubmitExchange = async (projectBudget: IProjectBudget) => {
     const successCallback = () => {
@@ -124,7 +112,6 @@ const Budget: React.FC<IBudgetView> = props => {
               projectId={projectId}
               isBudgetOpen={isBudgetOpen}
               budget={projectBudget!}
-              getActivity={getActivity}
               activity={activity}
             />
           ),
