@@ -29,7 +29,6 @@ import OrdersTableView, {
 } from '../../../layout/OrdersTableView/OrdersTableView';
 import SearchSelect from '../../../common/Form/Elements/SearchSelect';
 import { formatDate } from '../../../../utils/dates';
-import { getProjectActivities } from '../../../../services/ProjectService';
 import TabGroup from '../../../common/TabGroup/TabGroup';
 
 import styles from './Orders.module.css';
@@ -91,6 +90,12 @@ const Orders: React.FC<IOrdersView> = props => {
   const projectOrders = useAppSelector(
     state => state.projectOrders.projectOrders,
   );
+  const budgetActivities = useAppSelector(
+    state => state.budgetActivities.budgetActivities,
+  );
+  const extraActivities = useAppSelector(
+    state => state.extraActivities.extraActivities,
+  );
   const navigate = useNavigate();
 
   const tableHeader: TTableHeader[] = [
@@ -144,11 +149,6 @@ const Orders: React.FC<IOrdersView> = props => {
   const getFormattedActivity = (id?: string) => {
     const activity = getActivityById(id);
     return { value: activity?.id, label: activity?.activity };
-  };
-
-  const getActivities = async () => {
-    const successCallback = (data: IActivity[]) => setAllActivities(data);
-    await getProjectActivities({ projectId, appStrings, successCallback });
   };
 
   const handleSearch = async (event: { target: { value: string } }) => {
@@ -330,10 +330,12 @@ const Orders: React.FC<IOrdersView> = props => {
     }));
 
   useEffect(() => {
-    let abortController = new AbortController();
-    getActivities();
-    return () => abortController.abort();
-  }, []);
+    const extrasAct = extraActivities.map(activity => ({
+      ...activity,
+      isExtra: true,
+    }));
+    setAllActivities([...budgetActivities, ...extrasAct]);
+  }, [budgetActivities, extraActivities]);
 
   return (
     <div className={`${styles.operations_container}`}>

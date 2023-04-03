@@ -4,7 +4,6 @@ import { Divider } from '@chakra-ui/react';
 import BigButton from '../../../../common/BigButton/BigButton';
 import { useAppSelector } from '../../../../../redux/hooks';
 import { IProjectExtraBudget } from '../../../../../types/projectExtraBudget';
-import { IBudgetActivity } from '../../../../../types/budgetActivity';
 import Stat from '../../../../common/Stat/Stat';
 import { colonFormat, dolarFormat } from '../../../../../utils/numbers';
 
@@ -13,7 +12,6 @@ import styles from './BudgetSummary.module.css';
 interface IBudgetSummaryView {
   projectId: string;
   budget: IProjectExtraBudget;
-  activityList: IBudgetActivity[];
 }
 
 interface IBudgetTotals extends IProjectExtraBudget {
@@ -30,9 +28,12 @@ interface IBudgetTotals extends IProjectExtraBudget {
 }
 
 const BudgetSummary: React.FC<IBudgetSummaryView> = props => {
-  const { budget, activityList } = props;
+  const { budget } = props;
   const [budgetTotals, setBudgetTotals] = useState<IBudgetTotals>();
   const appStrings = useAppSelector(state => state.settings.appStrings);
+  const extraActivities = useAppSelector(
+    state => state.extraActivities.extraActivities,
+  );
 
   const calcTotals = ({
     sumLabors,
@@ -47,7 +48,7 @@ const BudgetSummary: React.FC<IBudgetSummaryView> = props => {
     let sumSubcontractsDolars = 0;
     let sumOthersDolars = 0;
     let adminFeeDolars = 0;
-    activityList.forEach(activity => {
+    extraActivities.forEach(activity => {
       exchange = Number(activity.exchange);
       sumMaterialsDolars += activity.sumMaterials / exchange;
       sumLaborsDolars += activity.sumLabors / exchange;
@@ -94,7 +95,7 @@ const BudgetSummary: React.FC<IBudgetSummaryView> = props => {
 
   useEffect(() => {
     setBudgetTotals({ ...budget, ...calcTotals(budget) });
-  }, [budget, activityList]);
+  }, [budget, extraActivities]);
 
   return budgetTotals ? (
     <>

@@ -10,13 +10,110 @@ import {
   where,
   documentId,
   increment,
+  onSnapshot,
+  FirestoreError,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
 import { IBudgetActivity } from '../types/budgetActivity';
 import { IService } from '../types/service';
 import { toastSuccess, toastError } from '../utils/toast';
-import { deleteCollect } from './herperService';
+import { deleteCollect, listenersList } from './herperService';
+import {
+  changeBudgetActivities,
+  insertBudgetActivity,
+  modifyBudgetActivity,
+  removeBudgetActivity,
+} from '../redux/reducers/budgetActivitiesSlice';
+import { store } from '../redux/store';
+
+export const listenBudgetActivities = ({
+  projectId,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: { projectId: string } & IService) => {
+  try {
+    const actRef = collection(db, 'projects', projectId, 'projectBudget');
+    const budgetActivitiesQuery = query(
+      actRef,
+      where(documentId(), '!=', 'summary'),
+    );
+    const { dispatch, getState } = store;
+
+    const unsubscribe = onSnapshot(
+      budgetActivitiesQuery,
+      querySnapshot => {
+        let activitiesList = [...getState().budgetActivities.budgetActivities];
+
+        const budgetActivities: any = querySnapshot
+          .docChanges()
+          .map(async change => {
+            const elem = {
+              ...change.doc.data(),
+              id: change.doc.id,
+              date: change.doc.data().date.toDate().toISOString(),
+            } as IBudgetActivity;
+
+            if (change.type === 'added') {
+              return changeTypeAdded(dispatch, activitiesList, elem);
+            }
+            if (change.type === 'modified') {
+              return changeTypeModified(dispatch, elem);
+            }
+            if (change.type === 'removed') {
+              return changeTypeRemoved(dispatch, elem);
+            }
+          });
+
+        Promise.all(budgetActivities).then(result => {
+          result.flat().length && dispatch(changeBudgetActivities(result));
+        });
+      },
+      error => {
+        const index = listenersList.findIndex(
+          e => e.name === 'budgetActivities',
+        );
+        if (index !== -1) {
+          listenersList.splice(index, 1);
+          dispatch(changeBudgetActivities([]));
+        }
+        throw error;
+      },
+    );
+    successCallback && successCallback(unsubscribe);
+  } catch (error) {
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError || error instanceof FirestoreError) {
+      errorMessage = error.message;
+    }
+    toastError(appStrings.getInformationError, errorMessage);
+    errorCallback && errorCallback();
+  }
+};
+
+const changeTypeAdded = async (
+  dispatch: any,
+  activitiesList: IBudgetActivity[],
+  elem: IBudgetActivity,
+) => {
+  if (activitiesList.length > 0) {
+    dispatch(insertBudgetActivity(elem));
+    return [];
+  } else {
+    return elem;
+  }
+};
+
+const changeTypeModified = async (dispatch: any, elem: IBudgetActivity) => {
+  dispatch(modifyBudgetActivity(elem));
+  return [];
+};
+
+const changeTypeRemoved = async (dispatch: any, elem: IBudgetActivity) => {
+  dispatch(removeBudgetActivity(elem));
+  return [];
+};
 
 export const getBudgetActivity = async ({
   projectId,

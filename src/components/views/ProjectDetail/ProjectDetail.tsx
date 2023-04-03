@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Box, Flex } from '@chakra-ui/react';
 import { useParams } from 'react-router-dom';
 import TabGroup from '../../common/TabGroup/TabGroup';
-import { getProjectById } from '../../../services/ProjectService';
 import { IProject } from '../../../types/project';
 import ExpensesReport from './ExpensesReport/ExpensesReport';
 import Orders from './Orders';
@@ -17,7 +16,21 @@ import { changeProjectExpenses } from '../../../redux/reducers/projectExpensesSl
 import { listenProjectInvoices } from '../../../services/ProjectInvoiceService';
 import { changeProjectInvoices } from '../../../redux/reducers/projectInvoicesSlice';
 import { changeProjectOrders } from '../../../redux/reducers/projectOrdersSlice';
+import { listenProjectExtraBudget } from '../../../services/ProjectExtraBudgetService';
+import { listenProjectBudget } from '../../../services/ProjectBudgetService';
 import { listenProjectOrders } from '../../../services/ProjectOrderService';
+import { listenBudgetActivities } from '../../../services/BudgetActivityService';
+import { listenBudgetLabors } from '../../../services/BudgetLaborsService';
+import { listenBudgetSubcontracts } from '../../../services/BudgetSubcontractsService';
+import { listenExtraActivities } from '../../../services/ExtraBudgetActivityService';
+import { listenBudgetOthers } from '../../../services/BudgetOthersService';
+import { clearProjectBudget } from '../../../redux/reducers/projectBudgetSlice';
+import { clearProjectExtraBudget } from '../../../redux/reducers/projectExtraBudgetSlice';
+import { changeBudgetOthers } from '../../../redux/reducers/budgetOthersSlice';
+import { changeBudgetSubcontracts } from '../../../redux/reducers/budgetSubcontractsSlice';
+import { changeBudgetLabors } from '../../../redux/reducers/budgetLaborsSlice';
+import { changeBudgetActivities } from '../../../redux/reducers/budgetActivitiesSlice';
+import { changeExtraActivities } from '../../../redux/reducers/extraActivitiesSlice';
 
 import styles from './ProjectDetail.module.css';
 
@@ -35,11 +48,42 @@ export default function Projects() {
   const [project, setProject] = useState<IProject>(defaultProjectData);
   const projectId = useParams().id as string;
   const appStrings = useAppSelector(state => state.settings.appStrings);
+  const projects = useAppSelector(state => state.projects.projects);
   const dispatch = useAppDispatch();
 
   const getProjectbyId = async () => {
-    const successCallback = (response: IProject) => setProject(response);
-    await getProjectById({ projectId, appStrings, successCallback });
+    const elem = projects.find(project => project.id === projectId)!;
+    setProject(elem);
+  };
+
+  const projectBudgetListener = () => {
+    const successCallback = (response: Function) => {
+      listenersList.push({
+        id: projectId,
+        name: 'projectBudget',
+        stop: response,
+      });
+    };
+    listenProjectBudget({
+      projectId,
+      appStrings,
+      successCallback,
+    });
+  };
+
+  const projectExtraBudgetListener = () => {
+    const successCallback = (response: Function) => {
+      listenersList.push({
+        id: projectId,
+        name: 'projectExtraBudget',
+        stop: response,
+      });
+    };
+    listenProjectExtraBudget({
+      projectId,
+      appStrings,
+      successCallback,
+    });
   };
 
   const projectOrdersListener = () => {
@@ -87,6 +131,81 @@ export default function Projects() {
     });
   };
 
+  const budgetActivitiesListener = () => {
+    const successCallback = (response: Function) => {
+      listenersList.push({
+        id: projectId,
+        name: 'budgetActivities',
+        stop: response,
+      });
+    };
+    listenBudgetActivities({
+      projectId,
+      appStrings,
+      successCallback,
+    });
+  };
+
+  const budgetLaborsListener = () => {
+    const successCallback = (response: Function) => {
+      listenersList.push({
+        id: projectId,
+        name: 'budgetLabors',
+        stop: response,
+      });
+    };
+    listenBudgetLabors({
+      projectId,
+      appStrings,
+      successCallback,
+    });
+  };
+
+  const budgetSubcontractsListener = () => {
+    const successCallback = (response: Function) => {
+      listenersList.push({
+        id: projectId,
+        name: 'budgetSubcontracts',
+        stop: response,
+      });
+    };
+    listenBudgetSubcontracts({
+      projectId,
+      appStrings,
+      successCallback,
+    });
+  };
+
+  const budgetOthersListener = () => {
+    const successCallback = (response: Function) => {
+      listenersList.push({
+        id: projectId,
+        name: 'budgetOthers',
+        stop: response,
+      });
+    };
+    listenBudgetOthers({
+      projectId,
+      appStrings,
+      successCallback,
+    });
+  };
+
+  const extraActivitiesListener = () => {
+    const successCallback = (response: Function) => {
+      listenersList.push({
+        id: projectId,
+        name: 'extraActivities',
+        stop: response,
+      });
+    };
+    listenExtraActivities({
+      projectId,
+      appStrings,
+      successCallback,
+    });
+  };
+
   const checkListeners = () => {
     const band = startListeners();
     !band && replaceListeners();
@@ -96,14 +215,28 @@ export default function Projects() {
     if (
       !listenersList.some(
         listener =>
+          listener.name === 'projectBudget' ||
+          listener.name === 'projectExtraBudget' ||
           listener.name === 'projectOrders' ||
           listener.name === 'projectInvoices' ||
-          listener.name === 'projectExpenses',
+          listener.name === 'projectExpenses' ||
+          listener.name === 'budgetActivities' ||
+          listener.name === 'budgetLabors' ||
+          listener.name === 'budgetSubcontracts' ||
+          listener.name === 'budgetOthers' ||
+          listener.name === 'extraActivities',
       )
     ) {
+      projectBudgetListener();
+      projectExtraBudgetListener();
       projectOrdersListener();
       projectInvoicesListener();
       projectExpensesListener();
+      budgetActivitiesListener();
+      budgetLaborsListener();
+      budgetSubcontractsListener();
+      budgetOthersListener();
+      extraActivitiesListener();
       return true;
     }
     return false;
@@ -113,24 +246,69 @@ export default function Projects() {
     const listeners = [...listenersList];
     listeners.forEach(listener => {
       if (listener.id && listener.id !== projectId) {
-        if (listener.name === 'projectOrders') {
-          listener.stop();
-          removeListenerItem(listener.id);
-          dispatch(changeProjectOrders([]));
-
-          projectOrdersListener();
-        } else if (listener.name === 'projectInvoices') {
-          listener.stop();
-          removeListenerItem(listener.id);
-          dispatch(changeProjectInvoices([]));
-
-          projectInvoicesListener();
-        } else if (listener.name === 'projectExpenses') {
-          listener.stop();
-          removeListenerItem(listener.id);
-          dispatch(changeProjectExpenses([]));
-
-          projectExpensesListener();
+        switch (listener.name) {
+          case 'projectBudget':
+            listener.stop();
+            removeListenerItem(listener.id);
+            dispatch(clearProjectBudget());
+            projectBudgetListener();
+            break;
+          case 'projectExtraBudget':
+            listener.stop();
+            removeListenerItem(listener.id);
+            dispatch(clearProjectExtraBudget());
+            projectExtraBudgetListener();
+            break;
+          case 'projectOrders':
+            listener.stop();
+            removeListenerItem(listener.id);
+            dispatch(changeProjectOrders([]));
+            projectOrdersListener();
+            break;
+          case 'projectInvoices':
+            listener.stop();
+            removeListenerItem(listener.id);
+            dispatch(changeProjectInvoices([]));
+            projectInvoicesListener();
+            break;
+          case 'projectExpenses':
+            listener.stop();
+            removeListenerItem(listener.id);
+            dispatch(changeProjectExpenses([]));
+            projectExpensesListener();
+            break;
+          case 'budgetActivities':
+            listener.stop();
+            removeListenerItem(listener.id);
+            dispatch(changeBudgetActivities([]));
+            budgetActivitiesListener();
+            break;
+          case 'budgetLabors':
+            listener.stop();
+            removeListenerItem(listener.id);
+            dispatch(changeBudgetLabors([]));
+            budgetLaborsListener();
+            break;
+          case 'budgetSubcontracts':
+            listener.stop();
+            removeListenerItem(listener.id);
+            dispatch(changeBudgetSubcontracts([]));
+            budgetSubcontractsListener();
+            break;
+          case 'budgetOthers':
+            listener.stop();
+            removeListenerItem(listener.id);
+            dispatch(changeBudgetOthers([]));
+            budgetOthersListener();
+            break;
+          case 'extraActivities':
+            listener.stop();
+            removeListenerItem(listener.id);
+            dispatch(changeExtraActivities([]));
+            extraActivitiesListener();
+            break;
+          default:
+            break;
         }
       }
     });
@@ -144,7 +322,7 @@ export default function Projects() {
   useEffect(() => {
     getProjectbyId();
     checkListeners();
-  }, [projectId]);
+  }, []);
 
   return (
     <>

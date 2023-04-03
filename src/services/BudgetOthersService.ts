@@ -5,12 +5,114 @@ import {
   doc,
   runTransaction,
   writeBatch,
+  FirestoreError,
+  onSnapshot,
+  query,
+  orderBy,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
 import { IBudgetOther } from '../types/budgetOther';
 import { IService } from '../types/service';
 import { toastSuccess, toastError } from '../utils/toast';
+import {
+  changeBudgetOthers,
+  insertBudgetOther,
+  modifyBudgetOther,
+  removeBudgetOther,
+} from '../redux/reducers/budgetOthersSlice';
+import { store } from '../redux/store';
+import { listenersList } from './herperService';
+
+export const listenBudgetOthers = ({
+  projectId,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: { projectId: string } & IService) => {
+  try {
+    const otherRef = collection(
+      db,
+      'projects',
+      projectId,
+      'projectBudget',
+      'summary',
+      'budgetOthers',
+    );
+    const budgetOthersQuery = query(otherRef, orderBy('name'));
+    const { dispatch, getState } = store;
+
+    const unsubscribe = onSnapshot(
+      budgetOthersQuery,
+      querySnapshot => {
+        let othersList = [...getState().budgetOthers.budgetOthers];
+
+        const budgetOthers: any = querySnapshot
+          .docChanges()
+          .map(async change => {
+            const elem = {
+              ...change.doc.data(),
+              id: change.doc.id,
+              subtotal: change.doc.data().cost * change.doc.data().quantity,
+            } as IBudgetOther;
+
+            if (change.type === 'added') {
+              return changeTypeAdded(dispatch, othersList, elem);
+            }
+            if (change.type === 'modified') {
+              return changeTypeModified(dispatch, elem);
+            }
+            if (change.type === 'removed') {
+              return changeTypeRemoved(dispatch, elem);
+            }
+          });
+
+        Promise.all(budgetOthers).then(result => {
+          result.flat().length && dispatch(changeBudgetOthers(result));
+        });
+      },
+      error => {
+        const index = listenersList.findIndex(e => e.name === 'budgetOthers');
+        if (index !== -1) {
+          listenersList.splice(index, 1);
+          dispatch(changeBudgetOthers([]));
+        }
+        throw error;
+      },
+    );
+    successCallback && successCallback(unsubscribe);
+  } catch (error) {
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError || error instanceof FirestoreError) {
+      errorMessage = error.message;
+    }
+    toastError(appStrings.getInformationError, errorMessage);
+    errorCallback && errorCallback();
+  }
+};
+
+const changeTypeAdded = async (
+  dispatch: any,
+  othersList: IBudgetOther[],
+  elem: IBudgetOther,
+) => {
+  if (othersList.length > 0) {
+    dispatch(insertBudgetOther(elem));
+    return [];
+  } else {
+    return elem;
+  }
+};
+
+const changeTypeModified = async (dispatch: any, elem: IBudgetOther) => {
+  dispatch(modifyBudgetOther(elem));
+  return [];
+};
+
+const changeTypeRemoved = async (dispatch: any, elem: IBudgetOther) => {
+  dispatch(removeBudgetOther(elem));
+  return [];
+};
 
 export const getBudgetOthers = async ({
   projectId,

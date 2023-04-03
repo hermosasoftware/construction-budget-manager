@@ -14,11 +14,9 @@ import BudgetSummary from './BudgetSummary/BudgetSummary';
 import Form from '../../../common/Form/Form';
 import ExchangeInput from '../../../common/ExchangeInput/ExchangeInput';
 import {
-  getProjectBudget,
   updateProjectBudgetAdminFee,
   updateProjectBudgetExchange,
 } from '../../../../services/ProjectBudgetService';
-import { getBudgetActivityById } from '../../../../services/BudgetActivityService';
 import { updateProject } from '../../../../services/ProjectService';
 import { IProjectBudget } from '../../../../types/projectBudget';
 import { IBudgetActivity } from '../../../../types/budgetActivity';
@@ -37,7 +35,6 @@ interface IBudgetView {
 
 const Budget: React.FC<IBudgetView> = props => {
   const { projectId, project, setProject } = props;
-  const [budget, setBudget] = useState<IProjectBudget>();
   const [activity, setActivity] = useState<IBudgetActivity>();
   const [selectedActivityTab, setSelectedActivityTab] = useState(false);
   const [selectedTab, setSelectedTab] = useState('summary');
@@ -46,28 +43,14 @@ const Budget: React.FC<IBudgetView> = props => {
   const [isBudgetOpen, setIsBudgetOpen] = useState(project?.budgetOpen);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const appStrings = useAppSelector(state => state.settings.appStrings);
+  const projectBudget = useAppSelector(
+    state => state.projectBudget.projectBudget,
+  );
   const navigate = useNavigate();
-
-  const getBudget = async () => {
-    const successCallback = (response: IProjectBudget) => setBudget(response);
-    await getProjectBudget({ projectId, appStrings, successCallback });
-  };
-
-  const getActivity = async (budgetActivityId: string) => {
-    const successCallback = (response: IBudgetActivity) =>
-      setActivity(response);
-    await getBudgetActivityById({
-      projectId,
-      budgetActivityId,
-      appStrings,
-      successCallback,
-    });
-  };
 
   const handleOnSubmitExchange = async (projectBudget: IProjectBudget) => {
     const successCallback = () => {
       setEditExchange(false);
-      getBudget();
     };
     const serviceCallParameters = {
       projectId,
@@ -81,7 +64,6 @@ const Budget: React.FC<IBudgetView> = props => {
   const handleOnSubmitAdminFee = async (projectBudget: IProjectBudget) => {
     const successCallback = () => {
       setEditAdminFee(false);
-      getBudget();
     };
     const serviceCallParameters = {
       projectId,
@@ -117,12 +99,6 @@ const Budget: React.FC<IBudgetView> = props => {
   });
 
   useEffect(() => {
-    let abortController = new AbortController();
-    getBudget();
-    return () => abortController.abort();
-  }, []);
-
-  useEffect(() => {
     if (project) {
       setIsBudgetOpen(project.budgetOpen);
     }
@@ -135,21 +111,20 @@ const Budget: React.FC<IBudgetView> = props => {
             <BudgetMaterial
               projectId={projectId}
               isBudgetOpen={isBudgetOpen}
-              getBudget={getBudget}
-              budget={budget!}
-              getActivity={getActivity}
+              budget={projectBudget!}
               activity={activity}
             />
           ),
         }
       : {
-          summary: <BudgetSummary budget={budget!} projectId={projectId} />,
+          summary: (
+            <BudgetSummary budget={projectBudget!} projectId={projectId} />
+          ),
           activity: (
             <BudgetActivity
               projectId={projectId}
               isBudgetOpen={isBudgetOpen}
-              getBudget={getBudget}
-              budget={budget!}
+              budget={projectBudget!}
               setActivity={setActivity}
             />
           ),
@@ -157,24 +132,21 @@ const Budget: React.FC<IBudgetView> = props => {
             <BudgetLabor
               projectId={projectId}
               isBudgetOpen={isBudgetOpen}
-              getBudget={getBudget}
-              budget={budget!}
+              budget={projectBudget!}
             />
           ),
           subcontracts: (
             <BudgetSubcontract
               projectId={projectId}
               isBudgetOpen={isBudgetOpen}
-              getBudget={getBudget}
-              budget={budget!}
+              budget={projectBudget!}
             />
           ),
           others: (
             <BudgetOther
               projectId={projectId}
               isBudgetOpen={isBudgetOpen}
-              getBudget={getBudget}
-              budget={budget!}
+              budget={projectBudget!}
             />
           ),
         };
@@ -236,7 +208,7 @@ const Budget: React.FC<IBudgetView> = props => {
           )}
           <Form
             id="exchange-form"
-            initialFormData={budget}
+            initialFormData={projectBudget}
             validationSchema={validationSchemaExchange}
             validateOnBlur
             style={{ alignItems: 'end', flex: 1 }}
@@ -250,7 +222,7 @@ const Budget: React.FC<IBudgetView> = props => {
           </Form>
           <Form
             id="adminfee-form"
-            initialFormData={budget}
+            initialFormData={projectBudget}
             validationSchema={validationSchemaAdminFee}
             validateOnBlur
             style={{ alignItems: 'end', marginLeft: '10px' }}
@@ -306,7 +278,7 @@ const Budget: React.FC<IBudgetView> = props => {
             </div>
           </Modal>
         </div>
-        {budget ? contentToDisplay(selectedTab) : null}
+        {projectBudget ? contentToDisplay(selectedTab) : null}
       </Box>
     </div>
   );

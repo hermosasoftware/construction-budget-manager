@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Flex, Heading } from '@chakra-ui/react';
 import * as yup from 'yup';
 import Button from '../../../../common/Button/Button';
@@ -11,7 +11,6 @@ import {
   createBudgetLabor,
   deleteBudgetLabor,
   getBudgetLaborById,
-  getBudgetLabors,
   updateBudgetLabor,
 } from '../../../../../services/BudgetLaborsService';
 import { IBudgetLabor } from '../../../../../types/budgetLabor';
@@ -26,7 +25,6 @@ import styles from './BudgetLabor.module.css';
 interface IBudgetLaborView {
   projectId: string;
   isBudgetOpen: boolean;
-  getBudget: Function;
   budget: IProjectBudget;
 }
 
@@ -40,8 +38,7 @@ const initialSelectedItemData = {
 };
 
 const BudgetLabor: React.FC<IBudgetLaborView> = props => {
-  const { projectId, isBudgetOpen, getBudget, budget } = props;
-  const [tableData, setTableData] = useState<IBudgetLabor[]>([]);
+  const { projectId, isBudgetOpen, budget } = props;
   const [selectedItem, setSelectedItem] = useState<IBudgetLabor>(
     initialSelectedItemData,
   );
@@ -49,6 +46,7 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const appStrings = useAppSelector(state => state.settings.appStrings);
+  const budgetLabors = useAppSelector(state => state.budgetLabors.budgetLabors);
 
   const tableHeader: TTableHeader[] = [
     { name: 'name', value: appStrings.name },
@@ -60,38 +58,12 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
   ];
 
   const formatTableData = () =>
-    tableData.map(data => ({
+    budgetLabors.map(data => ({
       ...data,
       cost: colonFormat(data.cost),
       subtotal: colonFormat(data.subtotal),
       dollars: dolarFormat(data.subtotal / budget.exchange),
     }));
-
-  const getLabors = async () => {
-    const successCallback = (response: IBudgetLabor[]) =>
-      setTableData(response);
-    await getBudgetLabors({
-      projectId,
-      appStrings,
-      successCallback,
-    });
-  };
-
-  const addItem = (item: IBudgetLabor) => setTableData([item, ...tableData]);
-
-  const updateItem = (item: IBudgetLabor) => {
-    const index = tableData.findIndex(e => e.id === item.id);
-    const data = [...tableData];
-    data.splice(index, 1, item);
-    setTableData(data);
-  };
-
-  const removeItem = (id: string) => {
-    const index = tableData.findIndex(e => e.id === id);
-    const data = [...tableData];
-    data.splice(index, 1);
-    setTableData(data);
-  };
 
   const editButton = async (budgetLaborId: string) => {
     const successCallback = (response: IBudgetLabor) => {
@@ -108,10 +80,8 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
 
   const deleteButton = async () => {
     const successCallback = () => {
-      removeItem(selectedItem.id);
       setSelectedItem(initialSelectedItemData);
       setIsAlertDialogOpen(false);
-      getBudget();
     };
     await deleteBudgetLabor({
       projectId,
@@ -129,8 +99,6 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
     const successCallback = (item: IBudgetLabor) => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
-      budgetLabor.id ? updateItem(item) : addItem(item);
-      getBudget();
     };
     const serviceCallParameters = {
       projectId,
@@ -154,12 +122,6 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
     quantity: yup.number().positive().required(appStrings?.requiredField),
     cost: yup.number().positive().required(appStrings?.requiredField),
   });
-
-  useEffect(() => {
-    let abortController = new AbortController();
-    getLabors();
-    return () => abortController.abort();
-  }, []);
 
   return (
     <div className={styles.operations_container}>
@@ -238,7 +200,7 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
         }}
         hideOptions={!isBudgetOpen}
       />
-      {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
+      {!budgetLabors.length ? <h1>{appStrings.noRecords}</h1> : null}
     </div>
   );
 };

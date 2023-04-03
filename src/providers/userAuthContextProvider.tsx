@@ -22,6 +22,17 @@ import { listenersList } from '../services/herperService';
 import { changeProjectOrders } from '../redux/reducers/projectOrdersSlice';
 import { changeProjectInvoices } from '../redux/reducers/projectInvoicesSlice';
 import { changeProjectExpenses } from '../redux/reducers/projectExpensesSlice';
+import { clearProjectBudget } from '../redux/reducers/projectBudgetSlice';
+import { clearProjectExtraBudget } from '../redux/reducers/projectExtraBudgetSlice';
+import { changeBudgetLabors } from '../redux/reducers/budgetLaborsSlice';
+import { changeBudgetSubcontracts } from '../redux/reducers/budgetSubcontractsSlice';
+import { changeBudgetOthers } from '../redux/reducers/budgetOthersSlice';
+import { changeExtraActivities } from '../redux/reducers/extraActivitiesSlice';
+import { changeBudgetActivities } from '../redux/reducers/budgetActivitiesSlice';
+import { changeExtraMaterials } from '../redux/reducers/extraMaterialsSlice';
+import { changeExtraLabors } from '../redux/reducers/extraLaborsSlice';
+import { changeExtraSubcontracts } from '../redux/reducers/extraSubcontractsSlice';
+import { changeExtraOthers } from '../redux/reducers/extraOthersSlice';
 
 export const verifyEmail = async ({
   email,
@@ -204,7 +215,18 @@ const cleanListeners = (dispatch: Function) => {
   listenersList.splice(0, listenersList.length);
   dispatch(changeMaterials([]));
   dispatch(changeProjects([]));
+  dispatch(clearProjectBudget());
+  dispatch(clearProjectExtraBudget());
   dispatch(changeProjectOrders([]));
   dispatch(changeProjectInvoices([]));
   dispatch(changeProjectExpenses([]));
+  dispatch(changeBudgetActivities([]));
+  dispatch(changeBudgetLabors([]));
+  dispatch(changeBudgetSubcontracts([]));
+  dispatch(changeBudgetOthers([]));
+  dispatch(changeExtraActivities([]));
+  dispatch(changeExtraMaterials([]));
+  dispatch(changeExtraLabors([]));
+  dispatch(changeExtraSubcontracts([]));
+  dispatch(changeExtraOthers([]));
 };

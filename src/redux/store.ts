@@ -5,9 +5,20 @@ import session from './reducers/sessionSlice';
 import modals from './reducers/modalsSlice';
 import materials from './reducers/materialsSlice';
 import projects from './reducers/projectsSlice';
+import projectBudget from './reducers/projectBudgetSlice';
+import projectExtraBudget from './reducers/projectExtraBudgetSlice';
 import projectExpenses from './reducers/projectExpensesSlice';
 import projectInvoices from './reducers/projectInvoicesSlice';
 import projectOrders from './reducers/projectOrdersSlice';
+import budgetActivities from './reducers/budgetActivitiesSlice';
+import budgetLabors from './reducers/budgetLaborsSlice';
+import budgetSubcontracts from './reducers/budgetSubcontractsSlice';
+import budgetOthers from './reducers/budgetOthersSlice';
+import extraActivities from './reducers/extraActivitiesSlice';
+import extraMaterials from './reducers/extraMaterialsSlice';
+import extraLabors from './reducers/extraLaborsSlice';
+import extraSubcontracts from './reducers/extraSubcontractsSlice';
+import extraOthers from './reducers/extraOthersSlice';
 
 import logger from 'redux-logger';
 
@@ -18,9 +29,20 @@ export const store = configureStore({
     modals,
     materials,
     projects,
+    projectBudget,
+    projectExtraBudget,
     projectExpenses,
     projectInvoices,
     projectOrders,
+    budgetActivities,
+    budgetLabors,
+    budgetSubcontracts,
+    budgetOthers,
+    extraActivities,
+    extraMaterials,
+    extraLabors,
+    extraSubcontracts,
+    extraOthers,
   },
   middleware: getDefaultMiddleware => getDefaultMiddleware().concat(logger),
 });

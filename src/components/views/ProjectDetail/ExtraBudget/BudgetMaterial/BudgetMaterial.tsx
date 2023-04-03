@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Flex, Heading } from '@chakra-ui/react';
 import * as yup from 'yup';
 import Button from '../../../../common/Button/Button';
@@ -13,7 +13,6 @@ import {
   deleteExtraBudgetMaterial,
   deleteExtraBudgetSubMaterial,
   getExtraBudgetMaterialById,
-  getExtraBudgetMaterials,
   updateExtraBudgetMaterial,
   updateExtraBudgetSubMaterial,
 } from '../../../../../services/ExtraBudgetMaterialsService';
@@ -23,18 +22,13 @@ import { IBudgetActivity } from '../../../../../types/budgetActivity';
 import Form, { AutoComplete, Input, Switch } from '../../../../common/Form';
 import AlertDialog from '../../../../common/AlertDialog/AlertDialog';
 import { useAppSelector } from '../../../../../redux/hooks';
-import {
-  IMaterialBreakdown,
-  ISubMaterial,
-} from '../../../../../types/collections';
+import { ISubMaterial } from '../../../../../types/collections';
 
 import styles from './BudgetMaterial.module.css';
 
 interface IBudgetMaterialView {
   projectId: string;
-  getExtraBudget: Function;
   budget: IProjectExtraBudget;
-  getActivity: Function;
   activity: IBudgetActivity;
 }
 
@@ -57,8 +51,7 @@ const initialSelectedSubMaterialData = {
 };
 
 const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
-  const { projectId, getExtraBudget, getActivity, activity } = props;
-  const [tableData, setTableData] = useState<IMaterialBreakdown[]>([]);
+  const { projectId, activity } = props;
   const [selectedItem, setSelectedItem] = useState<IBudgetMaterial>(
     initialSelectedItemData,
   );
@@ -73,6 +66,9 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
   const [searchTerm, setSearchTerm] = useState('');
   const appStrings = useAppSelector(state => state.settings.appStrings);
   const materials = useAppSelector(state => state.materials.materials);
+  const extraMaterials = useAppSelector(
+    state => state.extraMaterials.extraMaterials,
+  );
 
   const tableHeader: TTableHeader[] = [
     { name: 'name', value: appStrings.name },
@@ -82,34 +78,6 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
     { name: 'subtotal', value: appStrings.subtotal, isGreen: true },
     { name: 'dollarCost', value: appStrings.dollars, isGreen: true },
   ];
-
-  const getMaterials = async () => {
-    const successCallback = (response: IMaterialBreakdown[]) =>
-      setTableData(response);
-    await getExtraBudgetMaterials({
-      projectId,
-      activityId: activity.id,
-      appStrings,
-      successCallback,
-    });
-  };
-
-  const addItem = (item: IMaterialBreakdown) =>
-    setTableData([item, ...tableData]);
-
-  const updateItem = (item: IMaterialBreakdown) => {
-    const index = tableData.findIndex(e => e.id === item.id);
-    const data = [...tableData];
-    data.splice(index, 1, item);
-    setTableData(data);
-  };
-
-  const removeItem = (id: string) => {
-    const index = tableData.findIndex(e => e.id === id);
-    const data = [...tableData];
-    data.splice(index, 1);
-    setTableData(data);
-  };
 
   const editButton = async (extraBudgetMaterialId: string) => {
     const successCallback = (response: IBudgetMaterial) => {
@@ -127,11 +95,8 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
 
   const deleteButton = async () => {
     const successCallback = () => {
-      removeItem(selectedItem.id);
       setSelectedItem(initialSelectedItemData);
       setIsAlertDialogOpen(false);
-      getExtraBudget();
-      getActivity(activity.id);
     };
     await deleteExtraBudgetMaterial({
       projectId,
@@ -162,46 +127,14 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
   };
 
   const onSubmitSubmaterial = async (data: ISubMaterial) => {
-    const successAddCallback = (materialId: string, subMaterialId: string) => {
-      setTableData(
-        tableData.map(m =>
-          m.material?.id === materialId
-            ? {
-                ...m,
-                subMaterials: [
-                  ...m.subMaterials,
-                  { ...data, id: subMaterialId },
-                ],
-              }
-            : m,
-        ),
-      );
+    const successAddCallback = () => {
       setSelectedSubMaterial(initialSelectedSubMaterialData);
       setIsSubMaterialModalOpen(false);
-      getExtraBudget();
-      getActivity(activity.id);
     };
 
-    const successUpdateCallback = (
-      materialId: string,
-      subMaterialId: string,
-    ) => {
-      setTableData(
-        tableData.map(m =>
-          m.material?.id === materialId
-            ? {
-                ...m,
-                subMaterials: m.subMaterials?.map(s =>
-                  s.id === subMaterialId ? data : s,
-                ),
-              }
-            : m,
-        ),
-      );
+    const successUpdateCallback = () => {
       setSelectedSubMaterial(initialSelectedSubMaterialData);
       setIsSubMaterialModalOpen(false);
-      getExtraBudget();
-      getActivity(activity.id);
     };
     const serviceCallParameters = {
       materialId: selectedMaterial,
@@ -221,17 +154,17 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
   };
 
   const selectSubMaterial = (materialId: string) => {
-    const materialBreakDown = tableData.find(m => m.id === materialId);
+    const materialBreakDown = extraMaterials.find(m => m.id === materialId);
     setSelectedMaterial(materialBreakDown?.material?.id!);
     setIsSubMaterialModalOpen(true);
   };
 
   const editSubMaterial = async (materialId: string, submaterialId: string) => {
-    const submaterial = tableData
+    const submaterial = extraMaterials
       .find(m => m.material?.id === materialId)
       ?.subMaterials?.find(s => s.id === submaterialId);
     if (submaterial) {
-      const materialBreakDown = tableData.find(m => m.id === materialId);
+      const materialBreakDown = extraMaterials.find(m => m.id === materialId);
       setSelectedMaterial(materialBreakDown?.id!);
       setSelectedSubMaterial(submaterial);
       setIsSubMaterialModalOpen(true);
@@ -246,23 +179,9 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
 
   const deleteSubMaterial = async () => {
     const successCallback = () => {
-      setTableData(
-        tableData.map(e =>
-          e.id === selectedMaterial
-            ? {
-                ...e,
-                subMaterials: e.subMaterials?.filter(
-                  s => s.id !== selectedSubMaterial.id,
-                ),
-              }
-            : e,
-        ),
-      );
       setSelectedMaterial('');
       setSelectedSubMaterial(initialSelectedSubMaterialData);
       setSubMatAlertDialogOpen(false);
-      getExtraBudget();
-      getActivity(activity.id);
     };
     await deleteExtraBudgetSubMaterial({
       projectId,
@@ -276,7 +195,9 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
 
   const handleOnSubmit = async (data: IBudgetMaterial) => {
     const { name, ...rest } = data;
-    const subMaterials = tableData.find(e => e.id === data.id)?.subMaterials;
+    const subMaterials = extraMaterials.find(
+      e => e.id === data.id,
+    )?.subMaterials;
     const extraBudgetMaterial = {
       ...rest,
       quantity: +rest.quantity,
@@ -285,17 +206,9 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
       name,
       subMaterials: !data.id ? data.subMaterials : subMaterials,
     };
-    const successCallback = (item: IBudgetMaterial) => {
+    const successCallback = () => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
-      const MatBreakdown = {
-        id: item.id,
-        material: item,
-        subMaterials: item?.subMaterials || [],
-      };
-      extraBudgetMaterial.id ? updateItem(MatBreakdown) : addItem(MatBreakdown);
-      getExtraBudget();
-      getActivity(activity.id);
     };
     const serviceCallParameters = {
       projectId,
@@ -326,12 +239,6 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
     cost: yup.string().required(appStrings?.requiredField),
     quantity: yup.string().required(appStrings?.requiredField),
   });
-
-  useEffect(() => {
-    let abortController = new AbortController();
-    getMaterials();
-    return () => abortController.abort();
-  }, []);
 
   return (
     <div className={styles.operations_container}>
@@ -471,7 +378,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
       />
       <MaterialsTableView
         headers={tableHeader}
-        items={tableData}
+        items={extraMaterials}
         filter={value =>
           searchTerm === '' ||
           value.material.name.toUpperCase().includes(searchTerm)
@@ -492,7 +399,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
         exchangeRate={activity.exchange}
         formatCurrency
       />
-      {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
+      {!extraMaterials.length ? <h1>{appStrings.noRecords}</h1> : null}
     </div>
   );
 };

@@ -1,9 +1,67 @@
-import { getDoc, doc, updateDoc } from 'firebase/firestore';
+import {
+  getDoc,
+  doc,
+  updateDoc,
+  onSnapshot,
+  FirestoreError,
+} from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
 import { IProjectBudget } from '../types/projectBudget';
 import { IService } from '../types/service';
 import { toastSuccess, toastError } from '../utils/toast';
+import { store } from '../redux/store';
+import { listenersList } from './herperService';
+import {
+  changeProjectBudget,
+  clearProjectBudget,
+} from '../redux/reducers/projectBudgetSlice';
+
+export const listenProjectBudget = ({
+  projectId,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: { projectId: string } & IService) => {
+  try {
+    const budgetRef = doc(
+      db,
+      'projects',
+      projectId,
+      'projectBudget',
+      'summary',
+    );
+    const { dispatch } = store;
+
+    const unsubscribe = onSnapshot(
+      budgetRef,
+      doc => {
+        const data = {
+          ...doc.data(),
+          creationDate: doc.data()?.creationDate.toDate().toISOString(),
+        } as IProjectBudget;
+
+        dispatch(changeProjectBudget(data));
+      },
+      error => {
+        const index = listenersList.findIndex(e => e.name === 'projectBudget');
+        if (index !== -1) {
+          listenersList.splice(index, 1);
+          dispatch(clearProjectBudget());
+        }
+        throw error;
+      },
+    );
+    successCallback && successCallback(unsubscribe);
+  } catch (error) {
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError || error instanceof FirestoreError) {
+      errorMessage = error.message;
+    }
+    toastError(appStrings.getInformationError, errorMessage);
+    errorCallback && errorCallback();
+  }
+};
 
 export const getProjectBudget = async ({
   projectId,

@@ -6,13 +6,157 @@ import {
   query,
   runTransaction,
   writeBatch,
+  FirestoreError,
+  onSnapshot,
+  orderBy,
+  updateDoc,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
 import { IBudgetMaterial } from '../types/budgetMaterial';
 import { IService } from '../types/service';
 import { toastSuccess, toastError } from '../utils/toast';
-import { ISubMaterial } from '../types/collections';
+import { IMaterialBreakdown, ISubMaterial } from '../types/collections';
+import {
+  changeExtraMaterials,
+  insertExtraMaterial,
+  modifyExtraMaterial,
+  removeExtraMaterial,
+} from '../redux/reducers/extraMaterialsSlice';
+import { store } from '../redux/store';
+import { listenersList } from './herperService';
+
+export const listenExtraMaterials = ({
+  projectId,
+  activityId,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: { projectId: string; activityId: string } & IService) => {
+  try {
+    const matRef = collection(
+      db,
+      'projects',
+      projectId,
+      'projectExtraBudget',
+      activityId,
+      'budgetMaterials',
+    );
+    const matQuery = query(matRef, orderBy('name', 'desc'));
+    const { dispatch, getState } = store;
+
+    const unsubscribe = onSnapshot(
+      matQuery,
+      { includeMetadataChanges: true },
+      querySnapshot => {
+        let materialsList = [...getState().extraMaterials.extraMaterials];
+
+        const projectOrders: any = querySnapshot
+          .docChanges({ includeMetadataChanges: true })
+          .map(async change => {
+            const elem = {
+              ...change.doc.data(),
+              id: change.doc.id,
+              subtotal: change.doc.data().cost * change.doc.data().quantity,
+            } as IBudgetMaterial;
+
+            if (change.type === 'added') {
+              return changeTypeAdded(dispatch, materialsList, matRef, elem);
+            }
+            if (change.type === 'modified') {
+              return changeTypeModified(dispatch, matRef, elem);
+            }
+            if (change.type === 'removed') {
+              return changeTypeRemoved(dispatch, elem);
+            }
+          });
+
+        Promise.all(projectOrders).then(result => {
+          result.flat().length && dispatch(changeExtraMaterials(result));
+        });
+      },
+      error => {
+        const index = listenersList.findIndex(e => e.name === 'extraMaterials');
+        if (index !== -1) {
+          listenersList.splice(index, 1);
+          dispatch(changeExtraMaterials([]));
+        }
+        throw error;
+      },
+    );
+    successCallback && successCallback(unsubscribe);
+  } catch (e) {
+    let errorMessage = appStrings.genericError;
+    if (e instanceof FirebaseError || e instanceof FirestoreError) {
+      errorMessage = e.message;
+    }
+    toastError(appStrings.getInformationError, errorMessage);
+    errorCallback && errorCallback();
+  }
+};
+
+const changeTypeAdded = async (
+  dispatch: any,
+  materialsList: IMaterialBreakdown[],
+  matRef: any,
+  elem: IBudgetMaterial,
+) => {
+  const subMaterialQ = query(collection(matRef, elem.id, 'subMaterials'));
+  const subMaterials = await getDocs(subMaterialQ);
+  const data = subMaterials.docs.map(doc => ({
+    ...doc.data(),
+    id: doc.id,
+  })) as ISubMaterial[];
+
+  if (materialsList.length > 0) {
+    dispatch(
+      insertExtraMaterial({
+        id: elem.id,
+        material: elem,
+        subMaterials: data,
+      }),
+    );
+    return [];
+  } else {
+    return {
+      id: elem.id,
+      material: elem,
+      subMaterials: data,
+    };
+  }
+};
+
+const changeTypeModified = async (
+  dispatch: any,
+  matRef: any,
+  elem: IBudgetMaterial,
+) => {
+  const subMaterialQ = query(collection(matRef, elem.id, 'subMaterials'));
+  const subMaterials = await getDocs(subMaterialQ);
+  const data = subMaterials.docs.map(doc => ({
+    ...doc.data(),
+    id: doc.id,
+  })) as ISubMaterial[];
+  dispatch(
+    modifyExtraMaterial({
+      id: elem.id,
+      material: elem,
+      subMaterials: data,
+    }),
+  );
+  return [];
+};
+
+const changeTypeRemoved = async (dispatch: any, elem: IBudgetMaterial) => {
+  dispatch(
+    removeExtraMaterial({
+      id: elem.id,
+      material: elem,
+      subMaterials: [],
+    }),
+  );
+  return [];
+};
 
 export const getExtraBudgetMaterials = async ({
   projectId,
@@ -350,24 +494,24 @@ export const createExtraBudgetSubMaterial = async ({
   budgetSubMaterial: ISubMaterial;
 } & IService) => {
   try {
+    const { id, ...rest } = budgetSubMaterial;
+    const budgetRef = collection(
+      db,
+      'projects',
+      projectId,
+      'projectExtraBudget',
+    );
+    const matRef = doc(budgetRef, activityId, 'budgetMaterials', materialId);
+    const subMatRef = doc(
+      collection(
+        budgetRef,
+        activityId,
+        'budgetMaterials',
+        materialId,
+        'subMaterials',
+      ),
+    );
     const data = await runTransaction(db, async transaction => {
-      const { id, ...rest } = budgetSubMaterial;
-      const budgetRef = collection(
-        db,
-        'projects',
-        projectId,
-        'projectExtraBudget',
-      );
-      const matRef = doc(budgetRef, activityId, 'budgetMaterials', materialId);
-      const subMatRef = doc(
-        collection(
-          budgetRef,
-          activityId,
-          'budgetMaterials',
-          materialId,
-          'subMaterials',
-        ),
-      );
       const summaryRef = doc(budgetRef, 'summary');
       const activityRef = doc(budgetRef, activityId);
       const matDoc = await transaction.get(matRef);
@@ -384,11 +528,13 @@ export const createExtraBudgetSubMaterial = async ({
       transaction.update(summaryRef, { sumMaterials: summaryTotal });
       transaction.update(activityRef, { sumMaterials: activityTotal });
       transaction.set(subMatRef, rest);
+
       return {
         ...budgetSubMaterial,
         id: subMatRef.id,
       } as ISubMaterial;
     });
+    await updateDoc(matRef, {});
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
@@ -418,23 +564,23 @@ export const updateExtraBudgetSubMaterial = async ({
   budgetSubMaterial: ISubMaterial;
 } & IService) => {
   try {
+    const { id, ...rest } = budgetSubMaterial;
+    const budgetRef = collection(
+      db,
+      'projects',
+      projectId,
+      'projectExtraBudget',
+    );
+    const matRef = doc(budgetRef, activityId, 'budgetMaterials', materialId);
+    const subMatRef = doc(
+      budgetRef,
+      activityId,
+      'budgetMaterials',
+      materialId,
+      'subMaterials',
+      id,
+    );
     await runTransaction(db, async transaction => {
-      const { id, ...rest } = budgetSubMaterial;
-      const budgetRef = collection(
-        db,
-        'projects',
-        projectId,
-        'projectExtraBudget',
-      );
-      const matRef = doc(budgetRef, activityId, 'budgetMaterials', materialId);
-      const subMatRef = doc(
-        budgetRef,
-        activityId,
-        'budgetMaterials',
-        materialId,
-        'subMaterials',
-        id,
-      );
       const summaryRef = doc(budgetRef, 'summary');
       const activityRef = doc(budgetRef, activityId);
       const matDoc = await transaction.get(matRef);
@@ -464,6 +610,7 @@ export const updateExtraBudgetSubMaterial = async ({
       transaction.update(activityRef, { sumMaterials: activityTotal });
       transaction.set(subMatRef, rest);
     });
+    await updateDoc(matRef, {});
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
@@ -529,6 +676,7 @@ export const deleteExtraBudgetSubMaterial = async ({
     batch.update(summaryRef, { sumMaterials: summaryTotal });
     batch.update(activityRef, { sumMaterials: activityTotal });
     batch.delete(subMatRef);
+    batch.update(matRef, {});
 
     await batch.commit();
 
