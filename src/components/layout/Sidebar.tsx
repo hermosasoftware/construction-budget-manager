@@ -10,7 +10,7 @@ import {
   Box,
   Button,
 } from '@chakra-ui/react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import MenuBar from './MenuBar';
 import menuItems from '../../config/sidebarItems';
 import { useAppSelector } from '../../redux/hooks';
@@ -26,10 +26,7 @@ import styles from './Sidebar.module.css';
 const smVariant = { navigation: 'drawer', navigationButton: true };
 const mdVariant = { navigation: 'sidebar', navigationButton: false };
 
-const blacklist = ['/login', '/signup', '/forgot-password'];
-
 const Sidebar = () => {
-  const location = useLocation();
   const { appStrings } = useAppSelector(state => ({
     ...state.settings,
   }));
@@ -66,8 +63,6 @@ const Sidebar = () => {
     </Box>
   );
 
-  const shouldBeDisplayed = !blacklist.includes(location.pathname);
-
   const singOut = async () => {
     for await (const listener of listenersList) {
       await listener.stop();
@@ -76,26 +71,33 @@ const Sidebar = () => {
     navigate('/login');
   };
 
-  return shouldBeDisplayed ? (
-    variants?.navigation === 'sidebar' ? (
-      <SideBarContent />
-    ) : (
-      <>
-        <Drawer isOpen={isSidebarOpen} placement="top" onClose={toggleSidebar}>
-          <DrawerOverlay />
-          <DrawerContent>
-            <SideBarContent />
-          </DrawerContent>
-        </Drawer>
-        <List
-          className={styles.sidebar_icon}
-          size={40}
-          weight="fill"
-          onClick={toggleSidebar}
-        />
-      </>
-    )
-  ) : null;
+  return (
+    <>
+      {variants?.navigation === 'sidebar' ? (
+        <SideBarContent />
+      ) : (
+        <>
+          <Drawer
+            isOpen={isSidebarOpen}
+            placement="top"
+            onClose={toggleSidebar}
+          >
+            <DrawerOverlay />
+            <DrawerContent>
+              <SideBarContent />
+            </DrawerContent>
+          </Drawer>
+          <List
+            className={styles.sidebar_icon}
+            size={40}
+            weight="fill"
+            onClick={toggleSidebar}
+          />
+        </>
+      )}
+      <Outlet />
+    </>
+  );
 };
 
 export default Sidebar;

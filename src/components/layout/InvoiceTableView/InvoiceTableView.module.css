@@ -11,6 +11,7 @@ th.th {
   border-bottom: none;
   font-style: bold;
   color: var(--chakra-colors-black);
+  padding: var(--padding-vertical-sm);
 }
 
 .table_padding {
@@ -20,6 +21,7 @@ th.th {
 td.td {
   font-size: var(--font-size-sm);
   border: none;
+  padding: var(--padding-vertical-sm);
 }
 
 .column_color__green {

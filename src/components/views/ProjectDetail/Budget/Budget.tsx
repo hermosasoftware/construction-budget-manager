@@ -206,77 +206,79 @@ const Budget: React.FC<IBudgetView> = props => {
               onSelectedTabChange={activeTabs => setSelectedTab(activeTabs[0])}
             />
           )}
-          <Form
-            id="exchange-form"
-            initialFormData={projectBudget}
-            validationSchema={validationSchemaExchange}
-            validateOnBlur
-            style={{ alignItems: 'end', flex: 1 }}
-            onSubmit={handleOnSubmitExchange}
-          >
-            <ExchangeInput
-              editExchange={editExchange}
-              onClick={() => setEditExchange(true)}
-              isDisabled={!isBudgetOpen}
-            />
-          </Form>
-          <Form
-            id="adminfee-form"
-            initialFormData={projectBudget}
-            validationSchema={validationSchemaAdminFee}
-            validateOnBlur
-            style={{ alignItems: 'end', marginLeft: '10px' }}
-            onSubmit={handleOnSubmitAdminFee}
-          >
-            <AdminFeeInput
-              editAdminFee={editAdminFee}
-              onClick={() => setEditAdminFee(true)}
-              isDisabled={!isBudgetOpen}
-            />
-          </Form>
-          {
+          <div className={styles.operators__container}>
+            <Form
+              id="exchange-form"
+              initialFormData={projectBudget}
+              validationSchema={validationSchemaExchange}
+              validateOnBlur
+              style={{ alignItems: 'end', flex: 1 }}
+              onSubmit={handleOnSubmitExchange}
+            >
+              <ExchangeInput
+                editExchange={editExchange}
+                onClick={() => setEditExchange(true)}
+                isDisabled={!isBudgetOpen}
+              />
+            </Form>
+            <Form
+              id="adminfee-form"
+              initialFormData={projectBudget}
+              validationSchema={validationSchemaAdminFee}
+              validateOnBlur
+              style={{ alignItems: 'end' }}
+              onSubmit={handleOnSubmitAdminFee}
+            >
+              <AdminFeeInput
+                editAdminFee={editAdminFee}
+                onClick={() => setEditAdminFee(true)}
+                isDisabled={!isBudgetOpen}
+              />
+            </Form>
+            {
+              <Button
+                onClick={() => {
+                  navigate(`/project-detail/${projectId}/budget-pdf-preview`);
+                }}
+                className={styles.close_budget}
+              >
+                <FilePdf size={24} />
+              </Button>
+            }
             <Button
               onClick={() => {
-                navigate(`/project-detail/${projectId}/budget-pdf-preview`);
+                setIsModalOpen(true);
               }}
+              disabled={!isBudgetOpen}
               className={styles.close_budget}
             >
-              <FilePdf size={24} />
+              {`${
+                isBudgetOpen ? appStrings.closeBudget : appStrings.budgetClosed
+              }`}
             </Button>
-          }
-          <Button
-            onClick={() => {
-              setIsModalOpen(true);
-            }}
-            disabled={!isBudgetOpen}
-            className={styles.close_budget}
-          >
-            {`${
-              isBudgetOpen ? appStrings.closeBudget : appStrings.budgetClosed
-            }`}
-          </Button>
-          <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-            <Heading as="h2" size="lg">
-              {appStrings.closingBudget}
-            </Heading>
-            <div>
-              {appStrings.closingBudgetWarning}
-              <div className={styles.buttons_container}>
-                <Button
-                  onClick={() => setIsModalOpen(false)}
-                  className={styles.close_budget}
-                >
-                  {appStrings.cancel}
-                </Button>
-                <Button
-                  onClick={() => handleCloseBudget()}
-                  className={`${styles.close_budget} ${styles.button_danger}`}
-                >
-                  {appStrings.closeBudget}
-                </Button>
+            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+              <Heading as="h2" size="lg">
+                {appStrings.closingBudget}
+              </Heading>
+              <div>
+                {appStrings.closingBudgetWarning}
+                <div className={styles.buttons_container}>
+                  <Button
+                    onClick={() => setIsModalOpen(false)}
+                    className={styles.close_budget}
+                  >
+                    {appStrings.cancel}
+                  </Button>
+                  <Button
+                    onClick={() => handleCloseBudget()}
+                    className={`${styles.close_budget} ${styles.button_danger}`}
+                  >
+                    {appStrings.closeBudget}
+                  </Button>
+                </div>
               </div>
-            </div>
-          </Modal>
+            </Modal>
+          </div>
         </div>
         {projectBudget ? contentToDisplay(selectedTab) : null}
       </Box>

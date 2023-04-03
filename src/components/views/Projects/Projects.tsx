@@ -6,7 +6,6 @@ import Button from '../../common/Button/Button';
 import Modal from '../../common/Modal/Modal';
 import SearchInput from '../../common/SearchInput/SearchInput';
 import TabGroup from '../../common/TabGroup/TabGroup';
-import Sidebar from '../../layout/Sidebar';
 import TableView, { TTableHeader } from '../../common/TableView/TableView';
 import Form, { Input, Select } from '../../common/Form';
 import AlertDialog from '../../common/AlertDialog/AlertDialog';
@@ -105,107 +104,102 @@ export default function Projects() {
   }, [isModalOpen]);
 
   return (
-    <>
-      <Sidebar />
-      <div className={`${styles.projects_container}`}>
-        <Box p={5} borderWidth="1px">
-          <h1 className={`${styles.title}`}>{appStrings.projectsManagement}</h1>
-        </Box>
-        <TabGroup
-          className={`${styles.tabs}`}
-          tabs={[
-            { id: 'active', name: appStrings.activeProjects, selected: true },
-            { id: 'inactive', name: appStrings.inactiveProjects },
-          ]}
-          onSelectedTabChange={activeTabs => setSelectedTab(activeTabs[0])}
-        />
-        <div className={`${styles.operations_container}`}>
-          <Box p={5} borderWidth="1px" borderRadius={12}>
-            <Flex marginBottom="5px">
-              <SearchInput
-                style={{ margin: '0 10px 0 0', maxWidth: '500px' }}
-                placeholder={appStrings.search}
-                onChange={handleSearch}
-              ></SearchInput>
-              <div style={{ textAlign: 'end' }}>
-                <Button onClick={() => setIsModalOpen(true)}>+</Button>
-                <Modal
-                  isOpen={isModalOpen}
-                  onClose={() => setIsModalOpen(false)}
+    <div className={`container ${styles.projects_container}`}>
+      <Box p={5} borderWidth="1px">
+        <h1 className={`header ${styles.title}`}>
+          {appStrings.projectsManagement}
+        </h1>
+      </Box>
+      <TabGroup
+        className={`${styles.tabs}`}
+        tabs={[
+          { id: 'active', name: appStrings.activeProjects, selected: true },
+          { id: 'inactive', name: appStrings.inactiveProjects },
+        ]}
+        onSelectedTabChange={activeTabs => setSelectedTab(activeTabs[0])}
+      />
+      <div className={`${styles.operations_container}`}>
+        <Box p={5} borderWidth="1px" borderRadius={12}>
+          <Flex marginBottom="5px">
+            <SearchInput
+              style={{ margin: '0 10px 0 0', maxWidth: '500px' }}
+              placeholder={appStrings.search}
+              onChange={handleSearch}
+            ></SearchInput>
+            <div style={{ textAlign: 'end' }}>
+              <Button onClick={() => setIsModalOpen(true)}>+</Button>
+              <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+                <Heading as="h2" size="lg">
+                  {selectedItem.id
+                    ? appStrings.editProject
+                    : appStrings.createProject}
+                </Heading>
+                <Form
+                  id="project-form"
+                  initialFormData={selectedItem}
+                  validationSchema={validationSchema}
+                  validateOnChange
+                  validateOnBlur
+                  onSubmit={handleOnSubmit}
                 >
-                  <Heading as="h2" size="lg">
-                    {selectedItem.id
-                      ? appStrings.editProject
-                      : appStrings.createProject}
-                  </Heading>
-                  <Form
-                    id="project-form"
-                    initialFormData={selectedItem}
-                    validationSchema={validationSchema}
-                    validateOnChange
-                    validateOnBlur
-                    onSubmit={handleOnSubmit}
-                  >
-                    <Input
-                      name="name"
-                      label={appStrings.name}
-                      placeholder={appStrings.projectName}
-                    />
-                    <Input
-                      name="client"
-                      label={appStrings.client}
-                      placeholder={appStrings.clientName}
-                    />
-                    <Input
-                      name="location"
-                      label={appStrings.location}
-                      placeholder={appStrings.locationDescription}
-                    />
-                    <Select
-                      name="status"
-                      label={appStrings.status}
-                      options={[
-                        { id: 'active', name: appStrings.active },
-                        { id: 'inactive', name: appStrings.inactive },
-                      ]}
-                      containerStyle={{ width: '30%', alignSelf: 'start' }}
-                    />
-                    <br />
-                    <Button width="full" type="submit">
-                      {appStrings.submit}
-                    </Button>
-                  </Form>
-                </Modal>
-              </div>
-            </Flex>
-            <AlertDialog
-              title={appStrings.deleteProject}
-              content={appStrings.deleteWarning}
-              isOpen={isAlertDialogOpen}
-              onClose={() => {
-                setSelectedItem(initialSelectedItemData);
-                setIsAlertDialogOpen(false);
-              }}
-              onSubmit={() => deleteButton()}
-            />
-            <TableView
-              headers={tableHeader}
-              items={formatTableData()}
-              filter={value =>
-                searchTerm === '' ||
-                value.name.toUpperCase().includes(searchTerm)
-              }
-              handleRowClick={handleRowClick}
-              onClickEdit={id => editButton(id)}
-              onClickDelete={id => {
-                setSelectedItem({ ...selectedItem, id: id });
-                setIsAlertDialogOpen(true);
-              }}
-            />
-            {!projects.length ? <h1>{appStrings.noRecords}</h1> : null}
-          </Box>
-        </div>
+                  <Input
+                    name="name"
+                    label={appStrings.name}
+                    placeholder={appStrings.projectName}
+                  />
+                  <Input
+                    name="client"
+                    label={appStrings.client}
+                    placeholder={appStrings.clientName}
+                  />
+                  <Input
+                    name="location"
+                    label={appStrings.location}
+                    placeholder={appStrings.locationDescription}
+                  />
+                  <Select
+                    name="status"
+                    label={appStrings.status}
+                    options={[
+                      { id: 'active', name: appStrings.active },
+                      { id: 'inactive', name: appStrings.inactive },
+                    ]}
+                    containerStyle={{ width: '30%', alignSelf: 'start' }}
+                  />
+                  <br />
+                  <Button width="full" type="submit">
+                    {appStrings.submit}
+                  </Button>
+                </Form>
+              </Modal>
+            </div>
+          </Flex>
+          <AlertDialog
+            title={appStrings.deleteProject}
+            content={appStrings.deleteWarning}
+            isOpen={isAlertDialogOpen}
+            onClose={() => {
+              setSelectedItem(initialSelectedItemData);
+              setIsAlertDialogOpen(false);
+            }}
+            onSubmit={() => deleteButton()}
+          />
+          <TableView
+            headers={tableHeader}
+            items={formatTableData()}
+            filter={value =>
+              searchTerm === '' || value.name.toUpperCase().includes(searchTerm)
+            }
+            handleRowClick={handleRowClick}
+            onClickEdit={id => editButton(id)}
+            onClickDelete={id => {
+              setSelectedItem({ ...selectedItem, id: id });
+              setIsAlertDialogOpen(true);
+            }}
+          />
+          {!projects.length ? <h1>{appStrings.noRecords}</h1> : null}
+        </Box>
       </div>
-    </>
+    </div>
   );
 }

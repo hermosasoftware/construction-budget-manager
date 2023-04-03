@@ -301,42 +301,44 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
                   }
                 />
               </div>
-              <Form
-                id="exchange-form"
-                initialFormData={activity}
-                validationSchema={validationSchemaExchange}
-                validateOnBlur
-                style={{ alignItems: 'end', flex: 1 }}
-                onSubmit={handleOnSubmitExchange}
-              >
-                <ExchangeInput
-                  editExchange={editExchange}
-                  onClick={() => setEditExchange(true)}
-                />
-              </Form>
-              <Form
-                id="adminfee-form"
-                initialFormData={activity}
-                validationSchema={validationSchemaAdminFee}
-                validateOnBlur
-                style={{ alignItems: 'end', marginLeft: '10px' }}
-                onSubmit={handleOnSubmitAdminFee}
-              >
-                <AdminFeeInput
-                  editAdminFee={editAdminFee}
-                  onClick={() => setEditAdminFee(true)}
-                />
-              </Form>
-              <Button
-                onClick={() => {
-                  navigate(
-                    `/project-detail/${projectId}/extra-pdf-preview/${activity.id}`,
-                  );
-                }}
-                className={styles.pdf_button}
-              >
-                <FilePdf size={24} />
-              </Button>
+              <div className={styles.operators__container}>
+                <Form
+                  id="exchange-form"
+                  initialFormData={activity}
+                  validationSchema={validationSchemaExchange}
+                  validateOnBlur
+                  style={{ alignItems: 'end', flex: 1 }}
+                  onSubmit={handleOnSubmitExchange}
+                >
+                  <ExchangeInput
+                    editExchange={editExchange}
+                    onClick={() => setEditExchange(true)}
+                  />
+                </Form>
+                <Form
+                  id="adminfee-form"
+                  initialFormData={activity}
+                  validationSchema={validationSchemaAdminFee}
+                  validateOnBlur
+                  style={{ alignItems: 'end' }}
+                  onSubmit={handleOnSubmitAdminFee}
+                >
+                  <AdminFeeInput
+                    editAdminFee={editAdminFee}
+                    onClick={() => setEditAdminFee(true)}
+                  />
+                </Form>
+                <Button
+                  onClick={() => {
+                    navigate(
+                      `/project-detail/${projectId}/extra-pdf-preview/${activity.id}`,
+                    );
+                  }}
+                  className={styles.pdf_button}
+                >
+                  <FilePdf size={24} />
+                </Button>
+              </div>
             </>
           ) : (
             <TabGroup
