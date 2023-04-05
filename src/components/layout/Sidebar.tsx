@@ -9,6 +9,7 @@ import {
   DrawerContent,
   Box,
   Button,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import MenuBar from './MenuBar';
@@ -32,14 +33,17 @@ const Sidebar = () => {
   }));
 
   const navigate = useNavigate();
-
+  const bg = useColorModeValue(
+    'var(--chakra-colors-side_bar_background)',
+    'var(--chakra-colors-ghost)',
+  );
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const variants = useBreakpointValue({ base: smVariant, md: mdVariant });
 
   const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
 
   const SideBarContent = () => (
-    <Box className={styles.sideBar}>
+    <Box className={styles.sideBar} bg={bg}>
       <Stack className={styles.sideBar_container}>
         <Stack className="center-content-cross">
           <Logo className={styles.logo} />

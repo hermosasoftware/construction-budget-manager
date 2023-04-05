@@ -1,6 +1,5 @@
 .sideBar {
   position: fixed;
-  background-color: var(--chakra-colors-side_bar_background);
   width: var(--sidebar-width);
   align-items: center;
   overflow-y: auto;

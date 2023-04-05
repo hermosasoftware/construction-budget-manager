@@ -6,7 +6,7 @@ import { FormPartsStyles as Form } from './FormPartsStyles/FormPartsStyles';
 
 const config: ThemeConfig = {
   initialColorMode: 'light',
-  useSystemColorMode: false,
+  useSystemColorMode: true,
 };
 
 const breakpoints = createBreakpoints({
@@ -39,6 +39,7 @@ export const mavTheme = extendTheme({
     },
     side_bar_background: '#EEE',
     text_ghost: '#A3A3A3',
+    ghost: '#FFFFFF1A',
     dark_ghost: 'rgba(0, 0, 0, 0.64)',
     divider_disable: '#E2E8F0',
     text_disable: '#DFDFDF',

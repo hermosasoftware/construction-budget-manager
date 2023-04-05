@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import {
   Box,
   Input as ChakraInput,
@@ -8,6 +8,7 @@ import {
   InputProps,
   ListItem,
   UnorderedList,
+  useColorMode,
 } from '@chakra-ui/react';
 import { FormContext } from '../../Form';
 import FormControl, {
@@ -61,6 +62,7 @@ const AutoComplete: React.FC<IInput> = props => {
     handleOnChange,
     handleOnBlur,
   } = useContext(FormContext);
+  const { colorMode } = useColorMode();
 
   const triggerOnChangeHandlers = (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -174,7 +176,11 @@ const AutoComplete: React.FC<IInput> = props => {
               {isOpen ? (
                 <UnorderedList
                   {...getMenuProps()}
-                  className={styles.list_container}
+                  className={
+                    colorMode === 'light'
+                      ? styles.list_container
+                      : styles.list_container_dark
+                  }
                 >
                   <Collapse in={isOpen} animateOpacity>
                     {

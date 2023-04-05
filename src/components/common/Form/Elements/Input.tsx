@@ -118,6 +118,7 @@ const Input: React.FC<IInput> = props => {
 
 const showPasswordButtonStyles = {
   colorScheme: 'accent',
+  color: 'var(--chakra-colors-primary)',
   borderWidth: 'var(--btn-border-width-sm)',
   borderTopLeftRadius: 0,
   borderBottomLeftRadius: 0,

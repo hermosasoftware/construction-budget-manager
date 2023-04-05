@@ -118,11 +118,11 @@ const Invoicing: React.FC<IInvoicing> = props => {
     { name: 'date', value: appStrings.date },
     { name: 'activity', value: appStrings.activity },
     { name: 'description', value: appStrings.description },
-    { name: 'quantity', value: appStrings.quantity, isGreen: true },
+    { name: 'quantity', value: appStrings.quantity },
     { name: 'cost', value: appStrings.cost },
-    { name: 'subtotal', value: appStrings.subtotal },
-    { name: 'imp', value: appStrings.imp },
-    { name: 'total', value: appStrings.total },
+    { name: 'subtotal', value: appStrings.subtotal, isGreen: true },
+    { name: 'imp', value: appStrings.imp, isGreen: true },
+    { name: 'total', value: appStrings.total, isGreen: true },
   ];
 
   const formatTableData = () =>

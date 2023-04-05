@@ -10,7 +10,6 @@
 }
 
 .tab_group__option > p {
-  color: var(--chakra-colors-black);
   font-size: var(--font-size-md);
   line-height: var(--line-height-md);
 }

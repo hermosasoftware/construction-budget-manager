@@ -70,13 +70,7 @@ const FileUploader: React.FC<IFileUploader & InputProps> = props => {
         variant="ghost_outlined"
         className={`${styles.button} ${isUploaded ? styles.isUploaded : ''}`}
         onClick={() => hiddenInput?.click()}
-        rightIcon={
-          !isUploaded ? (
-            <Plus color="black" />
-          ) : (
-            <Pencil color="black" weight="fill" />
-          )
-        }
+        rightIcon={!isUploaded ? <Plus /> : <Pencil weight="fill" />}
       >
         {!isUploaded ? buttonLabel : appStrings.fileLoaded}
       </Button>

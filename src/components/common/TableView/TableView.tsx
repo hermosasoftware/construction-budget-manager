@@ -102,9 +102,7 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
                     }}
                     id={row.id?.toString()}
                     className={`${styles.td} ${
-                      header.isGreen
-                        ? styles.column_color__green
-                        : styles.column_color__black
+                      header.isGreen && styles.column_color__green
                     } ${
                       header.name === 'name' ? styles.column_bold_text : ''
                     } ${handleRowClick ? styles.cursor_pointer : ''}`}

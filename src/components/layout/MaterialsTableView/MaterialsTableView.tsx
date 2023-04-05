@@ -13,6 +13,7 @@ import {
   Th,
   Thead,
   Tr,
+  useColorMode,
 } from '@chakra-ui/react';
 import { DotsThreeOutlineVertical, Pencil, Plus, Trash } from 'phosphor-react';
 import { TObject } from '../../../types/global';
@@ -69,6 +70,7 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
   } = props;
   const [rowChildVisible, setRowChildVisible] = useState<boolean>(false);
   const [selectedRow, setSelectedRow] = useState<string | number>('');
+  const { colorMode } = useColorMode();
 
   const items = useMemo(() => {
     return !filter ? props.items : props.items?.filter(filter);
@@ -180,9 +182,7 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
                         onClick={e => onRowClick(isSelected, row, e)}
                         id={row.id?.toString()}
                         className={`${styles.td} ${
-                          header.isGreen
-                            ? styles.column_color__green
-                            : styles.column_color__black
+                          header.isGreen && styles.column_color__green
                         } ${isNameColumn ? styles.column_bold_text : ''} ${
                           handleRowClick &&
                           hasSubMaterials &&
@@ -223,7 +223,11 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
                             />
                           </Center>
                         </MenuButton>
-                        <MenuList>
+                        <MenuList
+                          className={
+                            colorMode === 'dark' ? styles.menuList : ''
+                          }
+                        >
                           {onClickAddSubMaterial &&
                             row?.material?.hasSubMaterials && (
                               <MenuItem
@@ -260,7 +264,11 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
                     return (
                       <Tr
                         key={`table-row-${sub.id}`}
-                        className={`${styles.childRowSelected} ${cssFormat}`}
+                        className={`${
+                          colorMode === 'light'
+                            ? styles.childRowSelected
+                            : styles.childRowSelectedDark
+                        } ${cssFormat}`}
                       >
                         {headers?.map(header => {
                           return (
