@@ -13,10 +13,11 @@ import PlayGround from './components/views/PlayGround';
 import Sidebar from './components/layout/Sidebar';
 import AuthRoute from './components/common/AuthRoute';
 import Materials from './components/views/Materials/Materials';
-import './App.css';
 import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from './redux/hooks';
 import { handleAuthChange } from './providers/userAuthContextProvider';
+
+import './App.css';
 
 function App() {
   const dispatch = useAppDispatch();
@@ -28,23 +29,24 @@ function App() {
   return (
     <div className="App">
       <BrowserRouter>
-        {/* <Sidebar /> */}
         <Routes>
           <Route path="/" element={<AuthRoute component={PlayGround} />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
-          <Route
-            path="/projects"
-            element={<AuthRoute component={Projects} />}
-          />
-          <Route
-            path="/materials"
-            element={<AuthRoute component={Materials} />}
-          />
-          <Route
-            path="/project-detail/:id"
-            element={<AuthRoute component={ProjectDetail} />}
-          />
+          <Route element={<Sidebar />}>
+            <Route
+              path="/projects"
+              element={<AuthRoute component={Projects} />}
+            />
+            <Route
+              path="/materials"
+              element={<AuthRoute component={Materials} />}
+            />
+            <Route
+              path="/project-detail/:id"
+              element={<AuthRoute component={ProjectDetail} />}
+            />
+          </Route>
           <Route
             path="/project-detail/:projectId/order-pdf-preview/:orderId/:activity"
             element={<AuthRoute component={OrderPreview} />}
