@@ -165,6 +165,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
   const deleteButton = async () => {
     const successCallback = () => {
       setSelectedItem(initialSelectedItemData);
+      setSelectedOrder(initialSelectedOrderData);
       setIsAlertDialogOpen(false);
     };
     await deleteProjectInvoiceDetail({
@@ -178,6 +179,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
   const handleOnSubmit = async (projectInvoiceDetail: IInvoice) => {
     const successCallback = () => {
       setSelectedItem(initialSelectedItemData);
+      setSelectedOrder(initialSelectedOrderData);
       setIsModalOpen(false);
     };
     const { option, ...rest } = projectInvoiceDetail;
@@ -236,11 +238,14 @@ const Invoicing: React.FC<IInvoicing> = props => {
     const successAddCallback = () => {
       setSelectedProduct(initialSelectedProductData);
       setSelectedItem(initialSelectedItemData);
+      setSelectedOrder(initialSelectedOrderData);
       setIsDetailModalOpen(false);
     };
 
     const successUpdateCallback = () => {
       setSelectedProduct(initialSelectedProductData);
+      setSelectedItem(initialSelectedItemData);
+      setSelectedOrder(initialSelectedOrderData);
       setIsDetailModalOpen(false);
     };
     const serviceCallParameters = {
@@ -258,6 +263,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
   const deleteProduct = async () => {
     const successCallback = () => {
       setSelectedItem(initialSelectedItemData);
+      setSelectedOrder(initialSelectedOrderData);
       setSelectedProduct(initialSelectedProductData);
       setIsProductAlertDialogOpen(false);
     };
@@ -501,6 +507,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
           isOpen={isAlertDialogOpen}
           onClose={() => {
             setSelectedItem(initialSelectedItemData);
+            setSelectedOrder(initialSelectedOrderData);
             setIsAlertDialogOpen(false);
           }}
           onSubmit={() => deleteButton()}
