@@ -51,6 +51,7 @@ const initialSelectedOrderData = {
   sentStatus: false,
   cost: 0,
   products: [],
+  updatedAt: new Date(),
 };
 
 const initialSelectedProductData = {

@@ -40,6 +40,7 @@ const initialSelectedItemData = {
   quantity: 1,
   cost: 0,
   subtotal: 0,
+  updatedAt: new Date(),
 };
 
 const initialSelectedSubMaterialData = {

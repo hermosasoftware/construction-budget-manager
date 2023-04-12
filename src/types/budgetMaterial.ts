@@ -9,4 +9,5 @@ export interface IBudgetMaterial {
   cost: number;
   subMaterials?: ISubMaterial[];
   subtotal: number;
+  updatedAt: Date | string;
 }

@@ -45,6 +45,7 @@ const initialSelectedItemData = {
   option: { value: '', label: '' },
   pdfURL: '',
   pdfFile: undefined,
+  updatedAt: new Date(),
 };
 
 const initialSelectedOrderData = {
@@ -58,6 +59,7 @@ const initialSelectedOrderData = {
   cost: 0,
   products: [],
   option: { value: '', label: '' },
+  updatedAt: new Date(),
 };
 
 const initialSelectedProductData = {
