@@ -3,7 +3,6 @@ button.button {
   width: var(--input-width-md);
   height: var(--input-height-md);
   font-size: var(--font-size-sm);
-  color: var(--chakra-colors-placeholder_color);
   font-weight: 600;
 
   display: block;

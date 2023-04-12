@@ -10,7 +10,6 @@
 th.th {
   border-bottom: none;
   font-style: bold;
-  color: var(--chakra-colors-black);
   padding: var(--padding-vertical-sm);
 }
 
@@ -26,10 +25,6 @@ td.td {
 
 .column_color__green {
   color: green;
-}
-
-.column_color__black {
-  color: var(--chakra-colors-black);
 }
 
 .column_bold_text {

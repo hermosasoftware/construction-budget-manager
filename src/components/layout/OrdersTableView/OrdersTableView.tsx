@@ -13,6 +13,7 @@ import {
   Th,
   Thead,
   Tr,
+  useColorMode,
 } from '@chakra-ui/react';
 import {
   DotsThreeOutlineVertical,
@@ -76,7 +77,7 @@ const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
   } = props;
   const [rowChildVisible, setRowChildVisible] = useState<boolean>(false);
   const [selectedRow, setSelectedRow] = useState<string | number>('');
-
+  const { colorMode } = useColorMode();
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
   const items = useMemo(() => {
@@ -219,9 +220,7 @@ const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
                         onClick={e => onRowClick(isSelected, row, e)}
                         id={row.id?.toString()}
                         className={`${styles.td} ${
-                          header.isGreen
-                            ? styles.column_color__green
-                            : styles.column_color__black
+                          header.isGreen && styles.column_color__green
                         } ${isFirstColumn ? styles.column_bold_text : ''} ${
                           handleRowClick && hasProducts && row?.products?.length
                             ? styles.cursor_pointer
@@ -263,7 +262,11 @@ const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
                             />
                           </Center>
                         </MenuButton>
-                        <MenuList>
+                        <MenuList
+                          className={
+                            colorMode === 'dark' ? styles.menuList : ''
+                          }
+                        >
                           {onClickAddProduct && (
                             <MenuItem
                               onClick={() =>
@@ -304,7 +307,11 @@ const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
                     return (
                       <Tr
                         key={`table-row-${prod.id}`}
-                        className={`${styles.childRowSelected} ${cssFormat}`}
+                        className={`${
+                          colorMode === 'light'
+                            ? styles.childRowSelected
+                            : styles.childRowSelectedDark
+                        } ${cssFormat}`}
                       >
                         {headers?.map(header => {
                           return (

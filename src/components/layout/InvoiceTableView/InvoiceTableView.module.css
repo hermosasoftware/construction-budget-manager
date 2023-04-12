@@ -10,7 +10,6 @@
 th.th {
   border-bottom: none;
   font-style: bold;
-  color: var(--chakra-colors-black);
   padding: var(--padding-vertical-sm);
 }
 
@@ -28,10 +27,6 @@ td.td {
   color: green;
 }
 
-.column_color__black {
-  color: var(--chakra-colors-black);
-}
-
 .column_bold_text {
   font-weight: bold;
 }
@@ -41,6 +36,7 @@ td.td {
 }
 
 .rowSelected {
+  color: var(--chakra-colors-primary-500);
   background-color: var(--chakra-colors-green-100);
 }
 
@@ -54,6 +50,14 @@ td.td {
 
 .childRowSelected {
   background-color: var(--chakra-colors-green-50);
+}
+
+.childRowSelectedDark {
+  background-color: var(--chakra-colors-ghost);
+}
+
+.menuList {
+  color: var(--chakra-colors-plain_white) !important;
 }
 
 .bottomRoundBorder td:first-child {

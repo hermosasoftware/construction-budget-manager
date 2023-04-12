@@ -16,3 +16,8 @@ label.form_label {
   display: flex;
   align-items: center;
 }
+
+.helperText {
+  color: var(--chakra-colors-primary) !important;
+  opacity: 0.5 !important;
+}

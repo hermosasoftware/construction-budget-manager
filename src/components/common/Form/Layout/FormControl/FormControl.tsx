@@ -41,7 +41,11 @@ const FormControl: React.FC<IFormControl> = props => {
   const helperMessage = errorMessage ? (
     <FormErrorMessage>{errorMessage}</FormErrorMessage>
   ) : (
-    helperText && <FormHelperText>{helperText}</FormHelperText>
+    helperText && (
+      <FormHelperText className={styles.helperText}>
+        {helperText}
+      </FormHelperText>
+    )
   );
 
   return (
