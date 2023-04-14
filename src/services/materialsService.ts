@@ -8,6 +8,7 @@ import {
   onSnapshot,
   orderBy,
   query,
+  serverTimestamp,
   setDoc,
   updateDoc,
   writeBatch,
@@ -43,28 +44,26 @@ export const listenMaterials = async ({
 
     const unsubscribe = onSnapshot(
       materialsQuery,
-      { includeMetadataChanges: true },
       querySnapshot => {
         let materialsList = [...getState().materials.materials];
 
-        const materials: any = querySnapshot
-          .docChanges({ includeMetadataChanges: true })
-          .map(async change => {
-            const elem = {
-              ...change.doc.data(),
-              id: change.doc.id,
-            } as IMaterial;
+        const materials: any = querySnapshot.docChanges().map(async change => {
+          const elem = {
+            ...change.doc.data(),
+            id: change.doc.id,
+            updatedAt: change.doc.data()?.updatedAt?.toDate()?.toISOString(),
+          } as IMaterial;
 
-            if (change.type === 'added') {
-              return changeTypeAdded(dispatch, materialsList, elem);
-            }
-            if (change.type === 'modified') {
-              return changeTypeModified(dispatch, elem);
-            }
-            if (change.type === 'removed') {
-              return changeTypeRemoved(dispatch, elem);
-            }
-          });
+          if (change.type === 'added') {
+            return changeTypeAdded(dispatch, materialsList, elem);
+          }
+          if (change.type === 'modified') {
+            return changeTypeModified(dispatch, elem);
+          }
+          if (change.type === 'removed') {
+            return changeTypeRemoved(dispatch, elem);
+          }
+        });
 
         Promise.all(materials).then(result => {
           result.flat().length && dispatch(changeMaterials(result));
@@ -191,7 +190,10 @@ export const addMaterial = async ({
 } & IService) => {
   try {
     const { id, ...rest } = material;
-    const docRef = await addDoc(materialDocRef, rest);
+    const docRef = await addDoc(materialDocRef, {
+      ...rest,
+      updatedAt: serverTimestamp(),
+    });
     toastSuccess(appStrings.success, appStrings.saveSuccess);
     successCallback && successCallback(docRef.id);
   } catch (e) {
@@ -210,7 +212,7 @@ export const updateMaterial = async ({
   try {
     const { id, ...rest } = material;
     const materialDocRef = doc(db, 'materials', id);
-    await setDoc(materialDocRef, rest);
+    await setDoc(materialDocRef, { ...rest, updatedAt: serverTimestamp() });
     toastSuccess(appStrings.success, appStrings.saveSuccess);
     successCallback && successCallback();
   } catch (e) {
@@ -271,7 +273,7 @@ export const addSubmaterial = async ({
     const subMatRef = collection(db, 'materials', materialId, 'subMaterials');
     const matRef = doc(db, 'materials', materialId);
     const docRef = await addDoc(subMatRef, rest);
-    await updateDoc(matRef, {});
+    await updateDoc(matRef, { updatedAt: serverTimestamp() });
     toastSuccess(appStrings.success, appStrings.saveSuccess);
     successCallback && successCallback(materialId, docRef.id);
   } catch (e) {
@@ -300,7 +302,7 @@ export const updateSubMaterial = async ({
       id,
     );
     await setDoc(subMaterialDocRef, rest);
-    await updateDoc(matRef, {});
+    await updateDoc(matRef, { updatedAt: serverTimestamp() });
     toastSuccess(appStrings.success, appStrings.saveSuccess);
     successCallback && successCallback(materialId, id);
   } catch (e) {
@@ -333,7 +335,7 @@ export const deleteSubMaterial = async ({
     const totalMatCost = matDoc.data().cost - totalSubMat;
 
     batch.delete(subMatRef);
-    batch.update(matRef, { cost: totalMatCost });
+    batch.update(matRef, { cost: totalMatCost, updatedAt: serverTimestamp() });
 
     await batch.commit();
 

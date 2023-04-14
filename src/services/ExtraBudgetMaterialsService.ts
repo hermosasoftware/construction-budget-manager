@@ -10,6 +10,7 @@ import {
   onSnapshot,
   orderBy,
   updateDoc,
+  serverTimestamp,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
@@ -47,17 +48,17 @@ export const listenExtraMaterials = ({
 
     const unsubscribe = onSnapshot(
       matQuery,
-      { includeMetadataChanges: true },
       querySnapshot => {
         let materialsList = [...getState().extraMaterials.extraMaterials];
 
         const projectOrders: any = querySnapshot
-          .docChanges({ includeMetadataChanges: true })
+          .docChanges()
           .map(async change => {
             const elem = {
               ...change.doc.data(),
               id: change.doc.id,
               subtotal: change.doc.data().cost * change.doc.data().quantity,
+              updatedAt: change.doc.data()?.updatedAt?.toDate()?.toISOString(),
             } as IBudgetMaterial;
 
             if (change.type === 'added') {
@@ -308,7 +309,7 @@ export const createExtraBudgetMaterial = async ({
 
       transaction.update(summaryRef, { sumMaterials: summaryTotal });
       transaction.update(activityRef, { sumMaterials: activityTotal });
-      transaction.set(matRef, rest);
+      transaction.set(matRef, { ...rest, updatedAt: serverTimestamp() });
 
       await batch.commit();
 
@@ -389,7 +390,7 @@ export const updateExtraBudgetMaterial = async ({
 
       transaction.update(summaryRef, { sumMaterials: summaryTotal });
       transaction.update(activityRef, { sumMaterials: activityTotal });
-      transaction.set(matRef, rest);
+      transaction.set(matRef, { ...rest, updatedAt: serverTimestamp() });
     });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
@@ -534,7 +535,7 @@ export const createExtraBudgetSubMaterial = async ({
         id: subMatRef.id,
       } as ISubMaterial;
     });
-    await updateDoc(matRef, {});
+    await updateDoc(matRef, { updatedAt: serverTimestamp() });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
@@ -610,7 +611,7 @@ export const updateExtraBudgetSubMaterial = async ({
       transaction.update(activityRef, { sumMaterials: activityTotal });
       transaction.set(subMatRef, rest);
     });
-    await updateDoc(matRef, {});
+    await updateDoc(matRef, { updatedAt: serverTimestamp() });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
@@ -676,7 +677,7 @@ export const deleteExtraBudgetSubMaterial = async ({
     batch.update(summaryRef, { sumMaterials: summaryTotal });
     batch.update(activityRef, { sumMaterials: activityTotal });
     batch.delete(subMatRef);
-    batch.update(matRef, {});
+    batch.update(matRef, { updatedAt: serverTimestamp() });
 
     await batch.commit();
 

@@ -11,6 +11,7 @@ import {
   orderBy,
   onSnapshot,
   FirestoreError,
+  serverTimestamp,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import {
@@ -48,17 +49,17 @@ export const listenProjectInvoices = ({
 
     const unsubscribe = onSnapshot(
       InvoicesQuery,
-      { includeMetadataChanges: true },
       querySnapshot => {
         let invoicesList = [...getState().projectInvoices.projectInvoices];
 
         const projectInvoices: any = querySnapshot
-          .docChanges({ includeMetadataChanges: true })
+          .docChanges()
           .map(async change => {
             const elem = {
               ...change.doc.data(),
               id: change.doc.id,
               date: change.doc.data().date.toDate().toISOString(),
+              updatedAt: change.doc.data()?.updatedAt?.toDate()?.toISOString(),
             } as IProjectInvoiceDetail;
 
             if (change.type === 'added') {
@@ -259,7 +260,10 @@ export const createProjectInvoiceDetail = async ({
     const { id, pdfURL, pdfFile, products, ...rest } = projectInvoiceDetail;
     const invRef = collection(db, 'projects', projectId, 'projectInvoicing');
 
-    const result = await addDoc(invRef, rest);
+    const result = await addDoc(invRef, {
+      ...rest,
+      updatedAt: serverTimestamp(),
+    });
     let data = {
       ...projectInvoiceDetail,
       id: result.id,
@@ -304,9 +308,9 @@ export const updateProjectInvoiceDetail = async ({
       await uploadBytes(storageRef, pdfFile);
       const pdfURL = await getDownloadURL(storageRef);
       projectInvoiceDetail.pdfURL = pdfURL;
-      await setDoc(invRef, { ...rest, pdfURL });
+      await setDoc(invRef, { ...rest, pdfURL, updatedAt: serverTimestamp() });
     } else {
-      await setDoc(invRef, rest);
+      await setDoc(invRef, { ...rest, updatedAt: serverTimestamp() });
     }
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
@@ -399,7 +403,7 @@ export const addInvoiceProduct = async ({
       ...rest,
       id: docRef.id,
     };
-    await updateDoc(invRef, {});
+    await updateDoc(invRef, { updatedAt: serverTimestamp() });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
@@ -445,7 +449,7 @@ export const updateInvoiceProduct = async ({
       id,
     );
     await setDoc(productRef, rest);
-    await updateDoc(invRef, {});
+    await updateDoc(invRef, { updatedAt: serverTimestamp() });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
@@ -491,7 +495,7 @@ export const deleteInvoiceProduct = async ({
     );
 
     await deleteDoc(productRef);
-    await updateDoc(invRef, {});
+    await updateDoc(invRef, { updatedAt: serverTimestamp() });
 
     toastSuccess(appStrings.success, appStrings.deleteSuccess);
 

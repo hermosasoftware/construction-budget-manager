@@ -35,6 +35,7 @@ const initialSelectedMaterialData = {
     name: '',
     hasSubMaterials: false,
     unit: '',
+    updatedAt: new Date(),
   },
   subMaterials: [],
 };

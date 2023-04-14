@@ -12,6 +12,7 @@ import {
   FirestoreError,
   writeBatch,
   updateDoc,
+  serverTimestamp,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
@@ -40,18 +41,18 @@ export const listenProjectOrders = ({
 
     const unsubscribe = onSnapshot(
       OrdersQuery,
-      { includeMetadataChanges: true },
       querySnapshot => {
         let ordersList = [...getState().projectOrders.projectOrders];
 
         const projectOrders: any = querySnapshot
-          .docChanges({ includeMetadataChanges: true })
+          .docChanges()
           .map(async change => {
             const elem = {
               ...change.doc.data(),
               id: change.doc.id,
               date: change.doc.data().date.toDate().toISOString(),
               deliverDate: change.doc.data().deliverDate.toDate().toISOString(),
+              updatedAt: change.doc.data()?.updatedAt?.toDate()?.toISOString(),
             } as IProjectOrder;
 
             if (change.type === 'added') {
@@ -248,7 +249,10 @@ export const createProjectOrder = async ({
   try {
     const { id, cost, products, ...rest } = projectOrder;
     const orderRef = collection(db, 'projects', projectId, 'projectOrders');
-    const result = await addDoc(orderRef, rest);
+    const result = await addDoc(orderRef, {
+      ...rest,
+      updatedAt: serverTimestamp(),
+    });
     const data = {
       ...projectOrder,
       id: result.id,
@@ -280,7 +284,7 @@ export const updateProjectOrder = async ({
   try {
     const { id, cost, products, ...rest } = projectOrder;
     const orderRef = doc(db, 'projects', projectId, 'projectOrders', id);
-    await setDoc(orderRef, rest);
+    await setDoc(orderRef, { ...rest, updatedAt: serverTimestamp() });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
@@ -367,7 +371,7 @@ export const addOrderProduct = async ({
       ...rest,
       id: docRef.id,
     };
-    await updateDoc(orderRef, {});
+    await updateDoc(orderRef, { updatedAt: serverTimestamp() });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
@@ -408,7 +412,7 @@ export const updateOrderProduct = async ({
     );
 
     await setDoc(productRef, rest);
-    await updateDoc(orderRef, {});
+    await updateDoc(orderRef, { updatedAt: serverTimestamp() });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
@@ -447,7 +451,7 @@ export const deleteOrderProduct = async ({
     const batch = writeBatch(db);
 
     batch.delete(productRef);
-    batch.update(orderRef, {});
+    batch.update(orderRef, { updatedAt: serverTimestamp() });
 
     await batch.commit();
 

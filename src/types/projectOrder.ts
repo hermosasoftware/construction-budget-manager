@@ -5,6 +5,7 @@ export interface IProjectOrder {
   date: Date | string;
   activity: string;
   deliverDate: Date | string;
+  updatedAt: Date | string;
   sentStatus: boolean | string;
   cost: number;
   products: IOrderProduct[];

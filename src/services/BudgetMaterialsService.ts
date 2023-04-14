@@ -6,6 +6,7 @@ import {
   query,
   runTransaction,
   writeBatch,
+  serverTimestamp,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
@@ -159,7 +160,7 @@ export const createBudgetMaterial = async ({
 
       transaction.update(summaryRef, { sumMaterials: summaryTotal });
       transaction.update(activityRef, { sumMaterials: activityTotal });
-      transaction.set(matRef, rest);
+      transaction.set(matRef, { ...rest, updatedAt: serverTimestamp() });
 
       await batch.commit();
 
@@ -235,7 +236,7 @@ export const updateBudgetMaterial = async ({
 
       transaction.update(summaryRef, { sumMaterials: summaryTotal });
       transaction.update(activityRef, { sumMaterials: activityTotal });
-      transaction.set(matRef, rest);
+      transaction.set(matRef, { ...rest, updatedAt: serverTimestamp() });
     });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
