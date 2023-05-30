@@ -289,6 +289,65 @@ export const createProjectInvoiceDetail = async ({
   }
 };
 
+export const createProjectInvoiceDetailAndProducts = async ({
+  projectId,
+  projectInvoiceDetail,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: {
+  projectId: string;
+  projectInvoiceDetail: IProjectInvoiceDetail;
+} & IService) => {
+  try {
+    const { id, pdfURL, pdfFile, products, ...rest } = projectInvoiceDetail;
+    const invRef = collection(db, 'projects', projectId, 'projectInvoicing');
+
+    const result = await addDoc(invRef, {
+      ...rest,
+      updatedAt: serverTimestamp(),
+    });
+    const productsMap = products.map(async product => {
+      const productRef = collection(invRef, result.id, 'products');
+      const docRef = await addDoc(productRef, {
+        ...product,
+      });
+      return {
+        ...product,
+        id: docRef.id,
+      };
+    });
+    let productsResult: IInvoiceProduct[] = [];
+    Promise.all(productsMap).then(result => {
+      productsResult = result;
+    });
+
+    let data = {
+      ...projectInvoiceDetail,
+      id: result.id,
+      products: productsResult,
+    } as IProjectInvoiceDetail;
+
+    if (pdfFile) {
+      const storageRef = ref(storage, `invoices-pdf/${result.id}`);
+      await uploadBytes(storageRef, pdfFile);
+      data.pdfURL = await getDownloadURL(storageRef);
+      await updateDoc(doc(invRef, data.id), { pdfURL: data.pdfURL });
+    }
+
+    toastSuccess(appStrings.success, appStrings.saveSuccess);
+
+    successCallback && successCallback(data);
+  } catch (error) {
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.saveError, errorMessage);
+
+    errorCallback && errorCallback();
+  }
+};
+
 export const updateProjectInvoiceDetail = async ({
   projectId,
   projectInvoiceDetail,

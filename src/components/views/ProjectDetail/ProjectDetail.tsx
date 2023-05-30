@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Box, Flex } from '@chakra-ui/react';
+import { Box, Flex, Text, useColorModeValue } from '@chakra-ui/react';
 import { useParams } from 'react-router-dom';
 import TabGroup from '../../common/TabGroup/TabGroup';
 import { IProject } from '../../../types/project';
@@ -30,6 +30,7 @@ import { changeBudgetSubcontracts } from '../../../redux/reducers/budgetSubcontr
 import { changeBudgetLabors } from '../../../redux/reducers/budgetLaborsSlice';
 import { changeBudgetActivities } from '../../../redux/reducers/budgetActivitiesSlice';
 import { changeExtraActivities } from '../../../redux/reducers/extraActivitiesSlice';
+import { xml2json } from '../../../utils/xml2json';
 
 import styles from './ProjectDetail.module.css';
 
@@ -323,9 +324,51 @@ export default function Projects() {
     checkListeners();
   }, []);
 
+  const Header = () => {
+    const textColor = useColorModeValue('teal.500', 'teal.300');
+    const textColorRed = useColorModeValue('red.400', 'red.100');
+    const accentColor = useColorModeValue('teal.100', 'teal.700');
+    const accentColorRed = useColorModeValue('red.100', 'red.500');
+    const secondaryTextColor = useColorModeValue('gray.500', 'gray.300');
+
+    return (
+      <Box borderBottomWidth="1px" px={4} py={3}>
+        <Flex className="header" justify="space-between" align="center">
+          <Text fontSize="2xl" fontWeight="bold" color={textColor}>
+            {project?.name}
+          </Text>
+          <Box
+            bg={project?.status === 'active' ? accentColor : accentColorRed}
+            px={3}
+            py={1}
+            borderRadius="md"
+          >
+            <Text
+              fontSize="sm"
+              fontWeight="medium"
+              color={project?.status === 'active' ? textColor : textColorRed}
+            >
+              {project?.status === 'active'
+                ? appStrings.active
+                : appStrings.inactive}
+            </Text>
+          </Box>
+        </Flex>
+        <Flex justify="space-between" align="center" mt={2}>
+          <Text fontSize="sm" fontWeight="medium" color={textColor}>
+            {`${appStrings.client}: ${project?.client}`}
+          </Text>
+          <Text fontSize="sm" fontWeight="medium" color={secondaryTextColor}>
+            {`${appStrings.location}: ${project?.location}`}
+          </Text>
+        </Flex>
+      </Box>
+    );
+  };
+
   return (
     <div className={`container ${styles.projects_container}`}>
-      <Box p={5} borderWidth="1px">
+      {/* <Box p={5} borderWidth="1px">
         <Flex className="header">
           <h1 className={`${styles.title}`}>
             {`${appStrings.project}: ${project?.name}`}
@@ -342,7 +385,8 @@ export default function Projects() {
             }`}
           </h1>
         </Flex>
-      </Box>
+      </Box> */}
+      <Header></Header>
 
       <TabGroup
         className={`${styles.tabs}`}
