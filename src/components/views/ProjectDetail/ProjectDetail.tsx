@@ -30,7 +30,6 @@ import { changeBudgetSubcontracts } from '../../../redux/reducers/budgetSubcontr
 import { changeBudgetLabors } from '../../../redux/reducers/budgetLaborsSlice';
 import { changeBudgetActivities } from '../../../redux/reducers/budgetActivitiesSlice';
 import { changeExtraActivities } from '../../../redux/reducers/extraActivitiesSlice';
-import { xml2json } from '../../../utils/xml2json';
 
 import styles from './ProjectDetail.module.css';
 
@@ -319,11 +318,6 @@ export default function Projects() {
     listenersList.splice(index, 1);
   };
 
-  useEffect(() => {
-    getProjectbyId();
-    checkListeners();
-  }, []);
-
   const Header = () => {
     const textColor = useColorModeValue('teal.500', 'teal.300');
     const textColorRed = useColorModeValue('red.400', 'red.100');
@@ -332,7 +326,7 @@ export default function Projects() {
     const secondaryTextColor = useColorModeValue('gray.500', 'gray.300');
 
     return (
-      <Box borderBottomWidth="1px" px={4} py={3}>
+      <Box borderBottomWidth="1px" px={5} py={3}>
         <Flex className="header" justify="space-between" align="center">
           <Text fontSize="2xl" fontWeight="bold" color={textColor}>
             {project?.name}
@@ -366,28 +360,17 @@ export default function Projects() {
     );
   };
 
+  useEffect(() => {
+    checkListeners();
+  }, []);
+
+  useEffect(() => {
+    getProjectbyId();
+  }, [projects]);
+
   return (
     <div className={`container ${styles.projects_container}`}>
-      {/* <Box p={5} borderWidth="1px">
-        <Flex className="header">
-          <h1 className={`${styles.title}`}>
-            {`${appStrings.project}: ${project?.name}`}
-          </h1>
-          <h1 className={`${styles.title}`}>
-            {`${appStrings.client}: ${project?.client}`}
-          </h1>
-          <h1 className={`${styles.title}`}>
-            {`${appStrings.location}: ${project?.location}`}
-          </h1>
-          <h1 className={`${styles.title}`}>
-            {`${appStrings.status}: ${
-              project?.status ? appStrings.active : appStrings.inactive
-            }`}
-          </h1>
-        </Flex>
-      </Box> */}
-      <Header></Header>
-
+      <Header />
       <TabGroup
         className={`${styles.tabs}`}
         tabs={[
@@ -407,7 +390,6 @@ export default function Projects() {
             name: appStrings.invoicing,
             isDisable: project?.budgetOpen,
           },
-
           {
             id: 'expenses',
             name: appStrings.expensesReport,

@@ -19,7 +19,7 @@ import { useAppSelector } from '../../../redux/hooks';
 import MaterialsTableView, {
   TTableHeader,
 } from '../../layout/MaterialsTableView/MaterialsTableView';
-import { Box, Flex, Heading } from '@chakra-ui/react';
+import { Box, Text, Flex, Heading, useColorModeValue } from '@chakra-ui/react';
 import SearchInput from '../../common/SearchInput';
 import Modal from '../../common/Modal';
 import ExchangeInput from '../../common/ExchangeInput';
@@ -219,6 +219,18 @@ export default function Materials() {
     });
   };
 
+  const Header = () => {
+    const textColor = useColorModeValue('teal.500', 'teal.300');
+
+    return (
+      <Box borderBottomWidth="1px" px={5} py={3}>
+        <Text fontSize="2xl" fontWeight="bold" color={textColor} align="left">
+          {appStrings.materialsManagement}
+        </Text>
+      </Box>
+    );
+  };
+
   useEffect(() => {
     if (!isModalOpen) setSelectedMaterial(initialSelectedMaterialData);
   }, [isModalOpen]);
@@ -232,11 +244,7 @@ export default function Materials() {
 
   return (
     <div className={`container  ${styles.projects_materials_container}`}>
-      <Box p={5} borderWidth="1px" className={`${styles.title_container}`}>
-        <h1 className={`header ${styles.title}`}>
-          {appStrings.materialsManagement}
-        </h1>
-      </Box>
+      <Header />
       <div className={`${styles.content_container}`}>
         <Box p={5} borderWidth="1px" borderRadius={12}>
           <Flex marginBottom="5px">

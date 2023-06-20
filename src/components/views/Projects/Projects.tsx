@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Box, Flex, Heading } from '@chakra-ui/react';
+import { Box, Text, Flex, Heading, useColorModeValue } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import * as yup from 'yup';
 import Button from '../../common/Button/Button';
@@ -99,17 +99,25 @@ export default function Projects() {
     status: yup.string().required(appStrings?.requiredField),
   });
 
+  const Header = () => {
+    const textColor = useColorModeValue('teal.500', 'teal.300');
+
+    return (
+      <Box borderBottomWidth="1px" px={5} py={3}>
+        <Text fontSize="2xl" fontWeight="bold" color={textColor} align="left">
+          {appStrings.projectsManagement}
+        </Text>
+      </Box>
+    );
+  };
+
   useEffect(() => {
     !isModalOpen && setSelectedItem(initialSelectedItemData);
   }, [isModalOpen]);
 
   return (
     <div className={`container ${styles.projects_container}`}>
-      <Box p={5} borderWidth="1px">
-        <h1 className={`header ${styles.title}`}>
-          {appStrings.projectsManagement}
-        </h1>
-      </Box>
+      <Header />
       <TabGroup
         className={`${styles.tabs}`}
         tabs={[
