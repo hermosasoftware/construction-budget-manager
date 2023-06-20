@@ -468,7 +468,6 @@ const Invoicing: React.FC<IInvoicing> = props => {
       <Box p={5} borderWidth="1px" borderRadius={12}>
         <Flex marginBottom="5px">
           <SearchInput
-            id="fhg fw"
             style={{ margin: '0 10px 0 0', maxWidth: '500px' }}
             placeholder="Search"
             onChange={handleSearch}
@@ -490,6 +489,9 @@ const Invoicing: React.FC<IInvoicing> = props => {
                 setIsXMLModalOpen(false);
               }}
             >
+              <Heading as="h2" size="lg">
+                {appStrings.addInvoice}
+              </Heading>
               <Form
                 id="xml-form"
                 initialFormData={xmlItem}
@@ -522,7 +524,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
                   ></FileUploader>
                   <FileUploader
                     name="pdfFile"
-                    label={`${appStrings.uploadPDF} (optional)`}
+                    label={`${appStrings.uploadPDF} (${appStrings.optional})`}
                     buttonLabel={appStrings.selectFile}
                     acceptedFiles={[EFileTypes.pdf]}
                   ></FileUploader>
