@@ -1,7 +1,7 @@
 import { Box, Flex, FormLabel, Heading } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import * as yup from 'yup';
-import { FilePdf } from 'phosphor-react';
+import { FilePdf, UploadSimple } from 'phosphor-react';
 import Button from '../../../common/Button/Button';
 import Modal from '../../../common/Modal/Modal';
 import SearchInput from '../../../common/SearchInput/SearchInput';
@@ -10,6 +10,7 @@ import AlertDialog from '../../../common/AlertDialog/AlertDialog';
 import {
   addInvoiceProduct,
   createProjectInvoiceDetail,
+  createProjectInvoiceDetailAndProducts,
   deleteInvoiceProduct,
   deleteProjectInvoiceDetail,
   updateInvoiceProduct,
@@ -18,11 +19,13 @@ import {
 import {
   IInvoiceProduct,
   IProjectInvoiceDetail,
+  IXMLFile,
 } from '../../../../types/projectInvoiceDetail';
 import { IActivity } from '../../../../types/activity';
 import { useAppSelector } from '../../../../redux/hooks';
 import SearchSelect from '../../../common/Form/Elements/SearchSelect';
 import { formatDate } from '../../../../utils/dates';
+import { xml2json } from '../../../../utils/xml2json';
 import { IOrderProduct, IProjectOrder } from '../../../../types/projectOrder';
 import InvoiceTableView from '../../../layout/InvoiceTableView';
 import { TTableHeader } from '../../../layout/InvoiceTableView/InvoiceTableView';
@@ -31,6 +34,7 @@ import FileUploader, {
 } from '../../../common/FileUploader/FileUploader';
 
 import styles from './Invoicing.module.css';
+
 interface IInvoicing {
   projectId: string;
 }
@@ -46,6 +50,14 @@ const initialSelectedItemData = {
   pdfURL: '',
   pdfFile: undefined,
   updatedAt: new Date(),
+};
+
+const initialXMLData = {
+  option: { value: '', label: '' },
+  activity: '',
+  xmlFile: undefined,
+  pdfURL: '',
+  pdfFile: undefined,
 };
 
 const initialSelectedOrderData = {
@@ -86,6 +98,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
   const [selectedItem, setSelectedItem] = useState<IInvoice>(
     initialSelectedItemData,
   );
+  const [xmlItem, setXMLItem] = useState<IXMLFile>(initialXMLData);
   const [selectedOrder, setSelectedOrder] = useState<IInvoiceOrderDetail>(
     initialSelectedOrderData,
   );
@@ -99,6 +112,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
 
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isXMLModalOpen, setIsXMLModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const { projectId } = props;
@@ -130,6 +144,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
   const formatTableData = () =>
     projectInvoices.map(data => ({
       ...data,
+      invoice: data.invoice.slice(-8),
       date: formatDate(new Date(data.date), 'MM/DD/YYYY'),
     }));
 
@@ -176,9 +191,60 @@ const Invoicing: React.FC<IInvoicing> = props => {
     });
   };
 
+  //Converts the information from JSON to the database format
+  const jsonProcessor = (json: any) => {
+    const invoice = {
+      invoice: json?.FacturaElectronica?.NumeroConsecutivo?.['#text'],
+      date: new Date(json?.FacturaElectronica?.FechaEmision?.['#text']),
+    };
+    const products =
+      json?.FacturaElectronica?.DetalleServicio?.LineaDetalle.map(
+        (element: any) => {
+          return {
+            cost: +element?.SubTotal?.['#text'] / +element?.Cantidad?.['#text'],
+            description: element?.Detalle?.['#text'],
+            quantity: +element?.Cantidad?.['#text'],
+            tax: element?.Impuesto ? +element?.Impuesto?.Tarifa?.['#text'] : 0,
+          } as IInvoiceProduct;
+        },
+      );
+    return { ...invoice, products };
+  };
+
+  const onSubmitXML = async (file: IXMLFile) => {
+    const { option, activity, xmlFile, pdfFile, pdfURL } = file;
+    const xmlString = await xmlFile?.text(); //Extract text from xml file
+    const objson = xml2json.fromStr(xmlString); //Converts xml text to JSON
+    const data = jsonProcessor(objson);
+
+    const successCallback = () => {
+      setXMLItem(initialXMLData);
+      setSelectedItem(initialSelectedItemData);
+      setSelectedOrder(initialSelectedOrderData);
+      setIsXMLModalOpen(false);
+    };
+
+    const serviceCallParameters = {
+      projectId,
+      projectInvoiceDetail: {
+        ...data,
+        id: '',
+        order: +option.label,
+        updatedAt: new Date(),
+        activity,
+        pdfFile,
+        pdfURL,
+      },
+      appStrings,
+      successCallback,
+    };
+    await createProjectInvoiceDetailAndProducts(serviceCallParameters);
+  };
+
   const handleOnSubmit = async (projectInvoiceDetail: IInvoice) => {
     const successCallback = () => {
       setSelectedItem(initialSelectedItemData);
+      setXMLItem(initialXMLData);
       setSelectedOrder(initialSelectedOrderData);
       setIsModalOpen(false);
     };
@@ -283,7 +349,9 @@ const Invoicing: React.FC<IInvoicing> = props => {
     }),
     invoice: yup.string().required(appStrings?.requiredField),
     activity: yup.string().required(appStrings?.requiredField),
+    pdfFile: yup.mixed().optional(),
   });
+
   const productValSchema = yup.object().shape({
     description: yup.object().shape({
       value: yup.string().required(appStrings?.requiredField),
@@ -292,6 +360,16 @@ const Invoicing: React.FC<IInvoicing> = props => {
     quantity: yup.string().required(appStrings?.requiredField),
     cost: yup.string().required(appStrings?.requiredField),
     tax: yup.number().min(0).max(100).required(appStrings.required),
+  });
+
+  const xmlValSchema = yup.object().shape({
+    option: yup.object().shape({
+      value: yup.string().required(appStrings?.requiredField),
+      label: yup.string().required(appStrings?.requiredField),
+    }),
+    activity: yup.string().required(appStrings?.requiredField),
+    xmlFile: yup.mixed().required(appStrings?.requiredField),
+    pdfFile: yup.mixed().optional(),
   });
 
   const handleSearchSelect = (v: any) => {
@@ -307,6 +385,11 @@ const Invoicing: React.FC<IInvoicing> = props => {
       });
       setSelectedItem({
         ...selectedItem,
+        option,
+        activity: orderActivity.activity,
+      });
+      setXMLItem({
+        ...xmlItem,
         option,
         activity: orderActivity.activity,
       });
@@ -389,8 +472,69 @@ const Invoicing: React.FC<IInvoicing> = props => {
             placeholder="Search"
             onChange={handleSearch}
           ></SearchInput>
-          <div style={{ textAlign: 'end' }}>
+          <div style={{ textAlign: 'end', display: 'flex' }}>
+            <Button
+              style={{ padding: '0px', marginRight: 10 }}
+              onClick={() => setIsXMLModalOpen(true)}
+            >
+              <UploadSimple size={18} />
+            </Button>
             <Button onClick={() => setIsModalOpen(true)}>+</Button>
+            <Modal
+              isOpen={isXMLModalOpen}
+              onClose={() => {
+                setXMLItem(initialXMLData);
+                setSelectedItem(initialSelectedItemData);
+                setSelectedOrder(initialSelectedOrderData);
+                setIsXMLModalOpen(false);
+              }}
+            >
+              <Heading as="h2" size="lg">
+                {appStrings.addInvoice}
+              </Heading>
+              <Form
+                id="xml-form"
+                initialFormData={xmlItem}
+                validationSchema={xmlValSchema}
+                validateOnChange
+                validateOnBlur
+                onSubmit={onSubmitXML}
+              >
+                <SearchSelect
+                  name="option"
+                  label={appStrings.order}
+                  placeholder={appStrings.selectOrder}
+                  options={orders.map(o => ({
+                    value: o.id,
+                    label: String(o.order),
+                  }))}
+                  value={selectedOrder.option}
+                  onChange={item => {
+                    handleSearchSelect(item?.value?.value);
+                  }}
+                />
+                <Input name="activity" label={appStrings.activity} isDisabled />{' '}
+                <br />
+                <div className={styles.fileUpload_container}>
+                  <FileUploader
+                    name="xmlFile"
+                    label={appStrings.uploadXML}
+                    buttonLabel={appStrings.selectFile}
+                    acceptedFiles={[EFileTypes.xml]}
+                  ></FileUploader>
+                  <FileUploader
+                    name="pdfFile"
+                    label={`${appStrings.uploadPDF} (${appStrings.optional})`}
+                    buttonLabel={appStrings.selectFile}
+                    acceptedFiles={[EFileTypes.pdf]}
+                  ></FileUploader>
+                </div>
+                <br />
+                <Button width="full" type="submit">
+                  {appStrings.submit}
+                </Button>
+              </Form>
+            </Modal>
             <Modal
               isOpen={isModalOpen}
               onClose={() => {

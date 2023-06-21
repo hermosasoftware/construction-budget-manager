@@ -17,3 +17,11 @@ export interface IInvoiceProduct {
   description: string;
   cost: number;
 }
+
+export interface IXMLFile {
+  option: { value: string; label: string };
+  activity: string;
+  xmlFile?: File;
+  pdfURL?: string;
+  pdfFile?: File;
+}

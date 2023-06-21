@@ -17,6 +17,7 @@ export enum EFileTypes {
   video = 'video/*',
   audio = 'audio/*',
   pdf = '.pdf',
+  xml = '.xml',
 }
 interface IFileUploader extends IFormControl, IFormElementProps {
   buttonLabel?: String;
