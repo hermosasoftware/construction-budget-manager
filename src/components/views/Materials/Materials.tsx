@@ -299,13 +299,11 @@ export default function Materials() {
                   <Input
                     name="name"
                     label={appStrings.name}
-                    innerStyle={{ width: '200px', marginRight: '5px' }}
                     placeholder={appStrings.materialName}
                   />
                   <Input
                     name="unit"
                     label={appStrings.unit}
-                    innerStyle={{ width: '200px', marginRight: '5px' }}
                     placeholder={appStrings.metricUnit}
                   />
                   <Switch
@@ -319,7 +317,6 @@ export default function Materials() {
                       name="cost"
                       type={'number'}
                       label={appStrings.cost}
-                      innerStyle={{ width: '200px', marginRight: '5px' }}
                     />
                   )}
                   <br />
@@ -345,28 +342,14 @@ export default function Materials() {
                   validateOnBlur
                   onSubmit={onSubmitSubmaterial}
                 >
-                  <Input
-                    name="name"
-                    label={appStrings.name}
-                    innerStyle={{ width: '200px', marginRight: '5px' }}
-                  />
-                  <Input
-                    name="unit"
-                    label={appStrings.unit}
-                    innerStyle={{ width: '200px', marginRight: '5px' }}
-                  />
+                  <Input name="name" label={appStrings.name} />
+                  <Input name="unit" label={appStrings.unit} />
                   <Input
                     name="quantity"
                     type="number"
                     label={appStrings.quantity}
-                    innerStyle={{ width: '200px', marginRight: '5px' }}
                   />
-                  <Input
-                    name="cost"
-                    type="number"
-                    label={appStrings.cost}
-                    innerStyle={{ width: '200px', marginRight: '5px' }}
-                  />
+                  <Input name="cost" type="number" label={appStrings.cost} />
                   <br />
                   <Button width="full" type="submit">
                     {appStrings.submit}
