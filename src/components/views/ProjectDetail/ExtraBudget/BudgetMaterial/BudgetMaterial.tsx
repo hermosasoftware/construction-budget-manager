@@ -129,14 +129,22 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
 
   const handleAutoCompleteSubMaterial = async (data: any) => {
     const { value, id } = data;
-    const m = materials.find(material => id === material.id);
-    if (m) {
-      const { cost, name, unit } = m.material;
+    const result = materials.find(material => id === material.id);
+    if (result) {
+      const { cost, name, unit } = result.material;
       setSelectedSubMaterial({ ...selectedSubMaterial, cost, name, unit });
     } else {
       setSelectedSubMaterial({ ...selectedSubMaterial, name: value });
     }
   };
+
+  const handleSubmaterialSuggestions = () =>
+    materials
+      .filter(item => !item.material.hasSubMaterials)
+      .map(item => ({
+        value: item.material.name,
+        id: item.id,
+      }));
 
   const onSubmitSubmaterial = async (data: ISubMaterial) => {
     const successAddCallback = () => {
@@ -341,12 +349,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
               <AutoComplete
                 name="name"
                 label={appStrings.material}
-                suggestions={materials
-                  .filter(m => !m.material.hasSubMaterials)
-                  .map(material => ({
-                    value: material.material.name,
-                    id: material.id,
-                  }))}
+                suggestions={handleSubmaterialSuggestions()}
                 onChange={e => handleAutoCompleteSubMaterial(e.value)}
                 placeholder={appStrings.materialName}
               />
