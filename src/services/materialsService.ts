@@ -51,6 +51,7 @@ export const listenMaterials = async ({
           const elem = {
             ...change.doc.data(),
             id: change.doc.id,
+            createdAt: change.doc.data()?.createdAt?.toDate()?.toISOString(),
             updatedAt: change.doc.data()?.updatedAt?.toDate()?.toISOString(),
           } as IMaterial;
 
@@ -99,6 +100,8 @@ const changeTypeAdded = async (
   const data = subMaterials.docs.map(doc => ({
     ...doc.data(),
     id: doc.id,
+    createdAt: doc.data()?.createdAt?.toDate()?.toISOString(),
+    updatedAt: doc.data()?.updatedAt?.toDate()?.toISOString(),
   })) as ISubMaterial[];
 
   if (materialsList.length > 0) {
@@ -125,6 +128,8 @@ const changeTypeModified = async (dispatch: any, elem: IMaterial) => {
   const data = subMaterials.docs.map(doc => ({
     ...doc.data(),
     id: doc.id,
+    createdAt: doc.data()?.createdAt?.toDate()?.toISOString(),
+    updatedAt: doc.data()?.updatedAt?.toDate()?.toISOString(),
   })) as ISubMaterial[];
   dispatch(
     modifyMaterial({
@@ -192,6 +197,7 @@ export const addMaterial = async ({
     const { id, ...rest } = material;
     const docRef = await addDoc(materialDocRef, {
       ...rest,
+      createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
     toastSuccess(appStrings.success, appStrings.saveSuccess);
@@ -212,7 +218,11 @@ export const updateMaterial = async ({
   try {
     const { id, ...rest } = material;
     const materialDocRef = doc(db, 'materials', id);
-    await setDoc(materialDocRef, { ...rest, updatedAt: serverTimestamp() });
+    await setDoc(materialDocRef, {
+      ...rest,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }); //provicional
     toastSuccess(appStrings.success, appStrings.saveSuccess);
     successCallback && successCallback();
   } catch (e) {
@@ -272,7 +282,11 @@ export const addSubmaterial = async ({
     const { id, ...rest } = submaterial;
     const subMatRef = collection(db, 'materials', materialId, 'subMaterials');
     const matRef = doc(db, 'materials', materialId);
-    const docRef = await addDoc(subMatRef, rest);
+    const docRef = await addDoc(subMatRef, {
+      ...rest,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
     await updateDoc(matRef, { updatedAt: serverTimestamp() });
     toastSuccess(appStrings.success, appStrings.saveSuccess);
     successCallback && successCallback(materialId, docRef.id);
@@ -301,7 +315,11 @@ export const updateSubMaterial = async ({
       'subMaterials',
       id,
     );
-    await setDoc(subMaterialDocRef, rest);
+    await setDoc(subMaterialDocRef, {
+      ...rest,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }); //provicional
     await updateDoc(matRef, { updatedAt: serverTimestamp() });
     toastSuccess(appStrings.success, appStrings.saveSuccess);
     successCallback && successCallback(materialId, id);

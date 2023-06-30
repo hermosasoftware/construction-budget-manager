@@ -58,6 +58,7 @@ export const listenExtraMaterials = ({
               ...change.doc.data(),
               id: change.doc.id,
               subtotal: change.doc.data().cost * change.doc.data().quantity,
+              createdAt: change.doc.data()?.createdAt?.toDate()?.toISOString(),
               updatedAt: change.doc.data()?.updatedAt?.toDate()?.toISOString(),
             } as IBudgetMaterial;
 
@@ -107,6 +108,8 @@ const changeTypeAdded = async (
   const data = subMaterials.docs.map(doc => ({
     ...doc.data(),
     id: doc.id,
+    createdAt: doc.data()?.createdAt?.toDate()?.toISOString(),
+    updatedAt: doc.data()?.updatedAt?.toDate()?.toISOString(),
   })) as ISubMaterial[];
 
   if (materialsList.length > 0) {
@@ -137,6 +140,8 @@ const changeTypeModified = async (
   const data = subMaterials.docs.map(doc => ({
     ...doc.data(),
     id: doc.id,
+    createdAt: doc.data()?.createdAt?.toDate()?.toISOString(),
+    updatedAt: doc.data()?.updatedAt?.toDate()?.toISOString(),
   })) as ISubMaterial[];
   dispatch(
     modifyExtraMaterial({
@@ -297,7 +302,11 @@ export const createExtraBudgetMaterial = async ({
         let subMatSubtotal = 0;
         subMaterials.forEach(e => {
           const { id, ...rest } = e;
-          batch.set(doc(matRef, 'subMaterials', id), rest);
+          batch.set(doc(matRef, 'subMaterials', id), {
+            ...rest,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          });
           subMatSubtotal += rest.cost * rest.quantity;
         });
         summaryTotal += subMatSubtotal * rest.quantity;
@@ -309,7 +318,11 @@ export const createExtraBudgetMaterial = async ({
 
       transaction.update(summaryRef, { sumMaterials: summaryTotal });
       transaction.update(activityRef, { sumMaterials: activityTotal });
-      transaction.set(matRef, { ...rest, updatedAt: serverTimestamp() });
+      transaction.set(matRef, {
+        ...rest,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
 
       await batch.commit();
 
@@ -390,7 +403,11 @@ export const updateExtraBudgetMaterial = async ({
 
       transaction.update(summaryRef, { sumMaterials: summaryTotal });
       transaction.update(activityRef, { sumMaterials: activityTotal });
-      transaction.set(matRef, { ...rest, updatedAt: serverTimestamp() });
+      transaction.set(matRef, {
+        ...rest,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      }); //provicional
     });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
@@ -528,7 +545,12 @@ export const createExtraBudgetSubMaterial = async ({
 
       transaction.update(summaryRef, { sumMaterials: summaryTotal });
       transaction.update(activityRef, { sumMaterials: activityTotal });
-      transaction.set(subMatRef, rest);
+      transaction.update(matRef, { updatedAt: serverTimestamp() });
+      transaction.set(subMatRef, {
+        ...rest,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
 
       return {
         ...budgetSubMaterial,
@@ -609,7 +631,12 @@ export const updateExtraBudgetSubMaterial = async ({
 
       transaction.update(summaryRef, { sumMaterials: summaryTotal });
       transaction.update(activityRef, { sumMaterials: activityTotal });
-      transaction.set(subMatRef, rest);
+      transaction.update(matRef, { updatedAt: serverTimestamp() });
+      transaction.set(subMatRef, {
+        ...rest,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      }); //provicional
     });
     await updateDoc(matRef, { updatedAt: serverTimestamp() });
 

@@ -148,7 +148,11 @@ export const createBudgetMaterial = async ({
         let subMatSubtotal = 0;
         subMaterials.forEach(e => {
           const { id, ...rest } = e;
-          batch.set(doc(matRef, 'subMaterials', id), rest);
+          batch.set(doc(matRef, 'subMaterials', id), {
+            ...rest,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          });
           subMatSubtotal += rest.cost * rest.quantity;
         });
         summaryTotal += subMatSubtotal * rest.quantity;
@@ -160,7 +164,11 @@ export const createBudgetMaterial = async ({
 
       transaction.update(summaryRef, { sumMaterials: summaryTotal });
       transaction.update(activityRef, { sumMaterials: activityTotal });
-      transaction.set(matRef, { ...rest, updatedAt: serverTimestamp() });
+      transaction.set(matRef, {
+        ...rest,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
 
       await batch.commit();
 
@@ -236,7 +244,11 @@ export const updateBudgetMaterial = async ({
 
       transaction.update(summaryRef, { sumMaterials: summaryTotal });
       transaction.update(activityRef, { sumMaterials: activityTotal });
-      transaction.set(matRef, { ...rest, updatedAt: serverTimestamp() });
+      transaction.set(matRef, {
+        ...rest,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      }); //provicional
     });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
@@ -364,7 +376,12 @@ export const createBudgetSubMaterial = async ({
 
       transaction.update(summaryRef, { sumMaterials: summaryTotal });
       transaction.update(activityRef, { sumMaterials: activityTotal });
-      transaction.set(subMatRef, rest);
+      transaction.update(matRef, { updatedAt: serverTimestamp() });
+      transaction.set(subMatRef, {
+        ...rest,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
       return {
         ...budgetSubMaterial,
         id: subMatRef.id,
@@ -438,7 +455,12 @@ export const updateBudgetSubMaterial = async ({
 
       transaction.update(summaryRef, { sumMaterials: summaryTotal });
       transaction.update(activityRef, { sumMaterials: activityTotal });
-      transaction.set(subMatRef, rest);
+      transaction.update(matRef, { updatedAt: serverTimestamp() });
+      transaction.set(subMatRef, {
+        ...rest,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      }); //provicional
     });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
@@ -499,6 +521,7 @@ export const deleteBudgetSubMaterial = async ({
 
     batch.update(summaryRef, { sumMaterials: summaryTotal });
     batch.update(activityRef, { sumMaterials: activityTotal });
+    batch.update(matRef, { updatedAt: serverTimestamp() });
     batch.delete(subMatRef);
 
     await batch.commit();
