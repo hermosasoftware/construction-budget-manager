@@ -7,6 +7,7 @@ import {
   runTransaction,
   writeBatch,
   serverTimestamp,
+  orderBy,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
@@ -23,13 +24,16 @@ export const getBudgetMaterials = async ({
   errorCallback,
 }: { projectId: string; activityId: string } & IService) => {
   try {
-    const matRef = collection(
-      db,
-      'projects',
-      projectId,
-      'projectBudget',
-      activityId,
-      'budgetMaterials',
+    const matRef = query(
+      collection(
+        db,
+        'projects',
+        projectId,
+        'projectBudget',
+        activityId,
+        'budgetMaterials',
+      ),
+      orderBy('createdAt'),
     );
     const result = await getDocs(matRef);
     const data = result.docs.map(doc => ({
@@ -51,6 +55,7 @@ export const getBudgetMaterials = async ({
           elem.id,
           'subMaterials',
         ),
+        orderBy('createdAt'),
       );
       const subMaterials = await getDocs(materialQ);
       const data = subMaterials.docs.map(doc => ({
@@ -244,11 +249,7 @@ export const updateBudgetMaterial = async ({
 
       transaction.update(summaryRef, { sumMaterials: summaryTotal });
       transaction.update(activityRef, { sumMaterials: activityTotal });
-      transaction.set(matRef, {
-        ...rest,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      }); //provicional
+      transaction.set(matRef, { ...rest, updatedAt: serverTimestamp() });
     });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
@@ -456,11 +457,7 @@ export const updateBudgetSubMaterial = async ({
       transaction.update(summaryRef, { sumMaterials: summaryTotal });
       transaction.update(activityRef, { sumMaterials: activityTotal });
       transaction.update(matRef, { updatedAt: serverTimestamp() });
-      transaction.set(subMatRef, {
-        ...rest,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      }); //provicional
+      transaction.set(subMatRef, { ...rest, updatedAt: serverTimestamp() });
     });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);

@@ -95,7 +95,10 @@ const changeTypeAdded = async (
   materialsList: IMaterialBreakdown[],
   elem: IMaterial,
 ) => {
-  const materialQ = query(collection(db, 'materials', elem.id, 'subMaterials'));
+  const materialQ = query(
+    collection(db, 'materials', elem.id, 'subMaterials'),
+    orderBy('createdAt'),
+  );
   const subMaterials = await getDocs(materialQ);
   const data = subMaterials.docs.map(doc => ({
     ...doc.data(),
@@ -123,7 +126,10 @@ const changeTypeAdded = async (
 };
 
 const changeTypeModified = async (dispatch: any, elem: IMaterial) => {
-  const materialQ = query(collection(db, 'materials', elem.id, 'subMaterials'));
+  const materialQ = query(
+    collection(db, 'materials', elem.id, 'subMaterials'),
+    orderBy('createdAt'),
+  );
   const subMaterials = await getDocs(materialQ);
   const data = subMaterials.docs.map(doc => ({
     ...doc.data(),
@@ -165,6 +171,7 @@ export const getMaterials = async ({
     let submaterialsPromise = materials.map(async elem => {
       const materialQ = query(
         collection(db, 'materials', elem.id, 'subMaterials'),
+        orderBy('createdAt'),
       );
       const subMaterials = await getDocs(materialQ);
       const data = subMaterials.docs.map(doc => ({
@@ -218,11 +225,7 @@ export const updateMaterial = async ({
   try {
     const { id, ...rest } = material;
     const materialDocRef = doc(db, 'materials', id);
-    await setDoc(materialDocRef, {
-      ...rest,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    }); //provicional
+    await setDoc(materialDocRef, { ...rest, updatedAt: serverTimestamp() });
     toastSuccess(appStrings.success, appStrings.saveSuccess);
     successCallback && successCallback();
   } catch (e) {
@@ -315,11 +318,7 @@ export const updateSubMaterial = async ({
       'subMaterials',
       id,
     );
-    await setDoc(subMaterialDocRef, {
-      ...rest,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    }); //provicional
+    await setDoc(subMaterialDocRef, { ...rest, updatedAt: serverTimestamp() });
     await updateDoc(matRef, { updatedAt: serverTimestamp() });
     toastSuccess(appStrings.success, appStrings.saveSuccess);
     successCallback && successCallback(materialId, id);
