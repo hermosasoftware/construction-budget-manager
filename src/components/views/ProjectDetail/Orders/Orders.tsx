@@ -515,6 +515,7 @@ const Orders: React.FC<IOrdersView> = props => {
             delProduct(orderId, productId)
           }
           formatCurrency
+          usePagination
         />
         {!projectOrders.length ? <h1>{appStrings.noRecords}</h1> : null}
       </Box>

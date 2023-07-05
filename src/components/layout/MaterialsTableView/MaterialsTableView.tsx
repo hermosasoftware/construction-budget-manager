@@ -19,6 +19,8 @@ import { DotsThreeOutlineVertical, Pencil, Plus, Trash } from 'phosphor-react';
 import { TObject } from '../../../types/global';
 import { colonFormat, dolarFormat } from '../../../utils/numbers';
 import styles from './MaterialsTableView.module.css';
+import { useAppSelector } from '../../../redux/hooks';
+import Pagination from '../../common/Pagination';
 
 export type TTableHeader<T = TObject> = {
   name: keyof TTableItem<T>;
@@ -51,6 +53,7 @@ interface ITableProps<T> {
   rowChild?: React.ReactElement;
   exchangeRate?: Number;
   formatCurrency?: boolean;
+  usePagination?: boolean;
 }
 
 const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
@@ -67,14 +70,28 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
     hideOptions,
     exchangeRate,
     formatCurrency,
+    usePagination,
   } = props;
   const [rowChildVisible, setRowChildVisible] = useState<boolean>(false);
   const [selectedRow, setSelectedRow] = useState<string | number>('');
   const { colorMode } = useColorMode();
 
+  const itemsPerPage = useAppSelector(state => state.settings.itemsPerPage);
+
+  const [currentPage, setCurrentPage] = useState<number>(0);
+
   const items = useMemo(() => {
-    return !filter ? props.items : props.items?.filter(filter);
-  }, [props.items, filter]);
+    const auxItems = !filter ? props.items : props.items?.filter(filter);
+    if (!usePagination) return auxItems;
+    let start = currentPage * itemsPerPage;
+    let end = start + itemsPerPage;
+    if (!auxItems) return [];
+    return auxItems.slice(start, end);
+  }, [props.items, filter, currentPage, usePagination]);
+
+  const handleOnPageChange = (pageNumber: number, itemsPerPage: number) => {
+    setCurrentPage(pageNumber);
+  };
 
   const onRowClick = (isSelected: boolean, row: any, e: React.MouseEvent) => {
     if (isSelected) setRowChildVisible(!rowChildVisible);
@@ -332,6 +349,14 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
           })}
         </Tbody>
       </Table>
+      {usePagination && props.items.length > itemsPerPage ? (
+        <Pagination
+          totalCount={props.items.length}
+          itemsPerPage={itemsPerPage}
+          handleOnPageChange={handleOnPageChange}
+          currentPage={currentPage}
+        />
+      ) : undefined}
     </Box>
   );
 };

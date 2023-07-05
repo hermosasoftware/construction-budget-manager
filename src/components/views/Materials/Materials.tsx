@@ -400,6 +400,7 @@ export default function Materials() {
             }}
             exchangeRate={Number(exchange)}
             formatCurrency
+            usePagination
           />
           {!materials.length ? <h1>{appStrings.noRecords}</h1> : null}
         </Box>
