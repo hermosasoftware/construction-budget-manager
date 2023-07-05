@@ -11,4 +11,6 @@ export interface IBudgetActivity {
   sumOthers: number;
   date: Date;
   materials?: IMaterialBreakdown[];
+  createdAt: Date | string;
+  updatedAt: Date | string;
 }

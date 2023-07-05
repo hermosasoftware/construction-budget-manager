@@ -12,6 +12,8 @@ import {
   increment,
   onSnapshot,
   FirestoreError,
+  serverTimestamp,
+  orderBy,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
@@ -35,10 +37,7 @@ export const listenBudgetActivities = ({
 }: { projectId: string } & IService) => {
   try {
     const actRef = collection(db, 'projects', projectId, 'projectBudget');
-    const budgetActivitiesQuery = query(
-      actRef,
-      where(documentId(), '!=', 'summary'),
-    );
+    const budgetActivitiesQuery = query(actRef, orderBy('createdAt'));
     const { dispatch, getState } = store;
 
     const unsubscribe = onSnapshot(
@@ -53,6 +52,8 @@ export const listenBudgetActivities = ({
               ...change.doc.data(),
               id: change.doc.id,
               date: change.doc.data().date.toDate().toISOString(),
+              createdAt: change.doc.data()?.createdAt?.toDate()?.toISOString(),
+              updatedAt: change.doc.data()?.updatedAt?.toDate()?.toISOString(),
             } as IBudgetActivity;
 
             if (change.type === 'added') {
@@ -193,7 +194,11 @@ export const createBudgetActivity = async ({
   try {
     const { id, ...rest } = budgetActivity;
     const actRef = collection(db, 'projects', projectId, 'projectBudget');
-    const result = await addDoc(actRef, rest);
+    const result = await addDoc(actRef, {
+      ...rest,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
     const data = {
       ...budgetActivity,
       id: result.id,
@@ -225,7 +230,7 @@ export const updateBudgetActivity = async ({
   try {
     const { id, ...rest } = budgetActivity;
     const actRef = doc(db, 'projects', projectId, 'projectBudget', id);
-    await setDoc(actRef, rest);
+    await setDoc(actRef, { ...rest, updatedAt: serverTimestamp() });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
