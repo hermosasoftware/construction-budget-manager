@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Box, Flex } from '@chakra-ui/react';
+import { Box, Flex, Text, useColorModeValue } from '@chakra-ui/react';
 import { useParams } from 'react-router-dom';
 import TabGroup from '../../common/TabGroup/TabGroup';
 import { IProject } from '../../../types/project';
@@ -318,32 +318,59 @@ export default function Projects() {
     listenersList.splice(index, 1);
   };
 
+  const Header = () => {
+    const textColor = useColorModeValue('teal.500', 'teal.300');
+    const textColorRed = useColorModeValue('red.400', 'red.100');
+    const accentColor = useColorModeValue('teal.100', 'teal.700');
+    const accentColorRed = useColorModeValue('red.100', 'red.500');
+    const secondaryTextColor = useColorModeValue('gray.500', 'gray.300');
+
+    return (
+      <Box borderBottomWidth="1px" px={5} py={3}>
+        <Flex className="header" justify="space-between" align="center">
+          <Text fontSize="2xl" fontWeight="bold" color={textColor}>
+            {project?.name}
+          </Text>
+          <Box
+            bg={project?.status === 'active' ? accentColor : accentColorRed}
+            px={3}
+            py={1}
+            borderRadius="md"
+          >
+            <Text
+              fontSize="sm"
+              fontWeight="medium"
+              color={project?.status === 'active' ? textColor : textColorRed}
+            >
+              {project?.status === 'active'
+                ? appStrings.active
+                : appStrings.inactive}
+            </Text>
+          </Box>
+        </Flex>
+        <Flex justify="space-between" align="center" mt={2}>
+          <Text fontSize="sm" fontWeight="medium" color={textColor}>
+            {`${appStrings.client}: ${project?.client}`}
+          </Text>
+          <Text fontSize="sm" fontWeight="medium" color={secondaryTextColor}>
+            {`${appStrings.location}: ${project?.location}`}
+          </Text>
+        </Flex>
+      </Box>
+    );
+  };
+
   useEffect(() => {
-    getProjectbyId();
     checkListeners();
   }, []);
 
+  useEffect(() => {
+    getProjectbyId();
+  }, [projects]);
+
   return (
     <div className={`container ${styles.projects_container}`}>
-      <Box p={5} borderWidth="1px">
-        <Flex className="header">
-          <h1 className={`${styles.title}`}>
-            {`${appStrings.project}: ${project?.name}`}
-          </h1>
-          <h1 className={`${styles.title}`}>
-            {`${appStrings.client}: ${project?.client}`}
-          </h1>
-          <h1 className={`${styles.title}`}>
-            {`${appStrings.location}: ${project?.location}`}
-          </h1>
-          <h1 className={`${styles.title}`}>
-            {`${appStrings.status}: ${
-              project?.status ? appStrings.active : appStrings.inactive
-            }`}
-          </h1>
-        </Flex>
-      </Box>
-
+      <Header />
       <TabGroup
         className={`${styles.tabs}`}
         tabs={[
@@ -363,7 +390,6 @@ export default function Projects() {
             name: appStrings.invoicing,
             isDisable: project?.budgetOpen,
           },
-
           {
             id: 'expenses',
             name: appStrings.expensesReport,

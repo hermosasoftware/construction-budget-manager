@@ -18,7 +18,7 @@ import { IProjectBudget } from '../../../../../types/projectBudget';
 import Form, { DatePicker, Input } from '../../../../common/Form';
 import AlertDialog from '../../../../common/AlertDialog/AlertDialog';
 import { useAppSelector } from '../../../../../redux/hooks';
-import { colonFormat } from '../../../../../utils/numbers';
+import { colonFormat, dolarFormat } from '../../../../../utils/numbers';
 import { formatDate } from '../../../../../utils/dates';
 
 import styles from './BudgetActivity.module.css';
@@ -38,6 +38,8 @@ const initialSelectedItemData = {
   sumSubcontracts: 0,
   sumOthers: 0,
   date: new Date(),
+  createdAt: new Date(),
+  updatedAt: new Date(),
 };
 
 const BudgetActivity: React.FC<IBudgetActivityView> = props => {
@@ -65,7 +67,7 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
       ...data,
       date: formatDate(new Date(data.date), 'MM/DD/YYYY'),
       subtotal: colonFormat(data.sumMaterials),
-      dollars: colonFormat(data.sumMaterials / budget.exchange),
+      dollars: dolarFormat(data.sumMaterials / budget.exchange),
     }));
 
   const editButton = async (budgetActivityId: string) => {

@@ -43,7 +43,7 @@ export const listenExtraMaterials = ({
       activityId,
       'budgetMaterials',
     );
-    const matQuery = query(matRef, orderBy('name', 'desc'));
+    const matQuery = query(matRef, orderBy('createdAt'));
     const { dispatch, getState } = store;
 
     const unsubscribe = onSnapshot(
@@ -58,6 +58,7 @@ export const listenExtraMaterials = ({
               ...change.doc.data(),
               id: change.doc.id,
               subtotal: change.doc.data().cost * change.doc.data().quantity,
+              createdAt: change.doc.data()?.createdAt?.toDate()?.toISOString(),
               updatedAt: change.doc.data()?.updatedAt?.toDate()?.toISOString(),
             } as IBudgetMaterial;
 
@@ -102,11 +103,16 @@ const changeTypeAdded = async (
   matRef: any,
   elem: IBudgetMaterial,
 ) => {
-  const subMaterialQ = query(collection(matRef, elem.id, 'subMaterials'));
+  const subMaterialQ = query(
+    collection(matRef, elem.id, 'subMaterials'),
+    orderBy('createdAt'),
+  );
   const subMaterials = await getDocs(subMaterialQ);
   const data = subMaterials.docs.map(doc => ({
     ...doc.data(),
     id: doc.id,
+    createdAt: doc.data()?.createdAt?.toDate()?.toISOString(),
+    updatedAt: doc.data()?.updatedAt?.toDate()?.toISOString(),
   })) as ISubMaterial[];
 
   if (materialsList.length > 0) {
@@ -132,11 +138,16 @@ const changeTypeModified = async (
   matRef: any,
   elem: IBudgetMaterial,
 ) => {
-  const subMaterialQ = query(collection(matRef, elem.id, 'subMaterials'));
+  const subMaterialQ = query(
+    collection(matRef, elem.id, 'subMaterials'),
+    orderBy('createdAt'),
+  );
   const subMaterials = await getDocs(subMaterialQ);
   const data = subMaterials.docs.map(doc => ({
     ...doc.data(),
     id: doc.id,
+    createdAt: doc.data()?.createdAt?.toDate()?.toISOString(),
+    updatedAt: doc.data()?.updatedAt?.toDate()?.toISOString(),
   })) as ISubMaterial[];
   dispatch(
     modifyExtraMaterial({
@@ -167,13 +178,16 @@ export const getExtraBudgetMaterials = async ({
   errorCallback,
 }: { projectId: string; activityId: string } & IService) => {
   try {
-    const matRef = collection(
-      db,
-      'projects',
-      projectId,
-      'projectExtraBudget',
-      activityId,
-      'budgetMaterials',
+    const matRef = query(
+      collection(
+        db,
+        'projects',
+        projectId,
+        'projectExtraBudget',
+        activityId,
+        'budgetMaterials',
+      ),
+      orderBy('createdAt'),
     );
     const result = await getDocs(matRef);
     const data = result.docs.map(doc => ({
@@ -195,6 +209,7 @@ export const getExtraBudgetMaterials = async ({
           elem.id,
           'subMaterials',
         ),
+        orderBy('createdAt'),
       );
       const subMaterials = await getDocs(materialQ);
       const data = subMaterials.docs.map(doc => ({
@@ -297,7 +312,11 @@ export const createExtraBudgetMaterial = async ({
         let subMatSubtotal = 0;
         subMaterials.forEach(e => {
           const { id, ...rest } = e;
-          batch.set(doc(matRef, 'subMaterials', id), rest);
+          batch.set(doc(matRef, 'subMaterials', id), {
+            ...rest,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          });
           subMatSubtotal += rest.cost * rest.quantity;
         });
         summaryTotal += subMatSubtotal * rest.quantity;
@@ -309,7 +328,11 @@ export const createExtraBudgetMaterial = async ({
 
       transaction.update(summaryRef, { sumMaterials: summaryTotal });
       transaction.update(activityRef, { sumMaterials: activityTotal });
-      transaction.set(matRef, { ...rest, updatedAt: serverTimestamp() });
+      transaction.set(matRef, {
+        ...rest,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
 
       await batch.commit();
 
@@ -528,7 +551,12 @@ export const createExtraBudgetSubMaterial = async ({
 
       transaction.update(summaryRef, { sumMaterials: summaryTotal });
       transaction.update(activityRef, { sumMaterials: activityTotal });
-      transaction.set(subMatRef, rest);
+      transaction.update(matRef, { updatedAt: serverTimestamp() });
+      transaction.set(subMatRef, {
+        ...rest,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
 
       return {
         ...budgetSubMaterial,
@@ -609,7 +637,8 @@ export const updateExtraBudgetSubMaterial = async ({
 
       transaction.update(summaryRef, { sumMaterials: summaryTotal });
       transaction.update(activityRef, { sumMaterials: activityTotal });
-      transaction.set(subMatRef, rest);
+      transaction.update(matRef, { updatedAt: serverTimestamp() });
+      transaction.set(subMatRef, { ...rest, updatedAt: serverTimestamp() });
     });
     await updateDoc(matRef, { updatedAt: serverTimestamp() });
 

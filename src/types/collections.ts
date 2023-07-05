@@ -7,6 +7,7 @@ export interface IMaterial {
   unit: string;
   cost: number;
   subtotal?: number;
+  createdAt: Date | string;
   updatedAt: Date | string;
 }
 
@@ -16,6 +17,8 @@ export interface ISubMaterial {
   unit: string;
   quantity: number;
   cost: number;
+  createdAt: Date | string;
+  updatedAt: Date | string;
 }
 
 export interface IMaterialBreakdown {

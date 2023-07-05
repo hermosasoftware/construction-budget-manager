@@ -51,6 +51,7 @@ export const listenMaterials = async ({
           const elem = {
             ...change.doc.data(),
             id: change.doc.id,
+            createdAt: change.doc.data()?.createdAt?.toDate()?.toISOString(),
             updatedAt: change.doc.data()?.updatedAt?.toDate()?.toISOString(),
           } as IMaterial;
 
@@ -94,11 +95,16 @@ const changeTypeAdded = async (
   materialsList: IMaterialBreakdown[],
   elem: IMaterial,
 ) => {
-  const materialQ = query(collection(db, 'materials', elem.id, 'subMaterials'));
+  const materialQ = query(
+    collection(db, 'materials', elem.id, 'subMaterials'),
+    orderBy('createdAt'),
+  );
   const subMaterials = await getDocs(materialQ);
   const data = subMaterials.docs.map(doc => ({
     ...doc.data(),
     id: doc.id,
+    createdAt: doc.data()?.createdAt?.toDate()?.toISOString(),
+    updatedAt: doc.data()?.updatedAt?.toDate()?.toISOString(),
   })) as ISubMaterial[];
 
   if (materialsList.length > 0) {
@@ -120,11 +126,16 @@ const changeTypeAdded = async (
 };
 
 const changeTypeModified = async (dispatch: any, elem: IMaterial) => {
-  const materialQ = query(collection(db, 'materials', elem.id, 'subMaterials'));
+  const materialQ = query(
+    collection(db, 'materials', elem.id, 'subMaterials'),
+    orderBy('createdAt'),
+  );
   const subMaterials = await getDocs(materialQ);
   const data = subMaterials.docs.map(doc => ({
     ...doc.data(),
     id: doc.id,
+    createdAt: doc.data()?.createdAt?.toDate()?.toISOString(),
+    updatedAt: doc.data()?.updatedAt?.toDate()?.toISOString(),
   })) as ISubMaterial[];
   dispatch(
     modifyMaterial({
@@ -160,6 +171,7 @@ export const getMaterials = async ({
     let submaterialsPromise = materials.map(async elem => {
       const materialQ = query(
         collection(db, 'materials', elem.id, 'subMaterials'),
+        orderBy('createdAt'),
       );
       const subMaterials = await getDocs(materialQ);
       const data = subMaterials.docs.map(doc => ({
@@ -192,6 +204,7 @@ export const addMaterial = async ({
     const { id, ...rest } = material;
     const docRef = await addDoc(materialDocRef, {
       ...rest,
+      createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
     toastSuccess(appStrings.success, appStrings.saveSuccess);
@@ -272,7 +285,11 @@ export const addSubmaterial = async ({
     const { id, ...rest } = submaterial;
     const subMatRef = collection(db, 'materials', materialId, 'subMaterials');
     const matRef = doc(db, 'materials', materialId);
-    const docRef = await addDoc(subMatRef, rest);
+    const docRef = await addDoc(subMatRef, {
+      ...rest,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
     await updateDoc(matRef, { updatedAt: serverTimestamp() });
     toastSuccess(appStrings.success, appStrings.saveSuccess);
     successCallback && successCallback(materialId, docRef.id);
@@ -301,7 +318,7 @@ export const updateSubMaterial = async ({
       'subMaterials',
       id,
     );
-    await setDoc(subMaterialDocRef, rest);
+    await setDoc(subMaterialDocRef, { ...rest, updatedAt: serverTimestamp() });
     await updateDoc(matRef, { updatedAt: serverTimestamp() });
     toastSuccess(appStrings.success, appStrings.saveSuccess);
     successCallback && successCallback(materialId, id);

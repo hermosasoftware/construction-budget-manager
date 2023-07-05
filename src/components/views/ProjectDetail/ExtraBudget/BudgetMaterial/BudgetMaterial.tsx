@@ -40,6 +40,7 @@ const initialSelectedItemData = {
   quantity: 1,
   cost: 0,
   subtotal: 0,
+  createdAt: new Date(),
   updatedAt: new Date(),
 };
 
@@ -49,6 +50,8 @@ const initialSelectedSubMaterialData = {
   name: '',
   quantity: 1,
   unit: '',
+  createdAt: new Date(),
+  updatedAt: new Date(),
 };
 
 const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
@@ -126,6 +129,25 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
       setSelectedItem({ ...selectedItem, name: value });
     }
   };
+
+  const handleAutoCompleteSubMaterial = async (data: any) => {
+    const { value, id } = data;
+    const result = materials.find(material => id === material.id);
+    if (result) {
+      const { cost, name, unit } = result.material;
+      setSelectedSubMaterial({ ...selectedSubMaterial, cost, name, unit });
+    } else {
+      setSelectedSubMaterial({ ...selectedSubMaterial, name: value });
+    }
+  };
+
+  const handleSubmaterialSuggestions = () =>
+    materials
+      .filter(item => !item.material.hasSubMaterials)
+      .map(item => ({
+        value: item.material.name,
+        id: item.id,
+      }));
 
   const onSubmitSubmaterial = async (data: ISubMaterial) => {
     const successAddCallback = () => {
@@ -327,28 +349,20 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
               validateOnBlur
               onSubmit={onSubmitSubmaterial}
             >
-              <Input
+              <AutoComplete
                 name="name"
-                label={appStrings.name}
-                innerStyle={{ width: '200px', marginRight: '5px' }}
+                label={appStrings.material}
+                suggestions={handleSubmaterialSuggestions()}
+                onChange={e => handleAutoCompleteSubMaterial(e.value)}
+                placeholder={appStrings.materialName}
               />
-              <Input
-                name="unit"
-                label={appStrings.unit}
-                innerStyle={{ width: '200px', marginRight: '5px' }}
-              />
+              <Input name="unit" label={appStrings.unit} />
               <Input
                 name="quantity"
                 type="number"
                 label={appStrings.quantity}
-                innerStyle={{ width: '200px', marginRight: '5px' }}
               />
-              <Input
-                name="cost"
-                type="number"
-                label={appStrings.cost}
-                innerStyle={{ width: '200px', marginRight: '5px' }}
-              />
+              <Input name="cost" type="number" label={appStrings.cost} />
               <br />
               <Button width="full" type="submit">
                 {appStrings.submit}
