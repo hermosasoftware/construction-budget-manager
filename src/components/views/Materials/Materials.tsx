@@ -35,6 +35,7 @@ const initialSelectedMaterialData = {
     name: '',
     hasSubMaterials: false,
     unit: '',
+    createdAt: new Date(),
     updatedAt: new Date(),
   },
   subMaterials: [],
@@ -45,6 +46,8 @@ const initialSelectedSubMaterialData = {
   name: '',
   quantity: 1,
   unit: '',
+  createdAt: new Date(),
+  updatedAt: new Date(),
 };
 
 export default function Materials() {

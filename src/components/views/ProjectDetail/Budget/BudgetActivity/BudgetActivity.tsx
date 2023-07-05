@@ -38,6 +38,8 @@ const initialSelectedItemData = {
   sumSubcontracts: 0,
   sumOthers: 0,
   date: new Date(),
+  createdAt: new Date(),
+  updatedAt: new Date(),
 };
 
 const BudgetActivity: React.FC<IBudgetActivityView> = props => {

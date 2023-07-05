@@ -45,6 +45,7 @@ const initialSelectedItemData = {
   quantity: 1,
   cost: 0,
   subtotal: 0,
+  createdAt: new Date(),
   updatedAt: new Date(),
 };
 const initialSelectedSubMaterialData = {
@@ -53,6 +54,8 @@ const initialSelectedSubMaterialData = {
   name: '',
   quantity: 1,
   unit: '',
+  createdAt: new Date(),
+  updatedAt: new Date(),
 };
 
 const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
