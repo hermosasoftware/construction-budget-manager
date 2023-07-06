@@ -9,6 +9,7 @@ import {
   onSnapshot,
   query,
   orderBy,
+  serverTimestamp,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
@@ -39,7 +40,7 @@ export const listenBudgetOthers = ({
       'summary',
       'budgetOthers',
     );
-    const budgetOthersQuery = query(otherRef, orderBy('name'));
+    const budgetOthersQuery = query(otherRef, orderBy('createdAt'));
     const { dispatch, getState } = store;
 
     const unsubscribe = onSnapshot(
@@ -54,6 +55,8 @@ export const listenBudgetOthers = ({
               ...change.doc.data(),
               id: change.doc.id,
               subtotal: change.doc.data().cost * change.doc.data().quantity,
+              createdAt: change.doc.data()?.createdAt?.toDate()?.toISOString(),
+              updatedAt: change.doc.data()?.updatedAt?.toDate()?.toISOString(),
             } as IBudgetOther;
 
             if (change.type === 'added') {
@@ -210,7 +213,11 @@ export const createBudgetOther = async ({
       const summaryTotal = summaryDoc.data().sumOthers + subtotal;
 
       transaction.update(summaryRef, { sumOthers: summaryTotal });
-      transaction.set(OtherRef, rest);
+      transaction.set(OtherRef, {
+        ...rest,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
 
       return {
         ...budgetOther,
@@ -258,7 +265,7 @@ export const updateBudgetOther = async ({
       const summaryTotal = summaryDoc.data().sumOthers + newSum;
 
       transaction.update(summaryRef, { sumOthers: summaryTotal });
-      transaction.set(OtherRef, rest);
+      transaction.set(OtherRef, { ...rest, updatedAt: serverTimestamp() });
     });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);

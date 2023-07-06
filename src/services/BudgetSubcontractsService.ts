@@ -9,6 +9,7 @@ import {
   orderBy,
   onSnapshot,
   FirestoreError,
+  serverTimestamp,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
@@ -39,7 +40,7 @@ export const listenBudgetSubcontracts = ({
       'summary',
       'budgetSubcontracts',
     );
-    const budgetSubcontractsQuery = query(subCtRef, orderBy('name'));
+    const budgetSubcontractsQuery = query(subCtRef, orderBy('createdAt'));
     const { dispatch, getState } = store;
 
     const unsubscribe = onSnapshot(
@@ -56,6 +57,8 @@ export const listenBudgetSubcontracts = ({
               ...change.doc.data(),
               id: change.doc.id,
               subtotal: change.doc.data().cost * change.doc.data().quantity,
+              createdAt: change.doc.data()?.createdAt?.toDate()?.toISOString(),
+              updatedAt: change.doc.data()?.updatedAt?.toDate()?.toISOString(),
             } as IBudgetSubcontract;
 
             if (change.type === 'added') {
@@ -216,7 +219,11 @@ export const createBudgetSubcontract = async ({
       const summaryTotal = summaryDoc.data().sumSubcontracts + subtotal;
 
       transaction.update(summaryRef, { sumSubcontracts: summaryTotal });
-      transaction.set(subCtRef, rest);
+      transaction.set(subCtRef, {
+        ...rest,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
 
       return {
         ...budgetSubcontract,
@@ -264,7 +271,7 @@ export const updateBudgetSubcontract = async ({
       const summaryTotal = summaryDoc.data().sumSubcontracts + newSum;
 
       transaction.update(summaryRef, { sumSubcontracts: summaryTotal });
-      transaction.set(subCtRef, rest);
+      transaction.set(subCtRef, { ...rest, updatedAt: serverTimestamp() });
     });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
