@@ -86,10 +86,12 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
 
   const calculateDollars = (row: any) => {
     let total = 0;
-    const subMaterials = row.subMaterials;
-    if (row?.material.hasSubMaterials) {
-      subMaterials?.forEach((s: any) => {
-        total += Number(s.quantity) * Number.parseFloat(s.cost);
+    const subMaterials = row?.subMaterials;
+    if (row?.material?.hasSubMaterials) {
+      subMaterials?.forEach((element: any) => {
+        total +=
+          (Number(element?.quantity) * Number.parseFloat(element?.cost)) /
+          Number(row?.material?.quantity);
       });
       total *= Number(row?.material?.quantity);
     } else {
@@ -102,10 +104,12 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
 
   const calculateColons = (row: any) => {
     let total = 0;
-    const subMaterials = row.subMaterials;
-    if (row?.material.hasSubMaterials) {
-      subMaterials?.forEach((s: any) => {
-        total += Number(s.quantity) * Number.parseFloat(s.cost);
+    const subMaterials = row?.subMaterials;
+    if (row?.material?.hasSubMaterials) {
+      subMaterials?.forEach((element: any) => {
+        total +=
+          (Number(element?.quantity) * Number.parseFloat(element?.cost)) /
+          Number(row?.material?.quantity);
       });
     } else {
       total = Number(row?.material?.cost);
