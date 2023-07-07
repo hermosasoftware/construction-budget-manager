@@ -229,7 +229,10 @@ export const getProjectOrderById = async ({
       deliverDate: result.data()?.deliverDate?.toDate(),
     } as IProjectOrder;
 
-    const productQ = collection(orderRef, 'products');
+    const productQ = query(
+      collection(orderRef, 'products'),
+      orderBy('createdAt'),
+    );
     const productsDocs = await getDocs(productQ);
     const products = productsDocs.docs.map(doc => ({
       ...doc.data(),
