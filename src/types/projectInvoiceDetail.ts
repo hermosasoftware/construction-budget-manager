@@ -2,12 +2,13 @@ export interface IProjectInvoiceDetail {
   id: string;
   order: number;
   date: Date | string;
-  updatedAt: Date | string;
   activity: string;
   invoice: string;
   pdfURL?: string;
   pdfFile?: File;
   products: IInvoiceProduct[];
+  createdAt: Date | string;
+  updatedAt: Date | string;
 }
 
 export interface IInvoiceProduct {
@@ -16,6 +17,8 @@ export interface IInvoiceProduct {
   tax: number;
   description: string;
   cost: number;
+  createdAt: Date | string;
+  updatedAt: Date | string;
 }
 
 export interface IXMLFile {

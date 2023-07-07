@@ -5,10 +5,11 @@ export interface IProjectOrder {
   date: Date | string;
   activity: string;
   deliverDate: Date | string;
-  updatedAt: Date | string;
   sentStatus: boolean | string;
   cost: number;
   products: IOrderProduct[];
+  createdAt: Date | string;
+  updatedAt: Date | string;
 }
 
 export interface IOrderProduct {
@@ -18,4 +19,6 @@ export interface IOrderProduct {
   cost: number;
   tax: number;
   materialRef: string;
+  createdAt: Date | string;
+  updatedAt: Date | string;
 }

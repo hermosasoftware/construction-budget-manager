@@ -5,4 +5,6 @@ export interface IProject {
   location: string;
   status: string;
   budgetOpen: boolean;
+  createdAt: Date | string;
+  updatedAt: Date | string;
 }
