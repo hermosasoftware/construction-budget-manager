@@ -9,6 +9,7 @@ import {
   FirestoreError,
   query,
   orderBy,
+  serverTimestamp,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
@@ -39,7 +40,7 @@ export const listenBudgetLabors = ({
       'summary',
       'budgetLabors',
     );
-    const budgetLaborsQuery = query(laborRef, orderBy('name'));
+    const budgetLaborsQuery = query(laborRef, orderBy('createdAt'));
     const { dispatch, getState } = store;
 
     const unsubscribe = onSnapshot(
@@ -54,6 +55,8 @@ export const listenBudgetLabors = ({
               ...change.doc.data(),
               id: change.doc.id,
               subtotal: change.doc.data().cost * change.doc.data().quantity,
+              createdAt: change.doc.data()?.createdAt?.toDate()?.toISOString(),
+              updatedAt: change.doc.data()?.updatedAt?.toDate()?.toISOString(),
             } as IBudgetLabor;
 
             if (change.type === 'added') {
@@ -210,7 +213,11 @@ export const createBudgetLabor = async ({
       const summaryTotal = summaryDoc.data().sumLabors + subtotal;
 
       transaction.update(summaryRef, { sumLabors: summaryTotal });
-      transaction.set(laborRef, rest);
+      transaction.set(laborRef, {
+        ...rest,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
 
       return {
         ...budgetLabor,
@@ -258,7 +265,7 @@ export const updateBudgetLabor = async ({
       const summaryTotal = summaryDoc.data().sumLabors + newSum;
 
       transaction.update(summaryRef, { sumLabors: summaryTotal });
-      transaction.set(laborRef, rest);
+      transaction.set(laborRef, { ...rest, updatedAt: serverTimestamp() });
     });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);

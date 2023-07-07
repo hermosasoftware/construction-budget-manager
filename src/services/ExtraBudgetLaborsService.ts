@@ -9,6 +9,7 @@ import {
   query,
   FirestoreError,
   orderBy,
+  serverTimestamp,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
@@ -40,7 +41,7 @@ export const listenExtraLabors = ({
       activityId,
       'budgetLabors',
     );
-    const extraLaborsQuery = query(laborRef, orderBy('name'));
+    const extraLaborsQuery = query(laborRef, orderBy('createdAt'));
     const { dispatch, getState } = store;
 
     const unsubscribe = onSnapshot(
@@ -55,6 +56,8 @@ export const listenExtraLabors = ({
               ...change.doc.data(),
               id: change.doc.id,
               subtotal: change.doc.data().cost * change.doc.data().quantity,
+              createdAt: change.doc.data()?.createdAt?.toDate()?.toISOString(),
+              updatedAt: change.doc.data()?.updatedAt?.toDate()?.toISOString(),
             } as IBudgetLabor;
 
             if (change.type === 'added') {
@@ -225,7 +228,11 @@ export const createExtraBudgetLabor = async ({
 
       transaction.update(summaryRef, { sumLabors: summaryTotal });
       transaction.update(activityRef, { sumLabors: activityTotal });
-      transaction.set(laborRef, rest);
+      transaction.set(laborRef, {
+        ...rest,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
 
       return {
         ...extraBudgetLabor,
@@ -284,7 +291,7 @@ export const updateExtraBudgetLabor = async ({
 
       transaction.update(summaryRef, { sumLabors: summaryTotal });
       transaction.update(activityRef, { sumLabors: activityTotal });
-      transaction.set(laborRef, rest);
+      transaction.set(laborRef, { ...rest, updatedAt: serverTimestamp() });
     });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);

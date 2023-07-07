@@ -4,4 +4,6 @@ export interface IBudgetSubcontract {
   quantity: number;
   cost: number;
   subtotal: number;
+  createdAt: Date | string;
+  updatedAt: Date | string;
 }
