@@ -17,7 +17,7 @@ export const extraLaborsSlice = createSlice({
       state.extraLabors = payload;
     },
     insertExtraLabor: (state, { payload }: PayloadAction<IBudgetLabor>) => {
-      state.extraLabors = [payload, ...state.extraLabors];
+      state.extraLabors = [...state.extraLabors, payload];
     },
     modifyExtraLabor: (state, { payload }: PayloadAction<IBudgetLabor>) => {
       const index = state.extraLabors.findIndex(m => m.id === payload.id);

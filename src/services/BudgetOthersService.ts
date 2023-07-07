@@ -124,15 +124,18 @@ export const getBudgetOthers = async ({
   errorCallback,
 }: { projectId: string } & IService) => {
   try {
-    const OtherRef = collection(
-      db,
-      'projects',
-      projectId,
-      'projectBudget',
-      'summary',
-      'budgetOthers',
+    const otherRef = query(
+      collection(
+        db,
+        'projects',
+        projectId,
+        'projectBudget',
+        'summary',
+        'budgetOthers',
+      ),
+      orderBy('createdAt'),
     );
-    const result = await getDocs(OtherRef);
+    const result = await getDocs(otherRef);
     const data = result.docs.map(doc => ({
       ...doc.data(),
       id: doc.id,
@@ -250,7 +253,7 @@ export const updateBudgetOther = async ({
 } & IService) => {
   try {
     await runTransaction(db, async transaction => {
-      const { id, subtotal, ...rest } = budgetOther;
+      const { id, createdAt, subtotal, ...rest } = budgetOther;
       const budgetRef = collection(db, 'projects', projectId, 'projectBudget');
       const OtherRef = doc(budgetRef, 'summary', 'budgetOthers', id);
       const summaryRef = doc(budgetRef, 'summary');
@@ -265,7 +268,7 @@ export const updateBudgetOther = async ({
       const summaryTotal = summaryDoc.data().sumOthers + newSum;
 
       transaction.update(summaryRef, { sumOthers: summaryTotal });
-      transaction.set(OtherRef, { ...rest, updatedAt: serverTimestamp() });
+      transaction.update(OtherRef, { ...rest, updatedAt: serverTimestamp() });
     });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);

@@ -17,7 +17,7 @@ export const budgetOthersSlice = createSlice({
       state.budgetOthers = payload;
     },
     insertBudgetOther: (state, { payload }: PayloadAction<IBudgetOther>) => {
-      state.budgetOthers = [payload, ...state.budgetOthers];
+      state.budgetOthers = [...state.budgetOthers, payload];
     },
     modifyBudgetOther: (state, { payload }: PayloadAction<IBudgetOther>) => {
       const index = state.budgetOthers.findIndex(m => m.id === payload.id);

@@ -377,7 +377,7 @@ export const updateProjectInvoiceDetail = async ({
   projectInvoiceDetail: IProjectInvoiceDetail;
 } & IService) => {
   try {
-    const { id, pdfFile, products, ...rest } = projectInvoiceDetail;
+    const { id, createdAt, pdfFile, products, ...rest } = projectInvoiceDetail;
     const invRef = doc(db, 'projects', projectId, 'projectInvoicing', id);
 
     if (pdfFile) {
@@ -385,9 +385,13 @@ export const updateProjectInvoiceDetail = async ({
       await uploadBytes(storageRef, pdfFile);
       const pdfURL = await getDownloadURL(storageRef);
       projectInvoiceDetail.pdfURL = pdfURL;
-      await setDoc(invRef, { ...rest, pdfURL, updatedAt: serverTimestamp() });
+      await updateDoc(invRef, {
+        ...rest,
+        pdfURL,
+        updatedAt: serverTimestamp(),
+      });
     } else {
-      await setDoc(invRef, { ...rest, updatedAt: serverTimestamp() });
+      await updateDoc(invRef, { ...rest, updatedAt: serverTimestamp() });
     }
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
@@ -510,7 +514,7 @@ export const updateInvoiceProduct = async ({
   product: IInvoiceProduct;
 } & IService) => {
   try {
-    const { id, ...rest } = product;
+    const { id, createdAt, ...rest } = product;
     const invRef = doc(
       db,
       'projects',
@@ -527,7 +531,7 @@ export const updateInvoiceProduct = async ({
       'products',
       id,
     );
-    await setDoc(productRef, { ...rest, updatedAt: serverTimestamp() });
+    await updateDoc(productRef, { ...rest, updatedAt: serverTimestamp() });
     await updateDoc(invRef, { updatedAt: serverTimestamp() });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);

@@ -8,13 +8,13 @@ import {
   orderBy,
   getDoc,
   doc,
-  setDoc,
   runTransaction,
   deleteDoc,
   documentId,
   onSnapshot,
   FirestoreError,
   serverTimestamp,
+  updateDoc,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
@@ -39,7 +39,7 @@ export const listenProjects = async ({
 }: IService) => {
   try {
     const projectRef = collection(db, 'projects');
-    const projectsQuery = query(projectRef, orderBy('createdAt'));
+    const projectsQuery = query(projectRef, orderBy('createdAt', 'desc'));
     const { dispatch, getState } = store;
 
     const unsubscribe = onSnapshot(
@@ -289,9 +289,9 @@ export const updateProject = async ({
   errorCallback,
 }: { project: IProject } & IService) => {
   try {
-    const { id, ...rest } = project;
+    const { id, createdAt, ...rest } = project;
     const projectRef = doc(db, 'projects', id);
-    await setDoc(projectRef, { ...rest, updatedAt: serverTimestamp() });
+    await updateDoc(projectRef, { ...rest, updatedAt: serverTimestamp() });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 

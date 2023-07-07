@@ -130,13 +130,16 @@ export const getExtraBudgetSubcontracts = async ({
   errorCallback,
 }: { projectId: string; activityId: string } & IService) => {
   try {
-    const subCtRef = collection(
-      db,
-      'projects',
-      projectId,
-      'projectExtraBudget',
-      activityId,
-      'budgetSubcontracts',
+    const subCtRef = query(
+      collection(
+        db,
+        'projects',
+        projectId,
+        'projectExtraBudget',
+        activityId,
+        'budgetSubcontracts',
+      ),
+      orderBy('createdAt'),
     );
     const result = await getDocs(subCtRef);
     const data = result.docs.map(doc => ({
@@ -273,7 +276,7 @@ export const updateExtraBudgetSubcontract = async ({
 } & IService) => {
   try {
     await runTransaction(db, async transaction => {
-      const { id, subtotal, ...rest } = extraBudgetSubcontract;
+      const { id, createdAt, subtotal, ...rest } = extraBudgetSubcontract;
       const budgetRef = collection(
         db,
         'projects',
@@ -297,7 +300,7 @@ export const updateExtraBudgetSubcontract = async ({
 
       transaction.update(summaryRef, { sumSubcontracts: summaryTotal });
       transaction.update(activityRef, { sumSubcontracts: activityTotal });
-      transaction.set(subCtRef, { ...rest, updatedAt: serverTimestamp() });
+      transaction.update(subCtRef, { ...rest, updatedAt: serverTimestamp() });
     });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);

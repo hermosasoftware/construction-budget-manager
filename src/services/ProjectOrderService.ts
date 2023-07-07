@@ -3,7 +3,6 @@ import {
   addDoc,
   getDocs,
   doc,
-  setDoc,
   getDoc,
   deleteDoc,
   query,
@@ -297,9 +296,9 @@ export const updateProjectOrder = async ({
   projectOrder: IProjectOrder;
 } & IService) => {
   try {
-    const { id, cost, products, ...rest } = projectOrder;
+    const { id, createdAt, cost, products, ...rest } = projectOrder;
     const orderRef = doc(db, 'projects', projectId, 'projectOrders', id);
-    await setDoc(orderRef, { ...rest, updatedAt: serverTimestamp() });
+    await updateDoc(orderRef, { ...rest, updatedAt: serverTimestamp() });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
@@ -416,7 +415,7 @@ export const updateOrderProduct = async ({
   product: IOrderProduct;
 } & IService) => {
   try {
-    const { id, ...rest } = product;
+    const { id, createdAt, ...rest } = product;
     const orderRef = doc(db, 'projects', projectId, 'projectOrders', orderId);
     const productRef = doc(
       db,
@@ -428,7 +427,7 @@ export const updateOrderProduct = async ({
       id,
     );
 
-    await setDoc(productRef, { ...rest, updatedAt: serverTimestamp() });
+    await updateDoc(productRef, { ...rest, updatedAt: serverTimestamp() });
     await updateDoc(orderRef, { updatedAt: serverTimestamp() });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);

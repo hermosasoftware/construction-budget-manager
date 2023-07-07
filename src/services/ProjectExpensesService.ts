@@ -3,7 +3,6 @@ import {
   addDoc,
   getDocs,
   doc,
-  setDoc,
   getDoc,
   deleteDoc,
   onSnapshot,
@@ -11,6 +10,7 @@ import {
   orderBy,
   FirestoreError,
   serverTimestamp,
+  updateDoc,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
@@ -216,9 +216,9 @@ export const updateProjectExpense = async ({
   errorCallback,
 }: { projectId: string; projectExpense: IProjectExpense } & IService) => {
   try {
-    const { id, ...rest } = projectExpense;
+    const { id, createdAt, ...rest } = projectExpense;
     const expRef = doc(db, 'projects', projectId, 'projectExpenses', id);
-    await setDoc(expRef, { ...rest, updatedAt: serverTimestamp() });
+    await updateDoc(expRef, { ...rest, updatedAt: serverTimestamp() });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
