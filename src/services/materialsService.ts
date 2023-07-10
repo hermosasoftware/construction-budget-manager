@@ -9,7 +9,6 @@ import {
   orderBy,
   query,
   serverTimestamp,
-  setDoc,
   updateDoc,
   writeBatch,
 } from 'firebase/firestore';
@@ -223,9 +222,9 @@ export const updateMaterial = async ({
   material: IMaterial;
 } & IService) => {
   try {
-    const { id, ...rest } = material;
+    const { id, createdAt, ...rest } = material;
     const materialDocRef = doc(db, 'materials', id);
-    await setDoc(materialDocRef, { ...rest, updatedAt: serverTimestamp() });
+    await updateDoc(materialDocRef, { ...rest, updatedAt: serverTimestamp() });
     toastSuccess(appStrings.success, appStrings.saveSuccess);
     successCallback && successCallback();
   } catch (e) {
@@ -309,7 +308,7 @@ export const updateSubMaterial = async ({
   submaterial: ISubMaterial;
 } & IService) => {
   try {
-    const { id, ...rest } = submaterial;
+    const { id, createdAt, ...rest } = submaterial;
     const matRef = doc(db, 'materials', materialId);
     const subMaterialDocRef = doc(
       db,
@@ -318,7 +317,10 @@ export const updateSubMaterial = async ({
       'subMaterials',
       id,
     );
-    await setDoc(subMaterialDocRef, { ...rest, updatedAt: serverTimestamp() });
+    await updateDoc(subMaterialDocRef, {
+      ...rest,
+      updatedAt: serverTimestamp(),
+    });
     await updateDoc(matRef, { updatedAt: serverTimestamp() });
     toastSuccess(appStrings.success, appStrings.saveSuccess);
     successCallback && successCallback(materialId, id);

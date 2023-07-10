@@ -35,6 +35,8 @@ const initialSelectedItemData = {
   quantity: 1,
   cost: 0,
   subtotal: 0,
+  createdAt: new Date(),
+  updatedAt: new Date(),
 };
 
 const BudgetLabor: React.FC<IBudgetLaborView> = props => {

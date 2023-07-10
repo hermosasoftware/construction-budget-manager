@@ -9,6 +9,7 @@ import {
   orderBy,
   onSnapshot,
   FirestoreError,
+  serverTimestamp,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
@@ -39,7 +40,7 @@ export const listenBudgetSubcontracts = ({
       'summary',
       'budgetSubcontracts',
     );
-    const budgetSubcontractsQuery = query(subCtRef, orderBy('name'));
+    const budgetSubcontractsQuery = query(subCtRef, orderBy('createdAt'));
     const { dispatch, getState } = store;
 
     const unsubscribe = onSnapshot(
@@ -56,6 +57,8 @@ export const listenBudgetSubcontracts = ({
               ...change.doc.data(),
               id: change.doc.id,
               subtotal: change.doc.data().cost * change.doc.data().quantity,
+              createdAt: change.doc.data()?.createdAt?.toDate()?.toISOString(),
+              updatedAt: change.doc.data()?.updatedAt?.toDate()?.toISOString(),
             } as IBudgetSubcontract;
 
             if (change.type === 'added') {
@@ -125,13 +128,16 @@ export const getBudgetSubcontracts = async ({
   errorCallback,
 }: { projectId: string } & IService) => {
   try {
-    const subCtRef = collection(
-      db,
-      'projects',
-      projectId,
-      'projectBudget',
-      'summary',
-      'budgetSubcontracts',
+    const subCtRef = query(
+      collection(
+        db,
+        'projects',
+        projectId,
+        'projectBudget',
+        'summary',
+        'budgetSubcontracts',
+      ),
+      orderBy('createdAt'),
     );
     const result = await getDocs(subCtRef);
     const data = result.docs.map(doc => ({
@@ -216,7 +222,11 @@ export const createBudgetSubcontract = async ({
       const summaryTotal = summaryDoc.data().sumSubcontracts + subtotal;
 
       transaction.update(summaryRef, { sumSubcontracts: summaryTotal });
-      transaction.set(subCtRef, rest);
+      transaction.set(subCtRef, {
+        ...rest,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
 
       return {
         ...budgetSubcontract,
@@ -249,7 +259,7 @@ export const updateBudgetSubcontract = async ({
 } & IService) => {
   try {
     await runTransaction(db, async transaction => {
-      const { id, subtotal, ...rest } = budgetSubcontract;
+      const { id, createdAt, subtotal, ...rest } = budgetSubcontract;
       const budgetRef = collection(db, 'projects', projectId, 'projectBudget');
       const subCtRef = doc(budgetRef, 'summary', 'budgetSubcontracts', id);
       const summaryRef = doc(budgetRef, 'summary');
@@ -264,7 +274,7 @@ export const updateBudgetSubcontract = async ({
       const summaryTotal = summaryDoc.data().sumSubcontracts + newSum;
 
       transaction.update(summaryRef, { sumSubcontracts: summaryTotal });
-      transaction.set(subCtRef, rest);
+      transaction.update(subCtRef, { ...rest, updatedAt: serverTimestamp() });
     });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);

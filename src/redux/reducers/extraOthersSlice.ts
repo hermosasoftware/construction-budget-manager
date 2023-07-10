@@ -17,7 +17,7 @@ export const extraOthersSlice = createSlice({
       state.extraOthers = payload;
     },
     insertExtraOther: (state, { payload }: PayloadAction<IBudgetOther>) => {
-      state.extraOthers = [payload, ...state.extraOthers];
+      state.extraOthers = [...state.extraOthers, payload];
     },
     modifyExtraOther: (state, { payload }: PayloadAction<IBudgetOther>) => {
       const index = state.extraOthers.findIndex(m => m.id === payload.id);

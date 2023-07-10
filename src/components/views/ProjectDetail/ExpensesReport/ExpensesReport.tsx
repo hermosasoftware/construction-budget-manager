@@ -32,6 +32,8 @@ const initialSelectedItemData = {
   amount: 0,
   work: '',
   date: new Date(),
+  createdAt: new Date(),
+  updatedAt: new Date(),
 };
 
 const ExpensesReport: React.FC<IExpensesReport> = props => {

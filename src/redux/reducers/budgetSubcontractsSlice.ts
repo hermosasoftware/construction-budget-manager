@@ -23,7 +23,7 @@ export const budgetSubcontractsSlice = createSlice({
       state,
       { payload }: PayloadAction<IBudgetSubcontract>,
     ) => {
-      state.budgetSubcontracts = [payload, ...state.budgetSubcontracts];
+      state.budgetSubcontracts = [...state.budgetSubcontracts, payload];
     },
     modifyBudgetSubcontract: (
       state,

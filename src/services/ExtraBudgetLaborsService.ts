@@ -9,6 +9,7 @@ import {
   query,
   FirestoreError,
   orderBy,
+  serverTimestamp,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
@@ -40,7 +41,7 @@ export const listenExtraLabors = ({
       activityId,
       'budgetLabors',
     );
-    const extraLaborsQuery = query(laborRef, orderBy('name'));
+    const extraLaborsQuery = query(laborRef, orderBy('createdAt'));
     const { dispatch, getState } = store;
 
     const unsubscribe = onSnapshot(
@@ -55,6 +56,8 @@ export const listenExtraLabors = ({
               ...change.doc.data(),
               id: change.doc.id,
               subtotal: change.doc.data().cost * change.doc.data().quantity,
+              createdAt: change.doc.data()?.createdAt?.toDate()?.toISOString(),
+              updatedAt: change.doc.data()?.updatedAt?.toDate()?.toISOString(),
             } as IBudgetLabor;
 
             if (change.type === 'added') {
@@ -123,13 +126,16 @@ export const getExtraBudgetLabors = async ({
   errorCallback,
 }: { projectId: string; activityId: string } & IService) => {
   try {
-    const laborRef = collection(
-      db,
-      'projects',
-      projectId,
-      'projectExtraBudget',
-      activityId,
-      'budgetLabors',
+    const laborRef = query(
+      collection(
+        db,
+        'projects',
+        projectId,
+        'projectExtraBudget',
+        activityId,
+        'budgetLabors',
+      ),
+      orderBy('createdAt'),
     );
     const result = await getDocs(laborRef);
     const data = result.docs.map(doc => ({
@@ -225,7 +231,11 @@ export const createExtraBudgetLabor = async ({
 
       transaction.update(summaryRef, { sumLabors: summaryTotal });
       transaction.update(activityRef, { sumLabors: activityTotal });
-      transaction.set(laborRef, rest);
+      transaction.set(laborRef, {
+        ...rest,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
 
       return {
         ...extraBudgetLabor,
@@ -260,7 +270,7 @@ export const updateExtraBudgetLabor = async ({
 } & IService) => {
   try {
     await runTransaction(db, async transaction => {
-      const { id, subtotal, ...rest } = extraBudgetLabor;
+      const { id, createdAt, subtotal, ...rest } = extraBudgetLabor;
       const budgetRef = collection(
         db,
         'projects',
@@ -284,7 +294,7 @@ export const updateExtraBudgetLabor = async ({
 
       transaction.update(summaryRef, { sumLabors: summaryTotal });
       transaction.update(activityRef, { sumLabors: activityTotal });
-      transaction.set(laborRef, rest);
+      transaction.update(laborRef, { ...rest, updatedAt: serverTimestamp() });
     });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);

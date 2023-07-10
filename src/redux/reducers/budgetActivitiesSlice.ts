@@ -23,7 +23,7 @@ export const budgetActivitiesSlice = createSlice({
       state,
       { payload }: PayloadAction<IBudgetActivity>,
     ) => {
-      state.budgetActivities = [payload, ...state.budgetActivities];
+      state.budgetActivities = [...state.budgetActivities, payload];
     },
     modifyBudgetActivity: (
       state,

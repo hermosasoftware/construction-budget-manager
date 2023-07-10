@@ -3,13 +3,14 @@ import {
   addDoc,
   getDocs,
   doc,
-  setDoc,
   getDoc,
   deleteDoc,
   onSnapshot,
   query,
   orderBy,
   FirestoreError,
+  serverTimestamp,
+  updateDoc,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
@@ -48,6 +49,8 @@ export const listenProjectExpenses = ({
               ...change.doc.data(),
               id: change.doc.id,
               date: change.doc.data().date.toDate().toISOString(),
+              createdAt: change.doc.data()?.createdAt?.toDate()?.toISOString(),
+              updatedAt: change.doc.data()?.updatedAt?.toDate()?.toISOString(),
             } as IProjectExpense;
 
             if (change.type === 'added') {
@@ -185,7 +188,11 @@ export const createProjectExpense = async ({
   try {
     const { id, ...rest } = projectExpense;
     const expRef = collection(db, 'projects', projectId, 'projectExpenses');
-    const result = await addDoc(expRef, rest);
+    const result = await addDoc(expRef, {
+      ...rest,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
     const data = { ...projectExpense, id: result.id } as IProjectExpense;
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
@@ -209,9 +216,9 @@ export const updateProjectExpense = async ({
   errorCallback,
 }: { projectId: string; projectExpense: IProjectExpense } & IService) => {
   try {
-    const { id, ...rest } = projectExpense;
+    const { id, createdAt, ...rest } = projectExpense;
     const expRef = doc(db, 'projects', projectId, 'projectExpenses', id);
-    await setDoc(expRef, rest);
+    await updateDoc(expRef, { ...rest, updatedAt: serverTimestamp() });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 

@@ -59,6 +59,7 @@ export const listenProjectInvoices = ({
               ...change.doc.data(),
               id: change.doc.id,
               date: change.doc.data().date.toDate().toISOString(),
+              createdAt: change.doc.data()?.createdAt?.toDate()?.toISOString(),
               updatedAt: change.doc.data()?.updatedAt?.toDate()?.toISOString(),
             } as IProjectInvoiceDetail;
 
@@ -105,11 +106,16 @@ const changeTypeAdded = async (
   invRef: any,
   elem: IProjectInvoiceDetail,
 ) => {
-  const productQ = query(collection(invRef, elem.id, 'products'));
+  const productQ = query(
+    collection(invRef, elem.id, 'products'),
+    orderBy('createdAt'),
+  );
   const products = await getDocs(productQ);
   const data = products.docs.map(doc => ({
     ...doc.data(),
     id: doc.id,
+    createdAt: doc.data()?.createdAt?.toDate()?.toISOString(),
+    updatedAt: doc.data()?.updatedAt?.toDate()?.toISOString(),
   })) as IInvoiceProduct[];
 
   if (invoicesList.length > 0) {
@@ -133,11 +139,16 @@ const changeTypeModified = async (
   invRef: any,
   elem: IProjectInvoiceDetail,
 ) => {
-  const productQ = query(collection(invRef, elem.id, 'products'));
+  const productQ = query(
+    collection(invRef, elem.id, 'products'),
+    orderBy('createdAt'),
+  );
   const products = await getDocs(productQ);
   const data = products.docs.map(doc => ({
     ...doc.data(),
     id: doc.id,
+    createdAt: doc.data()?.createdAt?.toDate()?.toISOString(),
+    updatedAt: doc.data()?.updatedAt?.toDate()?.toISOString(),
   })) as IInvoiceProduct[];
   dispatch(
     modifyProjectInvoice({
@@ -178,7 +189,10 @@ export const getProjectInvoicing = async ({
 
     let allInvoices: IProjectInvoiceDetail[] = [];
     let productsPromise = invoices.map(async elem => {
-      const productQ = query(collection(invRef, elem.id, 'products'));
+      const productQ = query(
+        collection(invRef, elem.id, 'products'),
+        orderBy('createdAt'),
+      );
       const products = await getDocs(productQ);
       const data = products.docs.map(doc => ({
         ...doc.data(),
@@ -262,6 +276,7 @@ export const createProjectInvoiceDetail = async ({
 
     const result = await addDoc(invRef, {
       ...rest,
+      createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
     let data = {
@@ -305,12 +320,15 @@ export const createProjectInvoiceDetailAndProducts = async ({
 
     const result = await addDoc(invRef, {
       ...rest,
+      createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
     const productsMap = products.map(async product => {
       const productRef = collection(invRef, result.id, 'products');
       const docRef = await addDoc(productRef, {
         ...product,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
       });
       return {
         ...product,
@@ -359,7 +377,7 @@ export const updateProjectInvoiceDetail = async ({
   projectInvoiceDetail: IProjectInvoiceDetail;
 } & IService) => {
   try {
-    const { id, pdfFile, products, ...rest } = projectInvoiceDetail;
+    const { id, createdAt, pdfFile, products, ...rest } = projectInvoiceDetail;
     const invRef = doc(db, 'projects', projectId, 'projectInvoicing', id);
 
     if (pdfFile) {
@@ -367,9 +385,13 @@ export const updateProjectInvoiceDetail = async ({
       await uploadBytes(storageRef, pdfFile);
       const pdfURL = await getDownloadURL(storageRef);
       projectInvoiceDetail.pdfURL = pdfURL;
-      await setDoc(invRef, { ...rest, pdfURL, updatedAt: serverTimestamp() });
+      await updateDoc(invRef, {
+        ...rest,
+        pdfURL,
+        updatedAt: serverTimestamp(),
+      });
     } else {
-      await setDoc(invRef, { ...rest, updatedAt: serverTimestamp() });
+      await updateDoc(invRef, { ...rest, updatedAt: serverTimestamp() });
     }
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
@@ -457,6 +479,8 @@ export const addInvoiceProduct = async ({
     );
     const docRef = await addDoc(productRef, {
       ...rest,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
     });
     const data = {
       ...rest,
@@ -490,7 +514,7 @@ export const updateInvoiceProduct = async ({
   product: IInvoiceProduct;
 } & IService) => {
   try {
-    const { id, ...rest } = product;
+    const { id, createdAt, ...rest } = product;
     const invRef = doc(
       db,
       'projects',
@@ -507,7 +531,7 @@ export const updateInvoiceProduct = async ({
       'products',
       id,
     );
-    await setDoc(productRef, rest);
+    await updateDoc(productRef, { ...rest, updatedAt: serverTimestamp() });
     await updateDoc(invRef, { updatedAt: serverTimestamp() });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);

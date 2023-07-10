@@ -49,6 +49,7 @@ const initialSelectedItemData = {
   option: { value: '', label: '' },
   pdfURL: '',
   pdfFile: undefined,
+  createdAt: new Date(),
   updatedAt: new Date(),
 };
 
@@ -71,6 +72,7 @@ const initialSelectedOrderData = {
   cost: 0,
   products: [],
   option: { value: '', label: '' },
+  createdAt: new Date(),
   updatedAt: new Date(),
 };
 
@@ -80,6 +82,8 @@ const initialSelectedProductData = {
   description: { value: '', label: '' },
   tax: 0,
   cost: 0,
+  createdAt: new Date(),
+  updatedAt: new Date(),
 };
 
 interface IInvoiceOrderDetail extends IProjectOrder {
@@ -230,6 +234,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
         ...data,
         id: '',
         order: +option.label,
+        createdAt: new Date(),
         updatedAt: new Date(),
         activity,
         pdfFile,

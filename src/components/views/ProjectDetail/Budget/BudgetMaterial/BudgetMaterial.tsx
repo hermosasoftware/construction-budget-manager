@@ -115,7 +115,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
   };
 
   const addItem = (item: IMaterialBreakdown) =>
-    setTableData([item, ...tableData]);
+    setTableData([...tableData, item]);
 
   const updateItem = (item: IMaterialBreakdown) => {
     const index = tableData.findIndex(e => e.id === item.id);

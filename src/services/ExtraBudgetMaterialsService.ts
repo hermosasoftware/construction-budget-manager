@@ -319,8 +319,8 @@ export const createExtraBudgetMaterial = async ({
           });
           subMatSubtotal += rest.cost * rest.quantity;
         });
-        summaryTotal += subMatSubtotal * rest.quantity;
-        activityTotal += subMatSubtotal * rest.quantity;
+        summaryTotal += subMatSubtotal;
+        activityTotal += subMatSubtotal;
       } else {
         summaryTotal += subtotal;
         activityTotal += subtotal;
@@ -370,7 +370,8 @@ export const updateExtraBudgetMaterial = async ({
 } & IService) => {
   try {
     await runTransaction(db, async transaction => {
-      const { id, subtotal, subMaterials, ...rest } = extraBudgetMaterial;
+      const { id, createdAt, subtotal, subMaterials, ...rest } =
+        extraBudgetMaterial;
       const budgetRef = collection(
         db,
         'projects',
@@ -390,21 +391,20 @@ export const updateExtraBudgetMaterial = async ({
 
       let newSum = 0;
       let subMatSubtotal = 0;
+      //Material with submaterials
       if (matDoc.data()?.hasSubMaterials && rest.hasSubMaterials) {
         subMaterials?.forEach(m => (subMatSubtotal += m.cost * m.quantity));
-        newSum =
-          subMatSubtotal * rest.quantity -
-          subMatSubtotal * matDoc.data()?.quantity;
-      } else if (!matDoc.data()?.hasSubMaterials && rest.hasSubMaterials) {
+        newSum = subMatSubtotal - subMatSubtotal;
+      } //Changed material to have submaterials
+      else if (!matDoc.data()?.hasSubMaterials && rest.hasSubMaterials) {
         subMaterials?.forEach(m => (subMatSubtotal += m.cost * m.quantity));
-        newSum =
-          subMatSubtotal * rest.quantity -
-          matDoc.data()?.cost * matDoc.data()?.quantity;
-      } else if (matDoc.data()?.hasSubMaterials && !rest.hasSubMaterials) {
+        newSum = subMatSubtotal - matDoc.data()?.cost * matDoc.data()?.quantity;
+      } //Changed material to not have submaterials
+      else if (matDoc.data()?.hasSubMaterials && !rest.hasSubMaterials) {
         subMaterials?.forEach(m => (subMatSubtotal += m.cost * m.quantity));
-        newSum =
-          rest.cost * rest.quantity - subMatSubtotal * matDoc.data()?.quantity;
-      } else {
+        newSum = rest.cost * rest.quantity - subMatSubtotal;
+      } //Material without submaterials
+      else {
         newSum = subtotal - matDoc.data()?.cost * matDoc.data()?.quantity;
       }
 
@@ -413,7 +413,7 @@ export const updateExtraBudgetMaterial = async ({
 
       transaction.update(summaryRef, { sumMaterials: summaryTotal });
       transaction.update(activityRef, { sumMaterials: activityTotal });
-      transaction.set(matRef, { ...rest, updatedAt: serverTimestamp() });
+      transaction.update(matRef, { ...rest, updatedAt: serverTimestamp() });
     });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
@@ -471,7 +471,6 @@ export const deleteExtraBudgetMaterial = async ({
       for (const subMaterial of subMatDocs.docs) {
         newSum += subMaterial.data()?.cost * subMaterial.data()?.quantity;
       }
-      newSum *= matDoc.data()?.quantity;
     } else {
       newSum = matDoc.data()?.cost * matDoc.data()?.quantity;
     }
@@ -538,14 +537,13 @@ export const createExtraBudgetSubMaterial = async ({
     const data = await runTransaction(db, async transaction => {
       const summaryRef = doc(budgetRef, 'summary');
       const activityRef = doc(budgetRef, activityId);
-      const matDoc = await transaction.get(matRef);
       const summaryDoc = await transaction.get(summaryRef);
       const activityDoc = await transaction.get(activityRef);
 
-      if (!summaryDoc.exists() || !activityDoc.exists() || !matDoc.exists()) {
+      if (!summaryDoc.exists() || !activityDoc.exists()) {
         throw Error(appStrings.noRecords);
       }
-      const subtotal = rest.cost * rest.quantity * matDoc.data()?.quantity;
+      const subtotal = rest.cost * rest.quantity;
       const summaryTotal = summaryDoc.data()?.sumMaterials + subtotal;
       const activityTotal = activityDoc.data()?.sumMaterials + subtotal;
 
@@ -593,7 +591,7 @@ export const updateExtraBudgetSubMaterial = async ({
   budgetSubMaterial: ISubMaterial;
 } & IService) => {
   try {
-    const { id, ...rest } = budgetSubMaterial;
+    const { id, createdAt, ...rest } = budgetSubMaterial;
     const budgetRef = collection(
       db,
       'projects',
@@ -612,13 +610,11 @@ export const updateExtraBudgetSubMaterial = async ({
     await runTransaction(db, async transaction => {
       const summaryRef = doc(budgetRef, 'summary');
       const activityRef = doc(budgetRef, activityId);
-      const matDoc = await transaction.get(matRef);
       const subMatDoc = await transaction.get(subMatRef);
       const summaryDoc = await transaction.get(summaryRef);
       const activityDoc = await transaction.get(activityRef);
 
       if (
-        !matDoc.exists() ||
         !subMatDoc.exists() ||
         !summaryDoc.exists() ||
         !activityDoc.exists()
@@ -626,11 +622,8 @@ export const updateExtraBudgetSubMaterial = async ({
         throw Error(appStrings.noRecords);
       }
 
-      const subtotal = rest.cost * rest.quantity * matDoc.data()?.quantity;
-      const oldSubtotal =
-        subMatDoc.data()?.cost *
-        subMatDoc.data()?.quantity *
-        matDoc.data()?.quantity;
+      const subtotal = rest.cost * rest.quantity;
+      const oldSubtotal = subMatDoc.data()?.cost * subMatDoc.data()?.quantity;
       const newSum = subtotal - oldSubtotal;
       const summaryTotal = summaryDoc.data()?.sumMaterials + newSum;
       const activityTotal = activityDoc.data()?.sumMaterials + newSum;
@@ -638,7 +631,7 @@ export const updateExtraBudgetSubMaterial = async ({
       transaction.update(summaryRef, { sumMaterials: summaryTotal });
       transaction.update(activityRef, { sumMaterials: activityTotal });
       transaction.update(matRef, { updatedAt: serverTimestamp() });
-      transaction.set(subMatRef, { ...rest, updatedAt: serverTimestamp() });
+      transaction.update(subMatRef, { ...rest, updatedAt: serverTimestamp() });
     });
     await updateDoc(matRef, { updatedAt: serverTimestamp() });
 
@@ -680,26 +673,17 @@ export const deleteExtraBudgetSubMaterial = async ({
     const subMatRef = doc(matRef, 'subMaterials', extraBudgetSubMaterialId);
     const summaryRef = doc(budgetRef, 'summary');
     const activityRef = doc(budgetRef, activityId);
-    const matDoc = await getDoc(matRef);
     const subMatDoc = await getDoc(subMatRef);
     const summaryDoc = await getDoc(summaryRef);
     const activityDoc = await getDoc(activityRef);
 
-    if (
-      !matDoc.exists() ||
-      !subMatDoc.exists() ||
-      !summaryDoc.exists() ||
-      !activityDoc.exists()
-    ) {
+    if (!subMatDoc.exists() || !summaryDoc.exists() || !activityDoc.exists()) {
       throw Error(appStrings.noRecords);
     }
 
     const batch = writeBatch(db);
 
-    const newSum =
-      subMatDoc.data()?.cost *
-      subMatDoc.data()?.quantity *
-      matDoc.data()?.quantity;
+    const newSum = subMatDoc.data()?.cost * subMatDoc.data()?.quantity;
     const summaryTotal = summaryDoc.data()?.sumMaterials - newSum;
     const activityTotal = activityDoc.data()?.sumMaterials - newSum;
 

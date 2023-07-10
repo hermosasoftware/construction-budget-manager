@@ -5,7 +5,6 @@ import {
   doc,
   writeBatch,
   addDoc,
-  setDoc,
   query,
   where,
   documentId,
@@ -229,9 +228,9 @@ export const updateExtraBudgetActivity = async ({
   extraBudgetActivity: IBudgetActivity;
 } & IService) => {
   try {
-    const { id, ...rest } = extraBudgetActivity;
+    const { id, createdAt, ...rest } = extraBudgetActivity;
     const actRef = doc(db, 'projects', projectId, 'projectExtraBudget', id);
-    await setDoc(actRef, { ...rest, updatedAt: serverTimestamp() });
+    await updateDoc(actRef, { ...rest, updatedAt: serverTimestamp() });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 

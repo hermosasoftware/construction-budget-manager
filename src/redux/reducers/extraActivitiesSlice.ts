@@ -23,7 +23,7 @@ export const extraActivitiesSlice = createSlice({
       state,
       { payload }: PayloadAction<IBudgetActivity>,
     ) => {
-      state.extraActivities = [payload, ...state.extraActivities];
+      state.extraActivities = [...state.extraActivities, payload];
     },
     modifyExtraActivity: (
       state,

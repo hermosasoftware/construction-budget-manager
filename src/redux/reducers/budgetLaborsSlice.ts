@@ -17,7 +17,7 @@ export const budgetLaborsSlice = createSlice({
       state.budgetLabors = payload;
     },
     insertBudgetLabor: (state, { payload }: PayloadAction<IBudgetLabor>) => {
-      state.budgetLabors = [payload, ...state.budgetLabors];
+      state.budgetLabors = [...state.budgetLabors, payload];
     },
     modifyBudgetLabor: (state, { payload }: PayloadAction<IBudgetLabor>) => {
       const index = state.budgetLabors.findIndex(m => m.id === payload.id);
