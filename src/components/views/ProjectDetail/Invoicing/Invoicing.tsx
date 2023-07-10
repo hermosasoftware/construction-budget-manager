@@ -692,6 +692,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
             delProduct(orderId, productId)
           }
           formatCurrency
+          usePagination
         />
         {!projectInvoices.length ? <h1>{appStrings.noRecords}</h1> : null}
       </Box>
