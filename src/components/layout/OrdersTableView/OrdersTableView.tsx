@@ -27,6 +27,7 @@ import { TObject } from '../../../types/global';
 import { colonFormat, dolarFormat } from '../../../utils/numbers';
 
 import styles from './OrdersTableView.module.css';
+import Pagination from '../../common/Pagination';
 
 export type TTableHeader<T = TObject> = {
   name: keyof TTableItem<T>;
@@ -57,6 +58,7 @@ interface ITableProps<T> {
   hideOptions?: boolean;
   exchangeRate?: Number;
   formatCurrency?: boolean;
+  usePagination?: boolean;
 }
 
 const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
@@ -74,15 +76,36 @@ const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
     hideOptions,
     exchangeRate,
     formatCurrency,
+    usePagination,
   } = props;
   const [rowChildVisible, setRowChildVisible] = useState<boolean>(false);
   const [selectedRow, setSelectedRow] = useState<string | number>('');
   const { colorMode } = useColorMode();
   const appStrings = useAppSelector(state => state.settings.appStrings);
+  const itemsPerPage = useAppSelector(state => state.settings.itemsPerPage);
+
+  const [currentPage, setCurrentPage] = useState<number>(0);
+  const [filteredCount, setFilteredCount] = useState<number>(
+    props.items?.length,
+  );
 
   const items = useMemo(() => {
-    return !filter ? props.items : props.items?.filter(filter);
-  }, [props.items, filter]);
+    const auxItems = !filter ? props.items : props.items?.filter(filter);
+    setFilteredCount(auxItems.length);
+    if (!usePagination) return auxItems;
+    let start = currentPage * itemsPerPage;
+    let end = start + itemsPerPage;
+    if (!auxItems) return [];
+    return auxItems.slice(start, end);
+  }, [filter, props.items, usePagination, currentPage, itemsPerPage]);
+
+  React.useEffect(() => {
+    setCurrentPage(0);
+  }, [props.items?.length]);
+
+  const handleOnPageChange = (pageNumber: number, itemsPerPage: number) => {
+    setCurrentPage(pageNumber);
+  };
 
   const onRowClick = (isSelected: boolean, row: any, e: React.MouseEvent) => {
     if (isSelected) {
@@ -182,6 +205,11 @@ const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
     }
     return row[headerName] || '-';
   };
+
+  const checkRenderPagination = () =>
+    usePagination &&
+    props.items.length > itemsPerPage &&
+    filteredCount > itemsPerPage;
 
   return (
     <Box className={styles.table_container} style={{ ...(boxStyle ?? '') }}>
@@ -375,6 +403,15 @@ const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
           })}
         </Tbody>
       </Table>
+      {checkRenderPagination() ? (
+        <Pagination
+          totalCount={props.items.length}
+          itemsPerPage={itemsPerPage}
+          handleOnPageChange={handleOnPageChange}
+          currentPage={currentPage}
+          filteredCount={filteredCount}
+        />
+      ) : undefined}
     </Box>
   );
 };

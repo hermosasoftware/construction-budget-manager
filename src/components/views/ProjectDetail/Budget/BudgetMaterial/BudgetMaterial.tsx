@@ -494,6 +494,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
           delSubMaterial(materialId, submaterialId);
         }}
         formatCurrency
+        usePagination
       />
       {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
     </div>
