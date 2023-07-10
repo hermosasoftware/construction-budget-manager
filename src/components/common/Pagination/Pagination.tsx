@@ -24,6 +24,7 @@ const Pagination = (props: IPagination) => {
 
   const firstPage = currentPage === 0;
   const lastPage = currentPage + 1 === pageCount;
+  console.log('currentPage', currentPage);
 
   const onPageChange = (obj: { selected: number }) => {
     handleOnPageChange(obj.selected, itemsPerPage);
@@ -34,6 +35,7 @@ const Pagination = (props: IPagination) => {
       <ReactPaginate
         containerClassName={styles.pagination_container}
         breakLabel={'...'}
+        breakClassName={styles.break_label}
         pageClassName={styles.item_page}
         pageCount={pageCount}
         nextLabel={<CaretRight size={25} />}
@@ -46,6 +48,7 @@ const Pagination = (props: IPagination) => {
         }`}
         activeClassName={styles.active}
         onPageChange={onPageChange}
+        forcePage={currentPage}
       />
     </div>
   );

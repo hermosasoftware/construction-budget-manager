@@ -88,7 +88,7 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
 
   React.useEffect(() => {
     setCurrentPage(0);
-  }, [props.items]);
+  }, [props.items?.length]);
 
   const handleOnPageChange = (pageNumber: number, itemsPerPage: number) => {
     setCurrentPage(pageNumber);
