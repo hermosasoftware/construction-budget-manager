@@ -85,15 +85,23 @@ const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
   const itemsPerPage = useAppSelector(state => state.settings.itemsPerPage);
 
   const [currentPage, setCurrentPage] = useState<number>(0);
+  const [filteredCount, setFilteredCount] = useState<number>(
+    props.items?.length,
+  );
 
   const items = useMemo(() => {
     const auxItems = !filter ? props.items : props.items?.filter(filter);
+    setFilteredCount(auxItems.length);
     if (!usePagination) return auxItems;
     let start = currentPage * itemsPerPage;
     let end = start + itemsPerPage;
     if (!auxItems) return [];
     return auxItems.slice(start, end);
-  }, [props.items, filter, currentPage, itemsPerPage]);
+  }, [filter, props.items, usePagination, currentPage, itemsPerPage]);
+
+  React.useEffect(() => {
+    setCurrentPage(0);
+  }, [props.items]);
 
   const handleOnPageChange = (pageNumber: number, itemsPerPage: number) => {
     setCurrentPage(pageNumber);
@@ -197,6 +205,11 @@ const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
     }
     return row[headerName] || '-';
   };
+
+  const checkRenderPagination = () =>
+    usePagination &&
+    props.items.length > itemsPerPage &&
+    filteredCount > itemsPerPage;
 
   return (
     <Box className={styles.table_container} style={{ ...(boxStyle ?? '') }}>
@@ -390,12 +403,13 @@ const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
           })}
         </Tbody>
       </Table>
-      {usePagination && props.items.length > itemsPerPage ? (
+      {checkRenderPagination() ? (
         <Pagination
           totalCount={props.items.length}
           itemsPerPage={itemsPerPage}
           handleOnPageChange={handleOnPageChange}
           currentPage={currentPage}
+          filteredCount={filteredCount}
         />
       ) : undefined}
     </Box>
