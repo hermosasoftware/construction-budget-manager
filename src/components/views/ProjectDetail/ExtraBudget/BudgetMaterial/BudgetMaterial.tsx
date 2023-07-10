@@ -36,7 +36,7 @@ const initialSelectedItemData = {
   id: '',
   name: '',
   unit: '',
-  hasSubMaterials: false,
+  hasSubMaterials: true,
   quantity: 1,
   cost: 0,
   subtotal: 0,

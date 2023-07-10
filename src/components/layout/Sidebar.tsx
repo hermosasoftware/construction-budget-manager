@@ -35,7 +35,7 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const bg = useColorModeValue(
     'var(--chakra-colors-side_bar_background)',
-    'var(--chakra-colors-ghost)',
+    'var(--chakra-colors-side_bar_background_dark)',
   );
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const variants = useBreakpointValue({ base: smVariant, md: mdVariant });
@@ -47,7 +47,10 @@ const Sidebar = () => {
       <Stack className={styles.sideBar_container}>
         <Stack className="center-content-cross">
           <Logo className={styles.logo} />
-          <MenuBar menuItems={menuItems(appStrings)} />
+          <MenuBar
+            menuItems={menuItems(appStrings)}
+            toggleSidebar={toggleSidebar}
+          />
         </Stack>
 
         <HStack className={styles.account}>

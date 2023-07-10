@@ -38,6 +38,7 @@ export const mavTheme = extendTheme({
       600: '#CEDBE9',
     },
     side_bar_background: '#EEE',
+    side_bar_background_dark: '#323742',
     text_ghost: '#A3A3A3',
     ghost: '#FFFFFF1A',
     dark_ghost: 'rgba(0, 0, 0, 0.64)',

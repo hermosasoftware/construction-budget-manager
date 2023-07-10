@@ -350,7 +350,12 @@ export const createProjectInvoiceDetailAndProducts = async ({
       const storageRef = ref(storage, `invoices-pdf/${result.id}`);
       await uploadBytes(storageRef, pdfFile);
       data.pdfURL = await getDownloadURL(storageRef);
-      await updateDoc(doc(invRef, data.id), { pdfURL: data.pdfURL });
+      await updateDoc(doc(invRef, data.id), {
+        pdfURL: data.pdfURL,
+        updatedAt: serverTimestamp(),
+      });
+    } else {
+      await updateDoc(doc(invRef, data.id), { updatedAt: serverTimestamp() });
     }
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);

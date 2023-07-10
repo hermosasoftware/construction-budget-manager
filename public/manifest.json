@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "coto-budget-manager",
+  "name": "Coto Budget Manager",
   "icons": [
     {
       "src": "favicon.ico",
