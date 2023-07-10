@@ -40,6 +40,8 @@ const defaultProjectData = {
   location: '',
   status: 'active',
   budgetOpen: true,
+  createdAt: new Date(),
+  updatedAt: new Date(),
 };
 
 export default function Projects() {

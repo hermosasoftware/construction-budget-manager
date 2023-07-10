@@ -126,13 +126,16 @@ export const getExtraBudgetOthers = async ({
   errorCallback,
 }: { projectId: string; activityId: string } & IService) => {
   try {
-    const OtherRef = collection(
-      db,
-      'projects',
-      projectId,
-      'projectExtraBudget',
-      activityId,
-      'budgetOthers',
+    const OtherRef = query(
+      collection(
+        db,
+        'projects',
+        projectId,
+        'projectExtraBudget',
+        activityId,
+        'budgetOthers',
+      ),
+      orderBy('createdAt'),
     );
     const result = await getDocs(OtherRef);
     const data = result.docs.map(doc => ({
@@ -267,7 +270,7 @@ export const updateExtraBudgetOther = async ({
 } & IService) => {
   try {
     await runTransaction(db, async transaction => {
-      const { id, subtotal, ...rest } = extraBudgetOther;
+      const { id, createdAt, subtotal, ...rest } = extraBudgetOther;
       const budgetRef = collection(
         db,
         'projects',
@@ -291,7 +294,7 @@ export const updateExtraBudgetOther = async ({
 
       transaction.update(summaryRef, { sumOthers: summaryTotal });
       transaction.update(activityRef, { sumOthers: activityTotal });
-      transaction.set(OtherRef, { ...rest, updatedAt: serverTimestamp() });
+      transaction.update(OtherRef, { ...rest, updatedAt: serverTimestamp() });
     });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);

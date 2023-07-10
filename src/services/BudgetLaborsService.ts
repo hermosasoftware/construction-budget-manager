@@ -124,13 +124,16 @@ export const getBudgetLabors = async ({
   errorCallback,
 }: { projectId: string } & IService) => {
   try {
-    const laborRef = collection(
-      db,
-      'projects',
-      projectId,
-      'projectBudget',
-      'summary',
-      'budgetLabors',
+    const laborRef = query(
+      collection(
+        db,
+        'projects',
+        projectId,
+        'projectBudget',
+        'summary',
+        'budgetLabors',
+      ),
+      orderBy('createdAt'),
     );
     const result = await getDocs(laborRef);
     const data = result.docs.map(doc => ({
@@ -250,7 +253,7 @@ export const updateBudgetLabor = async ({
 } & IService) => {
   try {
     await runTransaction(db, async transaction => {
-      const { id, subtotal, ...rest } = budgetLabor;
+      const { id, createdAt, subtotal, ...rest } = budgetLabor;
       const budgetRef = collection(db, 'projects', projectId, 'projectBudget');
       const laborRef = doc(budgetRef, 'summary', 'budgetLabors', id);
       const summaryRef = doc(budgetRef, 'summary');
@@ -265,7 +268,7 @@ export const updateBudgetLabor = async ({
       const summaryTotal = summaryDoc.data().sumLabors + newSum;
 
       transaction.update(summaryRef, { sumLabors: summaryTotal });
-      transaction.set(laborRef, { ...rest, updatedAt: serverTimestamp() });
+      transaction.update(laborRef, { ...rest, updatedAt: serverTimestamp() });
     });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);

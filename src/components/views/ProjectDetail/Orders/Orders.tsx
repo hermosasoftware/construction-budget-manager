@@ -51,6 +51,7 @@ const initialSelectedOrderData = {
   sentStatus: false,
   cost: 0,
   products: [],
+  createdAt: new Date(),
   updatedAt: new Date(),
 };
 
@@ -61,6 +62,8 @@ const initialSelectedProductData = {
   cost: 0,
   tax: 0,
   materialRef: '',
+  createdAt: new Date(),
+  updatedAt: new Date(),
 };
 
 const initialMaterialRefData = {

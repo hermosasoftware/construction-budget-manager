@@ -5,15 +5,13 @@ import {
   doc,
   writeBatch,
   addDoc,
-  setDoc,
   query,
-  where,
-  documentId,
   increment,
   onSnapshot,
   FirestoreError,
   serverTimestamp,
   orderBy,
+  updateDoc,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
@@ -125,7 +123,7 @@ export const getBudgetActivity = async ({
   try {
     const actRef = query(
       collection(db, 'projects', projectId, 'projectBudget'),
-      where(documentId(), '!=', 'summary'),
+      orderBy('createdAt'),
     );
     const result = await getDocs(actRef);
     const data = result.docs.map(doc => ({
@@ -228,9 +226,9 @@ export const updateBudgetActivity = async ({
   budgetActivity: IBudgetActivity;
 } & IService) => {
   try {
-    const { id, ...rest } = budgetActivity;
+    const { id, createdAt, ...rest } = budgetActivity;
     const actRef = doc(db, 'projects', projectId, 'projectBudget', id);
-    await setDoc(actRef, { ...rest, updatedAt: serverTimestamp() });
+    await updateDoc(actRef, { ...rest, updatedAt: serverTimestamp() });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 

@@ -8,12 +8,13 @@ import {
   orderBy,
   getDoc,
   doc,
-  setDoc,
   runTransaction,
   deleteDoc,
   documentId,
   onSnapshot,
   FirestoreError,
+  serverTimestamp,
+  updateDoc,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
@@ -38,7 +39,7 @@ export const listenProjects = async ({
 }: IService) => {
   try {
     const projectRef = collection(db, 'projects');
-    const projectsQuery = query(projectRef, orderBy('name'));
+    const projectsQuery = query(projectRef, orderBy('createdAt', 'desc'));
     const { dispatch, getState } = store;
 
     const unsubscribe = onSnapshot(
@@ -50,6 +51,8 @@ export const listenProjects = async ({
           const elem = {
             ...change.doc.data(),
             id: change.doc.id,
+            createdAt: change.doc.data()?.createdAt?.toDate()?.toISOString(),
+            updatedAt: change.doc.data()?.updatedAt?.toDate()?.toISOString(),
           } as IProject;
 
           if (change.type === 'added') {
@@ -238,7 +241,11 @@ export const createProject = async ({
 
       const { id, ...rest } = project;
       const projectRef = doc(collection(db, 'projects'));
-      transaction.set(projectRef, rest);
+      transaction.set(projectRef, {
+        ...rest,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
       const budgetRef = doc(
         db,
         'projects',
@@ -282,9 +289,9 @@ export const updateProject = async ({
   errorCallback,
 }: { project: IProject } & IService) => {
   try {
-    const { id, ...rest } = project;
+    const { id, createdAt, ...rest } = project;
     const projectRef = doc(db, 'projects', id);
-    await setDoc(projectRef, rest);
+    await updateDoc(projectRef, { ...rest, updatedAt: serverTimestamp() });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 

@@ -23,7 +23,7 @@ export const projectExpensesSlice = createSlice({
       state,
       { payload }: PayloadAction<IProjectExpense>,
     ) => {
-      state.projectExpenses = [payload, ...state.projectExpenses];
+      state.projectExpenses = [...state.projectExpenses, payload];
     },
     modifyProjectExpense: (
       state,

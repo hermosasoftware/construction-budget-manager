@@ -211,7 +211,7 @@ export const updateBudgetMaterial = async ({
 } & IService) => {
   try {
     await runTransaction(db, async transaction => {
-      const { id, subtotal, subMaterials, ...rest } = budgetMaterial;
+      const { id, createdAt, subtotal, subMaterials, ...rest } = budgetMaterial;
       const budgetRef = collection(db, 'projects', projectId, 'projectBudget');
       const matRef = doc(budgetRef, activityId, 'budgetMaterials', id);
       const summaryRef = doc(budgetRef, 'summary');
@@ -248,7 +248,7 @@ export const updateBudgetMaterial = async ({
 
       transaction.update(summaryRef, { sumMaterials: summaryTotal });
       transaction.update(activityRef, { sumMaterials: activityTotal });
-      transaction.set(matRef, { ...rest, updatedAt: serverTimestamp() });
+      transaction.update(matRef, { ...rest, updatedAt: serverTimestamp() });
     });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);

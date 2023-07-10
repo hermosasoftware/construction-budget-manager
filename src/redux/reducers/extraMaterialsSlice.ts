@@ -23,7 +23,7 @@ export const extraMaterialsSlice = createSlice({
       state,
       { payload }: PayloadAction<IMaterialBreakdown>,
     ) => {
-      state.extraMaterials = [payload, ...state.extraMaterials];
+      state.extraMaterials = [...state.extraMaterials, payload];
     },
     modifyExtraMaterial: (
       state,

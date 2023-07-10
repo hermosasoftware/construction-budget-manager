@@ -3,7 +3,6 @@ import {
   addDoc,
   getDocs,
   doc,
-  setDoc,
   getDoc,
   deleteDoc,
   query,
@@ -52,6 +51,7 @@ export const listenProjectOrders = ({
               id: change.doc.id,
               date: change.doc.data().date.toDate().toISOString(),
               deliverDate: change.doc.data().deliverDate.toDate().toISOString(),
+              createdAt: change.doc.data()?.createdAt?.toDate()?.toISOString(),
               updatedAt: change.doc.data()?.updatedAt?.toDate()?.toISOString(),
             } as IProjectOrder;
 
@@ -96,11 +96,16 @@ const changeTypeAdded = async (
   orderRef: any,
   elem: IProjectOrder,
 ) => {
-  const productQ = query(collection(orderRef, elem.id, 'products'));
+  const productQ = query(
+    collection(orderRef, elem.id, 'products'),
+    orderBy('createdAt'),
+  );
   const products = await getDocs(productQ);
   const data = products.docs.map(doc => ({
     ...doc.data(),
     id: doc.id,
+    createdAt: doc.data()?.createdAt?.toDate()?.toISOString(),
+    updatedAt: doc.data()?.updatedAt?.toDate()?.toISOString(),
   })) as IOrderProduct[];
 
   if (ordersList.length > 0) {
@@ -124,11 +129,16 @@ const changeTypeModified = async (
   orderRef: any,
   elem: IProjectOrder,
 ) => {
-  const productQ = query(collection(orderRef, elem.id, 'products'));
+  const productQ = query(
+    collection(orderRef, elem.id, 'products'),
+    orderBy('createdAt'),
+  );
   const products = await getDocs(productQ);
   const data = products.docs.map(doc => ({
     ...doc.data(),
     id: doc.id,
+    createdAt: doc.data()?.createdAt?.toDate()?.toISOString(),
+    updatedAt: doc.data()?.updatedAt?.toDate()?.toISOString(),
   })) as IOrderProduct[];
   dispatch(
     modifyProjectOrder({
@@ -167,7 +177,10 @@ export const getProjectOrders = async ({
 
     let allOrders: IProjectOrder[] = [];
     let productsPromise = orders.map(async elem => {
-      const productQ = query(collection(orderRef, elem.id, 'products'));
+      const productQ = query(
+        collection(orderRef, elem.id, 'products'),
+        orderBy('createdAt'),
+      );
       const products = await getDocs(productQ);
       const data = products.docs.map(doc => ({
         ...doc.data(),
@@ -216,7 +229,10 @@ export const getProjectOrderById = async ({
       deliverDate: result.data()?.deliverDate?.toDate(),
     } as IProjectOrder;
 
-    const productQ = collection(orderRef, 'products');
+    const productQ = query(
+      collection(orderRef, 'products'),
+      orderBy('createdAt'),
+    );
     const productsDocs = await getDocs(productQ);
     const products = productsDocs.docs.map(doc => ({
       ...doc.data(),
@@ -251,6 +267,7 @@ export const createProjectOrder = async ({
     const orderRef = collection(db, 'projects', projectId, 'projectOrders');
     const result = await addDoc(orderRef, {
       ...rest,
+      createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
     const data = {
@@ -282,9 +299,9 @@ export const updateProjectOrder = async ({
   projectOrder: IProjectOrder;
 } & IService) => {
   try {
-    const { id, cost, products, ...rest } = projectOrder;
+    const { id, createdAt, cost, products, ...rest } = projectOrder;
     const orderRef = doc(db, 'projects', projectId, 'projectOrders', id);
-    await setDoc(orderRef, { ...rest, updatedAt: serverTimestamp() });
+    await updateDoc(orderRef, { ...rest, updatedAt: serverTimestamp() });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
@@ -366,6 +383,8 @@ export const addOrderProduct = async ({
 
     const docRef = await addDoc(productRef, {
       ...rest,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
     });
     const data = {
       ...rest,
@@ -399,7 +418,7 @@ export const updateOrderProduct = async ({
   product: IOrderProduct;
 } & IService) => {
   try {
-    const { id, ...rest } = product;
+    const { id, createdAt, ...rest } = product;
     const orderRef = doc(db, 'projects', projectId, 'projectOrders', orderId);
     const productRef = doc(
       db,
@@ -411,7 +430,7 @@ export const updateOrderProduct = async ({
       id,
     );
 
-    await setDoc(productRef, rest);
+    await updateDoc(productRef, { ...rest, updatedAt: serverTimestamp() });
     await updateDoc(orderRef, { updatedAt: serverTimestamp() });
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);

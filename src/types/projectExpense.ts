@@ -6,4 +6,6 @@ export interface IProjectExpense {
   amount: number;
   work: string;
   date: Date | string;
+  createdAt: Date | string;
+  updatedAt: Date | string;
 }
