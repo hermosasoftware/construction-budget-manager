@@ -24,7 +24,6 @@ const Pagination = (props: IPagination) => {
 
   const firstPage = currentPage === 0;
   const lastPage = currentPage + 1 === pageCount;
-  console.log('currentPage', currentPage);
 
   const onPageChange = (obj: { selected: number }) => {
     handleOnPageChange(obj.selected, itemsPerPage);
