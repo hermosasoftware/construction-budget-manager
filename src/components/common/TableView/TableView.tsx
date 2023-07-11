@@ -24,6 +24,7 @@ import { TObject } from '../../../types/global';
 import Pagination from '../Pagination';
 import styles from './TableView.module.css';
 import { useAppSelector } from '../../../redux/hooks';
+import { parseCurrentPageItems } from '../../../utils/common';
 
 export type TTableHeader<T = TObject> = {
   name: keyof TTableItem<T>;
@@ -80,10 +81,7 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
     const auxItems = !filter ? props.items : props.items?.filter(filter);
     setFilteredCount(auxItems.length);
     if (!usePagination) return auxItems;
-    let start = currentPage * itemsPerPage;
-    let end = start + itemsPerPage;
-    if (!auxItems) return [];
-    return auxItems.slice(start, end);
+    return parseCurrentPageItems(auxItems, currentPage, itemsPerPage);
   }, [filter, props.items, usePagination, currentPage, itemsPerPage]);
 
   React.useEffect(() => {

@@ -18,9 +18,10 @@ import {
 import { DotsThreeOutlineVertical, Pencil, Plus, Trash } from 'phosphor-react';
 import { TObject } from '../../../types/global';
 import { colonFormat, dolarFormat } from '../../../utils/numbers';
-import styles from './MaterialsTableView.module.css';
 import { useAppSelector } from '../../../redux/hooks';
 import Pagination from '../../common/Pagination';
+import { parseCurrentPageItems } from '../../../utils/common';
+import styles from './MaterialsTableView.module.css';
 
 export type TTableHeader<T = TObject> = {
   name: keyof TTableItem<T>;
@@ -88,10 +89,7 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
     const auxItems = !filter ? props.items : props.items?.filter(filter);
     setFilteredCount(auxItems.length);
     if (!usePagination) return auxItems;
-    let start = currentPage * itemsPerPage;
-    let end = start + itemsPerPage;
-    if (!auxItems) return [];
-    return auxItems.slice(start, end);
+    return parseCurrentPageItems(auxItems, currentPage, itemsPerPage);
   }, [filter, props.items, usePagination, currentPage, itemsPerPage]);
 
   React.useEffect(() => {
