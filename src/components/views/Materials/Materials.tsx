@@ -227,9 +227,11 @@ export default function Materials() {
 
     return (
       <Box borderBottomWidth="1px" px={5} py={3}>
-        <Text fontSize="2xl" fontWeight="bold" color={textColor} align="left">
-          {appStrings.materialsManagement}
-        </Text>
+        <Flex className="header" justify="space-between" align="center">
+          <Text fontSize="2xl" fontWeight="bold" color={textColor} align="left">
+            {appStrings.materialsManagement}
+          </Text>
+        </Flex>
       </Box>
     );
   };

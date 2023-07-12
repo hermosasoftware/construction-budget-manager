@@ -8,9 +8,10 @@ import styles from './MenuBar.module.css';
 
 interface IMenuBarProps {
   menuItems: IMenuItems[];
+  toggleSidebar: Function;
 }
 
-const MenuBar: React.FC<IMenuBarProps> = ({ menuItems }) => {
+const MenuBar: React.FC<IMenuBarProps> = ({ menuItems, toggleSidebar }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [optionSelected, setOptionSelected] = useState<String>(
@@ -19,6 +20,7 @@ const MenuBar: React.FC<IMenuBarProps> = ({ menuItems }) => {
 
   function handleClick(redirectTo: String) {
     navigate(redirectTo.toString());
+    toggleSidebar();
   }
 
   useEffect(() => {
