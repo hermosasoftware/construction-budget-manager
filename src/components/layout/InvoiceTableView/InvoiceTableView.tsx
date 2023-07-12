@@ -27,6 +27,7 @@ import { colonFormat, dolarFormat } from '../../../utils/numbers';
 import { useAppSelector } from '../../../redux/hooks';
 import Pagination from '../../common/Pagination';
 import styles from './InvoiceTableView.module.css';
+import { parseCurrentPageItems } from '../../../utils/common';
 
 export type TTableHeader<T = TObject> = {
   name: keyof TTableItem<T>;
@@ -92,10 +93,7 @@ const InvoiceTableView = <T extends TObject>(props: ITableProps<T>) => {
     const auxItems = !filter ? props.items : props.items?.filter(filter);
     setFilteredCount(auxItems.length);
     if (!usePagination) return auxItems;
-    let start = currentPage * itemsPerPage;
-    let end = start + itemsPerPage;
-    if (!auxItems) return [];
-    return auxItems.slice(start, end);
+    return parseCurrentPageItems(auxItems, currentPage, itemsPerPage);
   }, [filter, props.items, usePagination, currentPage, itemsPerPage]);
 
   React.useEffect(() => {

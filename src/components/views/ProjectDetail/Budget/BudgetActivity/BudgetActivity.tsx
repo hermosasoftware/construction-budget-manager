@@ -197,7 +197,7 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
           setIsAlertDialogOpen(true);
         }}
         hideOptions={!isBudgetOpen}
-        usePagination
+        usePagination={!searchTerm?.length}
       />
       {!budgetActivities.length ? <h1>{appStrings.noRecords}</h1> : null}
     </div>
