@@ -32,3 +32,23 @@ export const formatDate = (date?: Date | string, format?: string) => {
   if (!date || !format) return 'undefined date';
   return DateUtils(date).format(format).toString();
 };
+
+export const getPreviousDay = (date = new Date()) => {
+  date.setDate(date.getDate() - 1);
+  return date;
+};
+
+export const getPreviousWeek = (date = new Date()) => {
+  date.setDate(date.getDate() - 7);
+  return date;
+};
+
+export const getPreviousMonth = (date = new Date()) => {
+  date.setMonth(date.getMonth() - 1);
+  return date;
+};
+
+export const getPreviousYear = (date = new Date()) => {
+  date.setFullYear(date.getFullYear() - 1);
+  return date;
+};
