@@ -14,10 +14,12 @@ import {
   List,
   Divider,
   Grid,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { FadersHorizontal } from 'phosphor-react';
-import { useState } from 'react';
+import { Dispatch, useEffect, useState } from 'react';
 import { useAppSelector } from '../../../redux/hooks';
+import { TObject } from '../../../types/global';
 import {
   formatDate,
   getPreviousDay,
@@ -28,96 +30,155 @@ import {
 } from '../../../utils/dates';
 import SearchInput from '../SearchInput';
 
-import styles from './SearchDate.module.css';
+import styles from './SearchFilter.module.css';
 
-interface SearchFiterProps {
-  handleFirstDateChange: Function;
-  handleSecondDateChange: Function;
+export interface SearchFilterProps {
+  search: Search;
+  setSearch: Dispatch<React.SetStateAction<Search>>;
+  data: any[];
+  options: FilterOption[];
 }
 
-const filterOptions = [
-  {
-    label: 'name',
-    content: [],
-  },
-  {
-    label: 'Work',
-    content: [
-      { label: 'Work', value: 'Work' },
-      { label: 'pool', value: 'pool' },
-      { label: 'Piso de arriba', value: 'Piso de arriba' },
-    ],
-  },
-  {
-    label: 'Owner',
-    content: [
-      {
-        label: 'GONZALEZ BORGE JOSE DENNIS',
-        value: 'GONZALEZ BORGE JOSE DENNIS',
-      },
-      { label: 'Luis Miguel Salazar', value: 'Luis Miguel Salazar' },
-      { label: 'Pablo Vazques Herrera', value: 'Pablo Vazques Herrera' },
-    ],
-  },
-  {
-    label: 'Date',
-    content: [
-      {
-        label: 'Today',
-        value: new Date(),
-      },
-      { label: 'Yersterday', value: getPreviousDay() },
-      { label: 'This Week', value: getPreviousWeek() },
-      { label: 'This Month', value: getPreviousMonth() },
-      { label: 'This Year', value: getPreviousYear() },
-    ],
-  },
-];
+export interface Search {
+  selectedOption: Option;
+  searchTerm: string;
+  firstDate: Date;
+  secondDate: Date;
+}
 
-const SearchFilter: React.FC<SearchFiterProps> = props => {
+export interface FilterOption {
+  name: string;
+  value: string | number | Date;
+  hasSuggestions: boolean;
+}
+
+export interface Option {
+  label: string;
+  value: string | number | Date;
+  suggestions?: Option[];
+}
+
+export const handleFilterSearch = (value: any, search: Search) => {
+  if (!isDate(search?.selectedOption?.value)) {
+    return (
+      search?.searchTerm === '' ||
+      value[search?.selectedOption?.label]
+        .toString()
+        .toUpperCase()
+        .includes(search?.searchTerm.toUpperCase())
+    );
+  } else {
+    let date = new Date(value[search?.selectedOption?.label]);
+    let firstDate = new Date(search?.firstDate);
+    let secondDate = new Date(search?.secondDate);
+    return date >= firstDate && date <= secondDate;
+  }
+};
+
+export const mapFilterOptions = (
+  data: any[],
+  attributes: FilterOption[],
+  appStrings: TObject<any, string>,
+) => {
+  const suggestionsLimit = 10;
+  const options: Option[] = attributes?.map((attribute: FilterOption) => ({
+    label: attribute?.name,
+    value: attribute?.value,
+    suggestions: !isDate(attribute.value)
+      ? []
+      : [
+          { label: appStrings.today, value: new Date() },
+          { label: appStrings.yersterday, value: getPreviousDay() },
+          { label: appStrings.thisWeek, value: getPreviousWeek() },
+          { label: appStrings.thisMonth, value: getPreviousMonth() },
+          { label: appStrings.thisYear, value: getPreviousYear() },
+        ],
+  }));
+
+  data?.forEach(item => {
+    attributes?.forEach((attribute, index) => {
+      const value = item[attribute.name];
+      const length = options[index]?.suggestions?.length;
+      if (
+        Number(length) < suggestionsLimit &&
+        !isDate(attribute.value) &&
+        !options[index]?.suggestions?.some(item => item?.value === value)
+      ) {
+        options[index]?.suggestions?.push({
+          label: value,
+          value: value,
+        });
+      }
+    });
+  });
+
+  return options;
+};
+
+const SearchFilter: React.FC<SearchFilterProps> = props => {
+  const { search, setSearch, data, options } = props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
-  const [firstDate, setFirstDate] = useState<Date>(new Date());
-  const [secondDate, setSecondDate] = useState<Date>(new Date());
+  const textColor = useColorModeValue('teal.500', 'teal.300');
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [filterOptions, setFilterOptions] = useState<Option[]>(
+    mapFilterOptions(data, options, appStrings),
+  );
 
   const handleFirstDateChange = (event: { target: { value: any } }) =>
-    setFirstDate(event.target.value);
+    setSearch({ ...search, firstDate: event.target.value });
 
   const handleSecondDateChange = (event: { target: { value: any } }) =>
-    setSecondDate(event.target.value);
+    setSearch({ ...search, secondDate: event.target.value });
 
-  const [selectedOption, setSelectedOption] = useState('name');
+  const handleSearchChange = (event: { target: { value: string } }) =>
+    setSearch({ ...search, searchTerm: event.target.value });
 
-  const handleSearch = async (event: { target: { value: string } }) => {
-    console.log('cambie');
-    // setSearchTerm(event.target.value.toUpperCase());
+  const handleOnClick = (option: Option, value: string | number | Date) => {
+    isDate(value)
+      ? setSearch({
+          ...search,
+          selectedOption: option,
+          firstDate: value as Date,
+        })
+      : setSearch({
+          ...search,
+          selectedOption: option,
+          searchTerm: value as string,
+        });
+    onClose();
   };
+
+  useEffect(
+    () => setFilterOptions(mapFilterOptions(data, options, appStrings)),
+    [data, options],
+  );
 
   return (
     <InputGroup>
-      {selectedOption !== 'Date' ? (
+      {!isDate(search?.selectedOption?.value) ? (
         <SearchInput
-          style={{ margin: '0 10px 0 0', maxWidth: '500px' }}
+          value={search?.searchTerm}
+          parentClassName={styles.search_container}
+          className={styles.search_input}
           placeholder={appStrings.search}
-          onChange={handleSearch}
-        ></SearchInput>
+          onChange={handleSearchChange}
+        />
       ) : (
         <>
           <Input
-            value={formatDate(firstDate, 'YYYY-MM-DD')}
+            value={formatDate(search?.firstDate, 'YYYY-MM-DD')}
             type="date"
-            className={styles.dateSelect}
+            className={styles.date_select}
             onChange={handleFirstDateChange}
           />
           <Input
-            value={formatDate(secondDate, 'YYYY-MM-DD')}
+            value={formatDate(search?.secondDate, 'YYYY-MM-DD')}
             type="date"
-            className={styles.dateSelect}
+            className={styles.date_select}
             onChange={handleSecondDateChange}
           />
         </>
       )}
-
       <Button
         className={styles.filter_button}
         rightIcon={<FadersHorizontal />}
@@ -125,13 +186,12 @@ const SearchFilter: React.FC<SearchFiterProps> = props => {
         variant={'ghost'}
         onClick={onOpen}
       >
-        Filters
+        {appStrings.filters}
       </Button>
-
       <Modal onClose={onClose} isOpen={isOpen} isCentered size="2xl">
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Search Filters</ModalHeader>
+          <ModalHeader>{appStrings.searchFilters}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <Grid
@@ -141,27 +201,21 @@ const SearchFilter: React.FC<SearchFiterProps> = props => {
               {filterOptions.map((option, key) => (
                 <List spacing={3} key={key}>
                   <ListItem
-                    className={styles.p}
-                    onClick={() => {
-                      setSelectedOption(option.label);
-                      onClose();
-                      console.log(option.label);
-                    }}
+                    className={styles.title_option}
+                    color={
+                      search.selectedOption?.label === option?.label
+                        ? textColor
+                        : 'current'
+                    }
+                    onClick={() => handleOnClick(option, option?.value)}
                   >
-                    {option.label}
+                    {option.label?.toLocaleUpperCase()}
                   </ListItem>
                   <Divider />
-                  {option.content.map((element, key) => (
+                  {option?.suggestions?.map((element, key) => (
                     <ListItem
-                      className={styles.p}
-                      onClick={() => {
-                        typeof isDate(element.value)
-                          ? setFirstDate(element.value as Date)
-                          : setSelectedOption(option.label);
-                        setSelectedOption(option.label);
-                        onClose();
-                        console.log(element.value);
-                      }}
+                      className={styles.item}
+                      onClick={() => handleOnClick(option, element?.value)}
                       key={key}
                     >
                       {element.label}
@@ -171,7 +225,7 @@ const SearchFilter: React.FC<SearchFiterProps> = props => {
               ))}
             </Grid>
           </ModalBody>
-          <ModalFooter></ModalFooter>
+          <ModalFooter />
         </ModalContent>
       </Modal>
     </InputGroup>

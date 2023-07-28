@@ -5,17 +5,21 @@ import {
   InputProps,
 } from '@chakra-ui/react';
 import { MagnifyingGlass } from 'phosphor-react';
+
 import styles from './SearchInput.module.css';
 
-const SearchInput: React.FC<InputProps> = props => {
-  const { className } = props;
+interface Props {
+  parentClassName?: string;
+}
+const SearchInput: React.FC<InputProps & Props> = props => {
+  const { parentClassName, className, ...rest } = props;
   return (
-    <InputGroup>
+    <InputGroup className={parentClassName}>
       <InputLeftElement
         className={styles.search_icon}
         children={<MagnifyingGlass />}
       />
-      <Input {...props} className={`${styles.search_button} ${className}`} />
+      <Input {...rest} className={`${styles.search_button} ${className}`} />
     </InputGroup>
   );
 };

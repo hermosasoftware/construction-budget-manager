@@ -4,7 +4,11 @@ import * as yup from 'yup';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../../common/Button/Button';
 import Modal from '../../../common/Modal/Modal';
-import SearchInput from '../../../common/SearchInput/SearchInput';
+import SearchFilter, {
+  FilterOption,
+  handleFilterSearch,
+  Search,
+} from '../../../common/SearchFilter/SearchFilter';
 import Form, {
   AutoComplete,
   DatePicker,
@@ -73,6 +77,13 @@ const initialMaterialRefData = {
   isSubMaterial: false,
 };
 
+const initialSearchData = {
+  selectedOption: { label: 'order', value: '' },
+  searchTerm: '',
+  firstDate: new Date(),
+  secondDate: new Date(),
+};
+
 const Orders: React.FC<IOrdersView> = props => {
   const { projectId } = props;
   const [selectedOrder, setSelectedOrder] = useState<IOrder>(
@@ -89,7 +100,7 @@ const Orders: React.FC<IOrdersView> = props => {
     useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [search, setSearch] = useState<Search>(initialSearchData);
   const appStrings = useAppSelector(state => state.settings.appStrings);
   const projectOrders = useAppSelector(
     state => state.projectOrders.projectOrders,
@@ -114,6 +125,14 @@ const Orders: React.FC<IOrdersView> = props => {
     { name: 'subtotal', value: appStrings.subtotal, isGreen: true },
     { name: 'imp', value: appStrings.imp, isGreen: true },
     { name: 'total', value: appStrings.total, isGreen: true },
+  ];
+
+  const filterOptions: FilterOption[] = [
+    { name: 'order', value: '', hasSuggestions: true },
+    { name: 'proforma', value: '', hasSuggestions: true },
+    { name: 'date', value: new Date(), hasSuggestions: true },
+    { name: 'deliverDate', value: new Date(), hasSuggestions: true },
+    { name: 'activity', value: '', hasSuggestions: true },
   ];
 
   const orderStatus: Array<{ id: string; name: string }> = [
@@ -153,10 +172,6 @@ const Orders: React.FC<IOrdersView> = props => {
   const getFormattedActivity = (id?: string) => {
     const activity = getActivityById(id);
     return { value: activity?.id, label: activity?.activity };
-  };
-
-  const handleSearch = async (event: { target: { value: string } }) => {
-    setSearchTerm(event.target.value.toUpperCase());
   };
 
   const handleOnChangeActivity = (e: any) => {
@@ -356,11 +371,12 @@ const Orders: React.FC<IOrdersView> = props => {
           />
         </div>
         <Flex marginBottom="5px" className={styles.p_10}>
-          <SearchInput
-            style={{ margin: '0 10px 0 0', maxWidth: '500px' }}
-            placeholder="Search"
-            onChange={handleSearch}
-          ></SearchInput>
+          <SearchFilter
+            search={search}
+            setSearch={setSearch}
+            data={formatTableData()}
+            options={filterOptions}
+          />
           <div style={{ textAlign: 'end' }}>
             <Button
               onClick={() => {
@@ -500,9 +516,7 @@ const Orders: React.FC<IOrdersView> = props => {
         <OrdersTableView
           headers={tableHeader}
           items={formatTableData()}
-          filter={value =>
-            searchTerm === '' || value?.order?.toString()?.includes(searchTerm)
-          }
+          filter={value => handleFilterSearch(value, search)}
           handleRowClick={() => {}}
           onClickEdit={id => editButton(id)}
           onClickDelete={id => {
@@ -518,7 +532,7 @@ const Orders: React.FC<IOrdersView> = props => {
             delProduct(orderId, productId)
           }
           formatCurrency
-          usePagination={!searchTerm?.length}
+          usePagination={!search.searchTerm?.length}
         />
         {!projectOrders.length ? <h1>{appStrings.noRecords}</h1> : null}
       </Box>

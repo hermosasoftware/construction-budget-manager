@@ -1,16 +1,13 @@
-.search_icon {
-  padding: 12px 0px 20px 20px;
-  cursor: pointer;
+.search_container {
+  width: auto !important;
 }
 
-input.search_button {
-  margin-left: 12px;
-  margin-right: 0 !important;
-  height: 32px;
-  border-radius: 12px;
+.search_input {
+  margin: 0 !important;
+  width: 500px !important;
 }
 
-.dateSelect {
+.date_select {
   height: 32px !important;
   max-width: 200px;
 }
@@ -19,11 +16,12 @@ input.search_button {
   border-radius: 12px;
 }
 
-.p {
+.title_option {
   cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
 }
 
-::placeholder {
-  color: var(--chakra-colors-primary) !important;
-  opacity: 0.5 !important;
+.item {
+  cursor: pointer;
 }

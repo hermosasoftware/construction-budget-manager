@@ -4,7 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import * as yup from 'yup';
 import Button from '../../common/Button/Button';
 import Modal from '../../common/Modal/Modal';
-import SearchInput from '../../common/SearchInput/SearchInput';
+import SearchFilter from '../../common/SearchFilter';
+import {
+  Search,
+  FilterOption,
+  handleFilterSearch,
+} from '../../common/SearchFilter/SearchFilter';
 import TabGroup from '../../common/TabGroup/TabGroup';
 import TableView, { TTableHeader } from '../../common/TableView/TableView';
 import Form, { Input, Select } from '../../common/Form';
@@ -31,6 +36,13 @@ const initialSelectedItemData = {
   updatedAt: new Date(),
 };
 
+const initialSearchData = {
+  selectedOption: { label: 'name', value: '' },
+  searchTerm: '',
+  firstDate: new Date(),
+  secondDate: new Date(),
+};
+
 export default function Projects() {
   const [selectedTab, setSelectedTab] = useState('active');
   const [selectedItem, setSelectedItem] = useState<IProject>(
@@ -38,7 +50,7 @@ export default function Projects() {
   );
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [search, setSearch] = useState<Search>(initialSearchData);
   const appStrings = useAppSelector(state => state.settings.appStrings);
   const projects = useAppSelector(state => state.projects.projects);
   const navigate = useNavigate();
@@ -49,12 +61,14 @@ export default function Projects() {
     { name: 'location', value: appStrings.location },
   ];
 
+  const filterOptions: FilterOption[] = [
+    { name: 'name', value: '', hasSuggestions: true },
+    { name: 'client', value: '', hasSuggestions: true },
+    { name: 'location', value: '', hasSuggestions: true },
+  ];
+
   const formatTableData = () => {
     return projects.filter(project => project.status === selectedTab);
-  };
-
-  const handleSearch = async (event: { target: { value: string } }) => {
-    setSearchTerm(event.target.value.toUpperCase());
   };
 
   const handleRowClick = (event: MouseEvent) => {
@@ -133,11 +147,12 @@ export default function Projects() {
       <div className={`${styles.operations_container}`}>
         <Box p={5} borderWidth="1px" borderRadius={12}>
           <Flex marginBottom="5px">
-            <SearchInput
-              style={{ margin: '0 10px 0 0', maxWidth: '500px' }}
-              placeholder={appStrings.search}
-              onChange={handleSearch}
-            ></SearchInput>
+            <SearchFilter
+              search={search}
+              setSearch={setSearch}
+              data={formatTableData()}
+              options={filterOptions}
+            />
             <div style={{ textAlign: 'end' }}>
               <Button onClick={() => setIsModalOpen(true)}>+</Button>
               <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
@@ -199,9 +214,7 @@ export default function Projects() {
           <TableView
             headers={tableHeader}
             items={formatTableData()}
-            filter={value =>
-              searchTerm === '' || value.name.toUpperCase().includes(searchTerm)
-            }
+            filter={value => handleFilterSearch(value, search)}
             handleRowClick={handleRowClick}
             onClickEdit={id => editButton(id)}
             onClickDelete={id => {
