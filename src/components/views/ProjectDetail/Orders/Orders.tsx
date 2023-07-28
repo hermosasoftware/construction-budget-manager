@@ -128,8 +128,8 @@ const Orders: React.FC<IOrdersView> = props => {
   ];
 
   const filterOptions: FilterOption[] = [
-    { name: 'order', value: '', hasSuggestions: true },
-    { name: 'proforma', value: '', hasSuggestions: true },
+    { name: 'order', value: '', hasSuggestions: false },
+    { name: 'proforma', value: '', hasSuggestions: false },
     { name: 'date', value: new Date(), hasSuggestions: true },
     { name: 'deliverDate', value: new Date(), hasSuggestions: true },
     { name: 'activity', value: '', hasSuggestions: true },

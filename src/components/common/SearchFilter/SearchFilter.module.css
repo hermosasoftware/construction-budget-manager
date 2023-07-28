@@ -12,6 +12,10 @@
   max-width: 200px;
 }
 
+::-webkit-calendar-picker-indicator {
+  filter: invert(50%);
+}
+
 .filter_button {
   border-radius: 12px;
 }

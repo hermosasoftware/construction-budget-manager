@@ -3,7 +3,11 @@ import { Box, Flex, Heading } from '@chakra-ui/react';
 import * as yup from 'yup';
 import Button from '../../../common/Button/Button';
 import Modal from '../../../common/Modal/Modal';
-import SearchInput from '../../../common/SearchInput/SearchInput';
+import SearchFilter, {
+  FilterOption,
+  handleFilterSearch,
+  Search,
+} from '../../../common/SearchFilter/SearchFilter';
 import TableView, { TTableHeader } from '../../../common/TableView/TableView';
 import Form, { DatePicker, Input } from '../../../common/Form';
 import AlertDialog from '../../../common/AlertDialog/AlertDialog';
@@ -36,13 +40,20 @@ const initialSelectedItemData = {
   updatedAt: new Date(),
 };
 
+const initialSearchData = {
+  selectedOption: { label: 'name', value: '' },
+  searchTerm: '',
+  firstDate: new Date(),
+  secondDate: new Date(),
+};
+
 const ExpensesReport: React.FC<IExpensesReport> = props => {
   const [selectedItem, setSelectedItem] = useState<IProjectExpense>(
     initialSelectedItemData,
   );
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [search, setSearch] = useState<Search>(initialSearchData);
   const { projectId } = props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
   const projectExpenses = useAppSelector(
@@ -58,16 +69,20 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
     { name: 'amount', value: appStrings.amount, isGreen: true },
   ];
 
+  const filterOptions: FilterOption[] = [
+    { name: 'name', value: '', hasSuggestions: false },
+    { name: 'docNumber', value: '', hasSuggestions: false },
+    { name: 'date', value: new Date(), hasSuggestions: true },
+    { name: 'owner', value: '', hasSuggestions: true },
+    { name: 'work', value: '', hasSuggestions: true },
+  ];
+
   const formatTableData = () =>
     projectExpenses.map(data => ({
       ...data,
       date: formatDate(new Date(data.date), 'MM/DD/YYYY'),
       amount: colonFormat(data.amount),
     }));
-
-  const handleSearch = async (event: { target: { value: string } }) => {
-    setSearchTerm(event.target.value.toUpperCase());
-  };
 
   const editButton = async (projectExpenseId: string) => {
     const successCallback = (response: IProjectExpense) => {
@@ -128,11 +143,12 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
     <div className={`${styles.operations_container}`}>
       <Box p={5} borderWidth="1px" borderRadius={12}>
         <Flex marginBottom="5px">
-          <SearchInput
-            style={{ margin: '0 10px 0 0', maxWidth: '500px' }}
-            placeholder="Search"
-            onChange={handleSearch}
-          ></SearchInput>
+          <SearchFilter
+            search={search}
+            setSearch={setSearch}
+            data={formatTableData()}
+            options={filterOptions}
+          />
           <div style={{ textAlign: 'end' }}>
             <Button onClick={() => setIsModalOpen(true)}>+</Button>
             <Modal
@@ -198,9 +214,7 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
         <TableView
           headers={tableHeader}
           items={formatTableData()}
-          filter={value =>
-            searchTerm === '' || value.name.toUpperCase().includes(searchTerm)
-          }
+          filter={value => handleFilterSearch(value, search)}
           onClickEdit={id => editButton(id)}
           onClickDelete={id => {
             setSelectedItem({ ...selectedItem, id: id });

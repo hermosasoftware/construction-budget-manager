@@ -4,7 +4,11 @@ import * as yup from 'yup';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../../../common/Button/Button';
 import Modal from '../../../../common/Modal/Modal';
-import SearchInput from '../../../../common/SearchInput/SearchInput';
+import SearchFilter, {
+  FilterOption,
+  handleFilterSearch,
+  Search,
+} from '../../../../common/SearchFilter/SearchFilter';
 import TableView, {
   TTableHeader,
 } from '../../../../common/TableView/TableView';
@@ -42,13 +46,20 @@ const initialSelectedItemData = {
   updatedAt: new Date(),
 };
 
+const initialSearchData = {
+  selectedOption: { label: 'name', value: '' },
+  searchTerm: '',
+  firstDate: new Date(),
+  secondDate: new Date(),
+};
+
 const BudgetActivity: React.FC<IBudgetActivityView> = props => {
   const [selectedItem, setSelectedItem] = useState<IBudgetActivity>(
     initialSelectedItemData,
   );
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [search, setSearch] = useState<Search>(initialSearchData);
   const { projectId, setActivity } = props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
   const extraActivities = useAppSelector(
@@ -69,6 +80,12 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
       isGreen: true,
     },
     { name: 'sumOthers', value: appStrings.others, isGreen: true },
+  ];
+
+  const filterOptions: FilterOption[] = [
+    { name: 'activity', value: '', hasSuggestions: true },
+    { name: 'date', value: new Date(), hasSuggestions: true },
+    { name: 'adminFee', value: '', hasSuggestions: true },
   ];
 
   const formatTableData = () =>
@@ -115,10 +132,6 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
       navigate(`/project-detail/${projectId}/extra-pdf-preview/${activity.id}`);
   };
 
-  const handleSearch = async (event: { target: { value: string } }) => {
-    setSearchTerm(event.target.value.toUpperCase());
-  };
-
   const handleRowClick = (event: MouseEvent) => {
     const row = event.target as HTMLInputElement;
     const projectId = row.id;
@@ -156,10 +169,11 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
   return (
     <div className={styles.operations_container}>
       <Flex marginBottom="5px">
-        <SearchInput
-          className={styles.search_button}
-          placeholder="Search"
-          onChange={handleSearch}
+        <SearchFilter
+          search={search}
+          setSearch={setSearch}
+          data={formatTableData()}
+          options={filterOptions}
         />
         <div className={styles.form_container}>
           <Button onClick={() => setIsModalOpen(true)}>+</Button>
@@ -221,9 +235,7 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
       <TableView
         headers={tableHeader}
         items={formatTableData()}
-        filter={value =>
-          searchTerm === '' || value.activity.toUpperCase().includes(searchTerm)
-        }
+        filter={value => handleFilterSearch(value, search)}
         handleRowClick={handleRowClick}
         onClickEdit={id => editButton(id)}
         onClickDelete={id => {

@@ -65,7 +65,7 @@ export const handleFilterSearch = (value: any, search: Search) => {
       value[search?.selectedOption?.label]
         .toString()
         .toUpperCase()
-        .includes(search?.searchTerm.toUpperCase())
+        .includes(search?.searchTerm?.toString()?.toUpperCase())
     );
   } else {
     let date = new Date(value[search?.selectedOption?.label]);
@@ -100,8 +100,9 @@ export const mapFilterOptions = (
       const value = item[attribute.name];
       const length = options[index]?.suggestions?.length;
       if (
+        attribute?.hasSuggestions &&
         Number(length) < suggestionsLimit &&
-        !isDate(attribute.value) &&
+        !isDate(attribute?.value) &&
         !options[index]?.suggestions?.some(item => item?.value === value)
       ) {
         options[index]?.suggestions?.push({
