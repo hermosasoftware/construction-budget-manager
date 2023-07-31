@@ -84,20 +84,20 @@ export const mapFilterOptions = (
   const options: Option[] = attributes?.map((attribute: FilterOption) => ({
     label: attribute?.name,
     value: attribute?.value,
-    suggestions: !isDate(attribute.value)
+    suggestions: !isDate(attribute?.value)
       ? []
       : [
-          { label: appStrings.today, value: new Date() },
-          { label: appStrings.yersterday, value: getPreviousDay() },
-          { label: appStrings.thisWeek, value: getPreviousWeek() },
-          { label: appStrings.thisMonth, value: getPreviousMonth() },
-          { label: appStrings.thisYear, value: getPreviousYear() },
+          { label: appStrings?.today, value: new Date() },
+          { label: appStrings?.yersterday, value: getPreviousDay() },
+          { label: appStrings?.thisWeek, value: getPreviousWeek() },
+          { label: appStrings?.thisMonth, value: getPreviousMonth() },
+          { label: appStrings?.thisYear, value: getPreviousYear() },
         ],
   }));
 
   data?.forEach(item => {
     attributes?.forEach((attribute, index) => {
-      const value = item[attribute.name];
+      const value = item[attribute?.name];
       const length = options[index]?.suggestions?.length;
       if (
         attribute?.hasSuggestions &&
@@ -184,7 +184,7 @@ const SearchFilter: React.FC<SearchFilterProps> = props => {
         className={styles.filter_button}
         rightIcon={<FadersHorizontal />}
         size="sm"
-        variant={'ghost'}
+        variant="ghost"
         onClick={onOpen}
       >
         {appStrings.filters}
@@ -210,7 +210,7 @@ const SearchFilter: React.FC<SearchFilterProps> = props => {
                     }
                     onClick={() => handleOnClick(option, option?.value)}
                   >
-                    {option.label?.toLocaleUpperCase()}
+                    {option?.label?.toLocaleUpperCase()}
                   </ListItem>
                   <Divider />
                   {option?.suggestions?.map((element, key) => (
@@ -219,7 +219,7 @@ const SearchFilter: React.FC<SearchFilterProps> = props => {
                       onClick={() => handleOnClick(option, element?.value)}
                       key={key}
                     >
-                      {element.label}
+                      {element?.label}
                     </ListItem>
                   ))}
                 </List>
