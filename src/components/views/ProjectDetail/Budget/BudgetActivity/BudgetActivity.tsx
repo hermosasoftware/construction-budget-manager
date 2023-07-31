@@ -47,7 +47,7 @@ const initialSelectedItemData = {
 };
 
 const initialSearchData = {
-  selectedOption: { label: 'name', value: '' },
+  selectedOption: { label: 'activity', value: '' },
   searchTerm: '',
   firstDate: new Date(),
   secondDate: new Date(),
