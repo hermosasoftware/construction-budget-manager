@@ -50,6 +50,7 @@ const initialSelectedOrderData = {
   order: 1,
   proforma: '',
   activity: { value: '', label: '' },
+  supplier: '',
   date: new Date(),
   deliverDate: new Date(),
   sentStatus: false,
@@ -119,6 +120,7 @@ const Orders: React.FC<IOrdersView> = props => {
     { name: 'date', value: 'Creation Date' },
     { name: 'deliverDate', value: 'Deliver Date' },
     { name: 'activity', value: appStrings.activity },
+    { name: 'supplier', value: appStrings.supplier },
     { name: 'description', value: appStrings.description },
     { name: 'quantity', value: appStrings.quantity },
     { name: 'cost', value: appStrings.cost },
@@ -332,6 +334,7 @@ const Orders: React.FC<IOrdersView> = props => {
       value: yup.string().required(appStrings?.requiredField),
       label: yup.string().required(appStrings?.requiredField),
     }),
+    supplier: yup.string().required(appStrings?.requiredField),
     date: yup.date().required(appStrings?.requiredField),
   });
 
@@ -423,6 +426,11 @@ const Orders: React.FC<IOrdersView> = props => {
                   options={formatActOptions()}
                   value={selectedOrder.activity}
                   onChange={item => handleOnChangeActivity(item)}
+                />
+                <Input
+                  name="supplier"
+                  label={appStrings.supplier}
+                  placeholder={appStrings.productSupplier}
                 />
                 <Input
                   name="proforma"

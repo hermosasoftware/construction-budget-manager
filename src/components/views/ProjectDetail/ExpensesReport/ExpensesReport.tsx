@@ -19,7 +19,7 @@ import {
 } from '../../../../services/ProjectExpensesService';
 import { IProjectExpense } from '../../../../types/projectExpense';
 import { useAppSelector } from '../../../../redux/hooks';
-import { colonFormat } from '../../../../utils/numbers';
+import { colonFormat, dolarFormat } from '../../../../utils/numbers';
 import { formatDate } from '../../../../utils/dates';
 
 import styles from './ExpensesReport.module.css';
@@ -35,6 +35,8 @@ const initialSelectedItemData = {
   owner: '',
   amount: 0,
   work: '',
+  family: '',
+  exchange: 1,
   date: new Date(),
   createdAt: new Date(),
   updatedAt: new Date(),
@@ -66,7 +68,9 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
     { name: 'date', value: appStrings.date, isGreen: true },
     { name: 'owner', value: appStrings.owner },
     { name: 'work', value: appStrings.work },
+    { name: 'family', value: appStrings.family },
     { name: 'amount', value: appStrings.amount, isGreen: true },
+    { name: 'dollars', value: appStrings.dollars, isGreen: true },
   ];
 
   const filterOptions: FilterOption[] = [
@@ -82,6 +86,7 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
       ...data,
       date: formatDate(new Date(data.date), 'MM/DD/YYYY'),
       amount: colonFormat(data.amount),
+      dollars: dolarFormat(data.amount / data.exchange),
     }));
 
   const editButton = async (projectExpenseId: string) => {
@@ -121,6 +126,7 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
         ...projectExpense,
         docNumber: +projectExpense.docNumber,
         amount: +projectExpense.amount,
+        exchange: +projectExpense.exchange,
       },
       appStrings,
       successCallback,
@@ -135,7 +141,9 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
     name: yup.string().required(appStrings?.requiredField),
     owner: yup.string().required(appStrings?.requiredField),
     amount: yup.number().positive().required(appStrings?.requiredField),
+    exchange: yup.number().positive().required(appStrings?.requiredField),
     work: yup.string().required(appStrings?.requiredField),
+    family: yup.string().required(appStrings?.requiredField),
     date: yup.date().required(appStrings?.requiredField),
   });
 
@@ -186,11 +194,21 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
                   label={appStrings.owner}
                   placeholder={appStrings.ownerName}
                 />
-                <Input name="amount" type="number" label={appStrings.amount} />
                 <Input
                   name="work"
                   label={appStrings.work}
                   placeholder={appStrings.workName}
+                />
+                <Input
+                  name="family"
+                  label={appStrings.family}
+                  placeholder={appStrings.familyName}
+                />
+                <Input name="amount" type="number" label={appStrings.amount} />
+                <Input
+                  name="exchange"
+                  type="number"
+                  label={appStrings.currencyExchange}
                 />
                 <DatePicker name="date" label={appStrings.date}></DatePicker>
                 <br />

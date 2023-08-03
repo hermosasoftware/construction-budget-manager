@@ -4,6 +4,7 @@ export interface IProjectOrder {
   proforma: string;
   date: Date | string;
   activity: string;
+  supplier: string;
   deliverDate: Date | string;
   sentStatus: boolean | string;
   cost: number;
