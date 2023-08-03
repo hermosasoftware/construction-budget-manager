@@ -44,6 +44,7 @@ const initialSelectedItemData = {
   order: 0,
   activity: '',
   invoice: '',
+  supplier: '',
   date: new Date(),
   products: [],
   option: { value: '', label: '' },
@@ -56,6 +57,7 @@ const initialSelectedItemData = {
 const initialXMLData = {
   option: { value: '', label: '' },
   activity: '',
+  supplier: '',
   xmlFile: undefined,
   pdfURL: '',
   pdfFile: undefined,
@@ -68,6 +70,7 @@ const initialSelectedOrderData = {
   date: new Date(),
   deliverDate: new Date(),
   activity: '',
+  supplier: '',
   sentStatus: false,
   cost: 0,
   products: [],
@@ -137,6 +140,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
     { name: 'order', value: appStrings.order },
     { name: 'date', value: appStrings.date },
     { name: 'activity', value: appStrings.activity },
+    { name: 'supplier', value: appStrings.supplier },
     { name: 'description', value: appStrings.description },
     { name: 'quantity', value: appStrings.quantity },
     { name: 'cost', value: appStrings.cost },
@@ -200,6 +204,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
     const invoice = {
       invoice: json?.FacturaElectronica?.NumeroConsecutivo?.['#text'],
       date: new Date(json?.FacturaElectronica?.FechaEmision?.['#text']),
+      supplier: json?.FacturaElectronica?.Emisor?.NombreComercial?.['#text'],
     };
     const products =
       json?.FacturaElectronica?.DetalleServicio?.LineaDetalle.map(
@@ -354,6 +359,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
     }),
     invoice: yup.string().required(appStrings?.requiredField),
     activity: yup.string().required(appStrings?.requiredField),
+    supplier: yup.string().required(appStrings?.requiredField),
     pdfFile: yup.mixed().optional(),
   });
 
@@ -373,6 +379,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
       label: yup.string().required(appStrings?.requiredField),
     }),
     activity: yup.string().required(appStrings?.requiredField),
+    supplier: yup.string().required(appStrings?.requiredField),
     xmlFile: yup.mixed().required(appStrings?.requiredField),
     pdfFile: yup.mixed().optional(),
   });
@@ -392,11 +399,13 @@ const Invoicing: React.FC<IInvoicing> = props => {
         ...selectedItem,
         option,
         activity: orderActivity.activity,
+        supplier: rest.supplier,
       });
       setXMLItem({
         ...xmlItem,
         option,
         activity: orderActivity.activity,
+        supplier: rest.supplier,
       });
     }
   };
@@ -518,7 +527,12 @@ const Invoicing: React.FC<IInvoicing> = props => {
                     handleSearchSelect(item?.value?.value);
                   }}
                 />
-                <Input name="activity" label={appStrings.activity} isDisabled />{' '}
+                <Input name="activity" label={appStrings.activity} isDisabled />
+                <Input
+                  name="supplier"
+                  label={appStrings.supplier}
+                  placeholder={appStrings.productSupplier}
+                />
                 <br />
                 <div className={styles.fileUpload_container}>
                   <FileUploader
@@ -582,6 +596,11 @@ const Invoicing: React.FC<IInvoicing> = props => {
                   placeholder={appStrings.invoiceNumber}
                 />
                 <Input name="activity" label={appStrings.activity} isDisabled />
+                <Input
+                  name="supplier"
+                  label={appStrings.supplier}
+                  placeholder={appStrings.productSupplier}
+                />
                 <DatePicker name="date" label={appStrings.date}></DatePicker>
                 <div className={styles.fileUpload_container}>
                   <FileUploader

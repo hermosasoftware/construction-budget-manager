@@ -1,9 +1,10 @@
 export interface IProjectInvoiceDetail {
   id: string;
+  invoice: string;
   order: number;
   date: Date | string;
   activity: string;
-  invoice: string;
+  supplier: string;
   pdfURL?: string;
   pdfFile?: File;
   products: IInvoiceProduct[];
@@ -24,6 +25,7 @@ export interface IInvoiceProduct {
 export interface IXMLFile {
   option: { value: string; label: string };
   activity: string;
+  supplier: string;
   xmlFile?: File;
   pdfURL?: string;
   pdfFile?: File;
