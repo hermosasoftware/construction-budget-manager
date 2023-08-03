@@ -135,6 +135,7 @@ const Orders: React.FC<IOrdersView> = props => {
     { name: 'date', value: new Date(), hasSuggestions: true },
     { name: 'deliverDate', value: new Date(), hasSuggestions: true },
     { name: 'activity', value: '', hasSuggestions: true },
+    { name: 'supplier', value: '', hasSuggestions: true },
   ];
 
   const orderStatus: Array<{ id: string; name: string }> = [

@@ -165,6 +165,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
     { name: 'order', value: '', hasSuggestions: false },
     { name: 'date', value: new Date(), hasSuggestions: true },
     { name: 'activity', value: '', hasSuggestions: true },
+    { name: 'supplier', value: '', hasSuggestions: true },
   ];
 
   const formatTableData = () =>

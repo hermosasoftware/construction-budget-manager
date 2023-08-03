@@ -79,6 +79,7 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
     { name: 'date', value: new Date(), hasSuggestions: true },
     { name: 'owner', value: '', hasSuggestions: true },
     { name: 'work', value: '', hasSuggestions: true },
+    { name: 'family', value: '', hasSuggestions: true },
   ];
 
   const formatTableData = () =>
