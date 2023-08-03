@@ -4,7 +4,11 @@ import * as yup from 'yup';
 import { FilePdf, UploadSimple } from 'phosphor-react';
 import Button from '../../../common/Button/Button';
 import Modal from '../../../common/Modal/Modal';
-import SearchInput from '../../../common/SearchInput/SearchInput';
+import SearchFilter, {
+  FilterOption,
+  handleFilterSearch,
+  Search,
+} from '../../../common/SearchFilter/SearchFilter';
 import Form, { DatePicker, Input } from '../../../common/Form';
 import AlertDialog from '../../../common/AlertDialog/AlertDialog';
 import {
@@ -89,6 +93,13 @@ const initialSelectedProductData = {
   updatedAt: new Date(),
 };
 
+const initialSearchData = {
+  selectedOption: { label: 'invoice', value: '' },
+  searchTerm: '',
+  firstDate: new Date(),
+  secondDate: new Date(),
+};
+
 interface IInvoiceOrderDetail extends IProjectOrder {
   option: { value: string; label: string };
 }
@@ -121,7 +132,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isXMLModalOpen, setIsXMLModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [search, setSearch] = useState<Search>(initialSearchData);
   const { projectId } = props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
   const projectInvoices = useAppSelector(
@@ -149,16 +160,20 @@ const Invoicing: React.FC<IInvoicing> = props => {
     { name: 'total', value: appStrings.total, isGreen: true },
   ];
 
+  const filterOptions: FilterOption[] = [
+    { name: 'invoice', value: '', hasSuggestions: false },
+    { name: 'order', value: '', hasSuggestions: false },
+    { name: 'date', value: new Date(), hasSuggestions: true },
+    { name: 'activity', value: '', hasSuggestions: true },
+    { name: 'supplier', value: '', hasSuggestions: true },
+  ];
+
   const formatTableData = () =>
     projectInvoices.map(data => ({
       ...data,
       invoice: data.invoice.slice(-8),
       date: formatDate(new Date(data.date), 'MM/DD/YYYY'),
     }));
-
-  const handleSearch = async (event: { target: { value: string } }) => {
-    setSearchTerm(event.target.value.toUpperCase());
-  };
 
   const getActivityById = (id?: string): IActivity =>
     allActivities.find(e => e.id === id)!;
@@ -481,11 +496,12 @@ const Invoicing: React.FC<IInvoicing> = props => {
     <div className={`${styles.operations_container}`}>
       <Box p={5} borderWidth="1px" borderRadius={12}>
         <Flex marginBottom="5px">
-          <SearchInput
-            style={{ margin: '0 10px 0 0', maxWidth: '500px' }}
-            placeholder="Search"
-            onChange={handleSearch}
-          ></SearchInput>
+          <SearchFilter
+            search={search}
+            setSearch={setSearch}
+            data={formatTableData()}
+            options={filterOptions}
+          />
           <div style={{ textAlign: 'end', display: 'flex' }}>
             <Button
               style={{ padding: '0px', marginRight: 10 }}
@@ -693,10 +709,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
         <InvoiceTableView
           headers={tableHeader}
           items={formatTableData()}
-          filter={value =>
-            searchTerm === '' ||
-            value.invoice?.toString().toUpperCase().includes(searchTerm)
-          }
+          filter={value => handleFilterSearch(value, search)}
           handleRowClick={() => {}}
           onClickEdit={id => editButton(id)}
           onClickDelete={id => {
@@ -711,7 +724,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
             delProduct(orderId, productId)
           }
           formatCurrency
-          usePagination={!searchTerm?.length}
+          usePagination={!search?.searchTerm?.length}
         />
         {!projectInvoices.length ? <h1>{appStrings.noRecords}</h1> : null}
       </Box>

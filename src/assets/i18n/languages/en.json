@@ -196,6 +196,7 @@
   "family": "Family",
   "familyName": "Family name",
   "fileLoaded": "1 File Loaded",
+  "filters": "Filters",
   "finalDate": "Final Date",
   "firstName": "First name",
   "generate": "Generate",
@@ -281,6 +282,7 @@
   "saveSuccess": "The information was saved successfully.",
   "sent": "Sent",
   "search": "Search",
+  "searchFilters": "Search Filters",
   "selectCanton": "Select a canton",
   "selectClient": "Select a client",
   "selectCountry": "Select a country",
@@ -315,6 +317,10 @@
   "taxExempt": "Tax Exempt",
   "testUserJob": "General Manager",
   "testUserName": "Coto",
+  "thisMonth": "This Month",
+  "thisWeek": "This Week",
+  "thisYear": "This Year",
+  "today": "Today",
   "total": "Total",
   "totalDirectCost": "Total Direct Cost",
   "type": "Type",
@@ -328,5 +334,6 @@
   "verifyPassword": "Verify password",
   "withoutClients": "Without clients",
   "work": "Work",
-  "workName": "Work name"
+  "workName": "Work name",
+  "yesterday": "Yesterday"
 }

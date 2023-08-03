@@ -1,0 +1,31 @@
+.search_container {
+  width: auto !important;
+}
+
+.search_input {
+  margin: 0 !important;
+  width: 500px !important;
+}
+
+.date_select {
+  height: 32px !important;
+  max-width: 200px;
+}
+
+::-webkit-calendar-picker-indicator {
+  filter: invert(50%);
+}
+
+.filter_button {
+  border-radius: 12px;
+}
+
+.title_option {
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.item {
+  cursor: pointer;
+}

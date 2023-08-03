@@ -80,7 +80,9 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
   const items: any = useMemo(() => {
     const auxItems = !filter ? props.items : props.items?.filter(filter);
     setFilteredCount(auxItems.length);
-    if (!usePagination) return auxItems;
+    if (!usePagination || props.items.length !== auxItems.length) {
+      return auxItems;
+    }
     return parseCurrentPageItems(auxItems, currentPage, itemsPerPage);
   }, [filter, props.items, usePagination, currentPage, itemsPerPage]);
 
@@ -95,6 +97,7 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
   const checkRenderPagination = () =>
     usePagination &&
     props.items.length > itemsPerPage &&
+    props.items.length === filteredCount &&
     filteredCount > itemsPerPage;
 
   return (
