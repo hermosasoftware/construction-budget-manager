@@ -7,20 +7,28 @@ import {
   MenuItem,
   MenuList,
   Spacer,
+  Stack,
   Table,
+  Tag,
   Tbody,
   Td,
   Th,
   Thead,
+  Tooltip,
   Tr,
   useColorMode,
 } from '@chakra-ui/react';
 import { DotsThreeOutlineVertical, Pencil, Plus, Trash } from 'phosphor-react';
 import { TObject } from '../../../types/global';
-import { colonFormat, dolarFormat } from '../../../utils/numbers';
+import {
+  colonFormat,
+  currencyToNumber,
+  dolarFormat,
+} from '../../../utils/numbers';
 import { useAppSelector } from '../../../redux/hooks';
 import Pagination from '../../common/Pagination';
 import { parseCurrentPageItems } from '../../../utils/common';
+
 import styles from './MaterialsTableView.module.css';
 
 export type TTableHeader<T = TObject> = {
@@ -28,6 +36,7 @@ export type TTableHeader<T = TObject> = {
   value: string | number;
   isGreen?: boolean;
   isEditable?: boolean;
+  showTotal?: boolean;
 };
 
 export type TTableItem<T = TObject> = T & { id: string | number };
@@ -55,6 +64,7 @@ interface ITableProps<T> {
   exchangeRate?: Number;
   formatCurrency?: boolean;
   usePagination?: boolean;
+  showTotals?: boolean;
 }
 
 const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
@@ -72,7 +82,9 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
     exchangeRate,
     formatCurrency,
     usePagination,
+    showTotals = false,
   } = props;
+  const appStrings = useAppSelector(state => state.settings.appStrings);
   const [rowChildVisible, setRowChildVisible] = useState<boolean>(false);
   const [selectedRow, setSelectedRow] = useState<string | number>('');
   const { colorMode } = useColorMode();
@@ -176,205 +188,242 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
     props.items.length > itemsPerPage &&
     filteredCount > itemsPerPage;
 
+  const TotalStats = () => {
+    const toShow = headers?.filter(header => header?.showTotal);
+    const totalValues = items?.reduce((summary: any, item: any) => {
+      for (const element of toShow) {
+        summary[element?.name] =
+          (summary[element?.name] || 0) +
+          currencyToNumber(renderColumnValue(item, element?.name));
+      }
+      return summary;
+    }, {});
+
+    return (
+      <>
+        {toShow?.map((element, key) => (
+          <Tooltip key={key} label={element?.name}>
+            <Tag colorScheme={key % 2 ? 'teal' : 'green'}>
+              {colonFormat(totalValues[element?.name])}
+            </Tag>
+          </Tooltip>
+        ))}
+      </>
+    );
+  };
+
   return (
-    <Box className={styles.table_container} style={{ ...(boxStyle ?? '') }}>
-      <Table>
-        <Thead>
-          <Tr>
-            {headers?.map(header => (
-              <Th
-                key={`table-header-${header.name as string}`}
-                className={styles.th}
-              >
-                {header.value}
-              </Th>
-            ))}
-          </Tr>
-        </Thead>
-        <Tbody>
-          {items?.map(row => {
-            const isSelected = selectedRow === row.id && rowChildVisible;
-            const hasSubMaterials = row.subMaterials?.length > 0;
-            return (
-              <React.Fragment key={`table-row-${row.id}`}>
-                <Tr
-                  key={`table-row-${row.id}`}
-                  className={`${
+    <>
+      <Box className={styles.table_container} style={{ ...(boxStyle ?? '') }}>
+        <Table>
+          <Thead>
+            <Tr>
+              {headers?.map(header => (
+                <Th
+                  key={`table-header-${header.name as string}`}
+                  className={styles.th}
+                >
+                  {header.value}
+                </Th>
+              ))}
+            </Tr>
+          </Thead>
+          <Tbody>
+            {items?.map(row => {
+              const isSelected = selectedRow === row.id && rowChildVisible;
+              const hasSubMaterials = row.subMaterials?.length > 0;
+              return (
+                <React.Fragment key={`table-row-${row.id}`}>
+                  <Tr
+                    key={`table-row-${row.id}`}
+                    className={`${
+                      isSelected &&
+                      hasSubMaterials &&
+                      row?.material?.hasSubMaterials
+                        ? styles.rowSelected
+                        : ''
+                    }`}
+                  >
+                    {headers?.map(header => {
+                      const isNameColumn = header.name === 'name';
+                      return (
+                        <Td
+                          key={`table-row-header-${header.name as string}`}
+                          onClick={e => onRowClick(isSelected, row, e)}
+                          id={row.id?.toString()}
+                          className={`${styles.td} ${
+                            header.isGreen && styles.column_color__green
+                          } ${isNameColumn ? styles.column_bold_text : ''} ${
+                            handleRowClick &&
+                            hasSubMaterials &&
+                            row?.material?.hasSubMaterials
+                              ? styles.cursor_pointer
+                              : ''
+                          }`}
+                        >
+                          {hasSubMaterials &&
+                            row?.material?.hasSubMaterials &&
+                            isNameColumn && (
+                              <i
+                                className={`${
+                                  styles.materialArrow
+                                } icon ion-md-arrow-drop${
+                                  rowChildVisible && isSelected
+                                    ? 'down'
+                                    : 'right'
+                                }`}
+                              ></i>
+                            )}
+
+                          {renderColumnValue(row, header.name)}
+                        </Td>
+                      );
+                    })}
+                    {onClickEdit && onClickDelete && !hideOptions ? (
+                      <Td
+                        id={row.id?.toString()}
+                        className={`${styles.td}`}
+                        textAlign="center"
+                        width="90px"
+                      >
+                        <Menu>
+                          <MenuButton boxSize="40px">
+                            <Center>
+                              <DotsThreeOutlineVertical
+                                className={styles.cursor_pointer}
+                                weight="fill"
+                              />
+                            </Center>
+                          </MenuButton>
+                          <MenuList
+                            className={
+                              colorMode === 'dark' ? styles.menuList : ''
+                            }
+                          >
+                            {onClickAddSubMaterial &&
+                              row?.material?.hasSubMaterials && (
+                                <MenuItem
+                                  onClick={() =>
+                                    onClickAddSubMaterial(row.id.toString())
+                                  }
+                                >
+                                  {appStrings?.addSubmaterial} <Spacer />
+                                  <Plus />
+                                </MenuItem>
+                              )}
+                            <MenuItem
+                              onClick={() => onClickEdit(row.id.toString())}
+                            >
+                              {appStrings?.edit} <Spacer /> <Pencil />
+                            </MenuItem>
+                            <MenuItem
+                              onClick={() => onClickDelete(row.id.toString())}
+                            >
+                              {appStrings?.delete} <Spacer /> <Trash />
+                            </MenuItem>
+                          </MenuList>
+                        </Menu>
+                      </Td>
+                    ) : null}
+                  </Tr>
+                  {rowChildVisible &&
                     isSelected &&
                     hasSubMaterials &&
-                    row?.material?.hasSubMaterials
-                      ? styles.rowSelected
-                      : ''
-                  }`}
-                >
-                  {headers?.map(header => {
-                    const isNameColumn = header.name === 'name';
-                    return (
-                      <Td
-                        key={`table-row-header-${header.name as string}`}
-                        onClick={e => onRowClick(isSelected, row, e)}
-                        id={row.id?.toString()}
-                        className={`${styles.td} ${
-                          header.isGreen && styles.column_color__green
-                        } ${isNameColumn ? styles.column_bold_text : ''} ${
-                          handleRowClick &&
-                          hasSubMaterials &&
-                          row?.material?.hasSubMaterials
-                            ? styles.cursor_pointer
-                            : ''
-                        }`}
-                      >
-                        {hasSubMaterials &&
-                          row?.material?.hasSubMaterials &&
-                          isNameColumn && (
-                            <i
-                              className={`${
-                                styles.materialArrow
-                              } icon ion-md-arrow-drop${
-                                rowChildVisible && isSelected ? 'down' : 'right'
-                              }`}
-                            ></i>
-                          )}
-
-                        {renderColumnValue(row, header.name)}
-                      </Td>
-                    );
-                  })}
-                  {onClickEdit && onClickDelete && !hideOptions ? (
-                    <Td
-                      id={row.id?.toString()}
-                      className={`${styles.td}`}
-                      textAlign="center"
-                      width="90px"
-                    >
-                      <Menu>
-                        <MenuButton boxSize="40px">
-                          <Center>
-                            <DotsThreeOutlineVertical
-                              className={styles.cursor_pointer}
-                              weight="fill"
-                            />
-                          </Center>
-                        </MenuButton>
-                        <MenuList
-                          className={
-                            colorMode === 'dark' ? styles.menuList : ''
-                          }
+                    row?.material?.hasSubMaterials &&
+                    row.subMaterials?.map((sub: any, i: number, arr: any) => {
+                      let cssFormat = '';
+                      const isLastRow = i === arr.length - 1;
+                      cssFormat = isLastRow ? styles.bottomRoundBorder : '';
+                      return (
+                        <Tr
+                          key={`table-row-${sub.id}`}
+                          className={`${
+                            colorMode === 'light'
+                              ? styles.childRowSelected
+                              : styles.childRowSelectedDark
+                          } ${cssFormat}`}
                         >
-                          {onClickAddSubMaterial &&
-                            row?.material?.hasSubMaterials && (
-                              <MenuItem
-                                onClick={() =>
-                                  onClickAddSubMaterial(row.id.toString())
-                                }
+                          {headers?.map(header => {
+                            return (
+                              <Td
+                                key={`table-row-header-${
+                                  header.name as string
+                                }`}
+                                id={sub.id?.toString()}
+                                className={`${styles.td}`}
                               >
-                                Add sub material <Spacer></Spacer> <Plus />
-                              </MenuItem>
-                            )}
-                          <MenuItem
-                            onClick={() => onClickEdit(row.id.toString())}
-                          >
-                            Edit <Spacer></Spacer> <Pencil />
-                          </MenuItem>
-                          <MenuItem
-                            onClick={() => onClickDelete(row.id.toString())}
-                          >
-                            Delete <Spacer></Spacer> <Trash />
-                          </MenuItem>
-                        </MenuList>
-                      </Menu>
-                    </Td>
-                  ) : null}
-                </Tr>
-                {rowChildVisible &&
-                  isSelected &&
-                  hasSubMaterials &&
-                  row?.material?.hasSubMaterials &&
-                  row.subMaterials?.map((sub: any, i: number, arr: any) => {
-                    let cssFormat = '';
-                    const isLastRow = i === arr.length - 1;
-                    cssFormat = isLastRow ? styles.bottomRoundBorder : '';
-                    return (
-                      <Tr
-                        key={`table-row-${sub.id}`}
-                        className={`${
-                          colorMode === 'light'
-                            ? styles.childRowSelected
-                            : styles.childRowSelectedDark
-                        } ${cssFormat}`}
-                      >
-                        {headers?.map(header => {
-                          return (
+                                {renderSubColumnValue(sub, header.name)}
+                              </Td>
+                            );
+                          })}
+                          {onClickEditSubMaterial &&
+                          onClickDeleteSubMaterial &&
+                          !hideOptions ? (
                             <Td
-                              key={`table-row-header-${header.name as string}`}
-                              id={sub.id?.toString()}
+                              id={row.id?.toString()}
                               className={`${styles.td}`}
+                              textAlign="center"
+                              width="90px"
                             >
-                              {renderSubColumnValue(sub, header.name)}
+                              <Menu>
+                                <MenuButton boxSize="40px">
+                                  <Center>
+                                    <DotsThreeOutlineVertical
+                                      className={styles.cursor_pointer}
+                                      weight="fill"
+                                    />
+                                  </Center>
+                                </MenuButton>
+                                <MenuList>
+                                  <MenuItem
+                                    onClick={() =>
+                                      onClickEditSubMaterial(
+                                        row.id.toString(),
+                                        sub.id.toString(),
+                                      )
+                                    }
+                                  >
+                                    {appStrings?.edit} <Spacer /> <Pencil />
+                                  </MenuItem>
+                                  <MenuItem
+                                    onClick={() =>
+                                      onClickDeleteSubMaterial(
+                                        row.id.toString(),
+                                        sub.id.toString(),
+                                      )
+                                    }
+                                  >
+                                    {appStrings?.delete} <Spacer /> <Trash />
+                                  </MenuItem>
+                                </MenuList>
+                              </Menu>
                             </Td>
-                          );
-                        })}
-                        {onClickEditSubMaterial &&
-                        onClickDeleteSubMaterial &&
-                        !hideOptions ? (
-                          <Td
-                            id={row.id?.toString()}
-                            className={`${styles.td}`}
-                            textAlign="center"
-                            width="90px"
-                          >
-                            <Menu>
-                              <MenuButton boxSize="40px">
-                                <Center>
-                                  <DotsThreeOutlineVertical
-                                    className={styles.cursor_pointer}
-                                    weight="fill"
-                                  />
-                                </Center>
-                              </MenuButton>
-                              <MenuList>
-                                <MenuItem
-                                  onClick={() =>
-                                    onClickEditSubMaterial(
-                                      row.id.toString(),
-                                      sub.id.toString(),
-                                    )
-                                  }
-                                >
-                                  Edit <Spacer></Spacer> <Pencil />
-                                </MenuItem>
-                                <MenuItem
-                                  onClick={() =>
-                                    onClickDeleteSubMaterial(
-                                      row.id.toString(),
-                                      sub.id.toString(),
-                                    )
-                                  }
-                                >
-                                  Delete <Spacer></Spacer> <Trash />
-                                </MenuItem>
-                              </MenuList>
-                            </Menu>
-                          </Td>
-                        ) : null}
-                      </Tr>
-                    );
-                  })}
-              </React.Fragment>
-            );
-          })}
-        </Tbody>
-      </Table>
-      {checkRenderPagination() ? (
-        <Pagination
-          totalCount={props.items.length}
-          itemsPerPage={itemsPerPage}
-          handleOnPageChange={handleOnPageChange}
-          currentPage={currentPage}
-          filteredCount={filteredCount}
-        />
-      ) : undefined}
-    </Box>
+                          ) : null}
+                        </Tr>
+                      );
+                    })}
+                </React.Fragment>
+              );
+            })}
+          </Tbody>
+        </Table>
+        {checkRenderPagination() ? (
+          <Pagination
+            totalCount={props.items.length}
+            itemsPerPage={itemsPerPage}
+            handleOnPageChange={handleOnPageChange}
+            currentPage={currentPage}
+            filteredCount={filteredCount}
+          />
+        ) : undefined}
+      </Box>
+      {showTotals && items?.length && (
+        <Stack direction="row" className={styles.totals_container}>
+          <Tag>{appStrings?.totals?.toUpperCase()}</Tag>
+          <TotalStats />
+        </Stack>
+      )}
+    </>
   );
 };
 

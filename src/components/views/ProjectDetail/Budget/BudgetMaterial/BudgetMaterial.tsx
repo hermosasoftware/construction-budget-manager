@@ -80,9 +80,19 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
     { name: 'name', value: appStrings.name },
     { name: 'unit', value: appStrings.unit },
     { name: 'quantity', value: appStrings.quantity },
-    { name: 'cost', value: appStrings.cost, isGreen: true },
-    { name: 'subtotal', value: appStrings.subtotal, isGreen: true },
-    { name: 'dollarCost', value: appStrings.dollars, isGreen: true },
+    { name: 'cost', value: appStrings.cost, isGreen: true, showTotal: true },
+    {
+      name: 'subtotal',
+      value: appStrings.subtotal,
+      isGreen: true,
+      showTotal: true,
+    },
+    {
+      name: 'dollarCost',
+      value: appStrings.dollars,
+      isGreen: true,
+      showTotal: true,
+    },
   ];
 
   const validationSchema = yup.object().shape({
@@ -495,6 +505,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
         }}
         formatCurrency
         usePagination
+        showTotals
       />
       {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
     </div>

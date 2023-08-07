@@ -110,7 +110,7 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
     filteredCount > itemsPerPage;
 
   const TotalStats = () => {
-    const toShow = headers.filter(header => header?.showTotal);
+    const toShow = headers?.filter(header => header?.showTotal);
     const totalValues = items?.reduce((summary: any, item: any) => {
       for (const element of toShow) {
         summary[element?.name] =
@@ -121,7 +121,7 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
 
     return (
       <>
-        {toShow.map((element, key) => (
+        {toShow?.map((element, key) => (
           <Tooltip key={key} label={element?.name}>
             <Tag colorScheme={key % 2 ? 'teal' : 'green'}>
               {colonFormat(totalValues[element?.name])}
@@ -209,7 +209,7 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
                                 onClickExportPDF(row.id.toString())
                               }
                             >
-                              {appStrings?.exportPDF} <Spacer />{' '}
+                              {appStrings?.exportPDF} <Spacer />
                               <FilePdf size={24} />
                             </MenuItem>
                           )}
@@ -237,7 +237,7 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
           />
         ) : undefined}
       </Box>
-      {showTotals && (
+      {showTotals && items?.length && (
         <Stack direction="row" className={styles.totals_container}>
           <Tag>{appStrings?.totals?.toUpperCase()}</Tag>
           <TotalStats />
