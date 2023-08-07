@@ -13,6 +13,9 @@ import {
   Th,
   Thead,
   Tr,
+  Stack,
+  Tag,
+  Tooltip,
 } from '@chakra-ui/react';
 import {
   DotsThreeOutlineVertical,
@@ -22,15 +25,18 @@ import {
 } from 'phosphor-react';
 import { TObject } from '../../../types/global';
 import Pagination from '../Pagination';
-import styles from './TableView.module.css';
 import { useAppSelector } from '../../../redux/hooks';
 import { parseCurrentPageItems } from '../../../utils/common';
+import { colonFormat, currencyToNumber } from '../../../utils/numbers';
+
+import styles from './TableView.module.css';
 
 export type TTableHeader<T = TObject> = {
   name: keyof TTableItem<T>;
   value: string | number;
   isGreen?: boolean;
   isEditable?: boolean;
+  showTotal?: boolean;
 };
 
 export type TTableItem<T = TObject> = T & { id: string | number };
@@ -51,6 +57,7 @@ interface ITableProps<T> {
   rowChild?: React.ReactElement;
   hideOptions?: boolean;
   usePagination?: boolean;
+  showTotals?: boolean;
 }
 
 const TableView = <T extends TObject>(props: ITableProps<T>) => {
@@ -65,7 +72,9 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
     rowChild,
     hideOptions,
     usePagination,
+    showTotals = false,
   } = props;
+  const appStrings = useAppSelector(state => state.settings.appStrings);
   const [rowChildVisible, seTrowChildVisible] = useState<boolean>(false);
   const [selectedRow, setSelectedRow] = useState<string | number>('');
 
@@ -100,106 +109,141 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
     props.items.length === filteredCount &&
     filteredCount > itemsPerPage;
 
+  const TotalStats = () => {
+    const toShow = headers.filter(header => header?.showTotal);
+    const totalValues = items?.reduce((summary: any, item: any) => {
+      for (const element of toShow) {
+        summary[element?.name] =
+          (summary[element?.name] || 0) + currencyToNumber(item[element?.name]);
+      }
+      return summary;
+    }, {});
+
+    return (
+      <>
+        {toShow.map((element, key) => (
+          <Tooltip key={key} label={element?.name}>
+            <Tag colorScheme={key % 2 ? 'teal' : 'green'}>
+              {colonFormat(totalValues[element?.name])}
+            </Tag>
+          </Tooltip>
+        ))}
+      </>
+    );
+  };
+
   return (
-    <Box className={styles.table_container} style={{ ...(boxStyle ?? '') }}>
-      <Table>
-        <Thead>
-          <Tr>
-            {headers?.map(header => (
-              <Th
-                key={`table-header-${header.name as string}`}
-                className={styles.th}
-              >
-                {header.value}
-              </Th>
-            ))}
-          </Tr>
-        </Thead>
-        <Tbody>
-          {items?.map((row: any) => (
-            <React.Fragment key={`table-row-${row.id}`}>
-              <Tr key={`table-row-${row.id}`}>
-                {headers?.map(header => (
-                  <Td
-                    key={`table-row-header-${header.name as string}`}
-                    onClick={(e: any) => {
-                      if (rowChild) {
-                        if (selectedRow === row.id)
-                          seTrowChildVisible(!rowChildVisible);
-                        else seTrowChildVisible(true);
-                        setSelectedRow(row.id);
-                      }
-                      handleRowClick && handleRowClick(e);
-                    }}
-                    id={row.id?.toString()}
-                    className={`${styles.td} ${
-                      header.isGreen && styles.column_color__green
-                    } ${
-                      header.name === 'name' ? styles.column_bold_text : ''
-                    } ${handleRowClick ? styles.cursor_pointer : ''}`}
-                  >
-                    {row[header.name]}
-                  </Td>
-                ))}
-                {onClickEdit && onClickDelete && !hideOptions ? (
-                  <Td
-                    id={row.id?.toString()}
-                    className={`${styles.td}`}
-                    textAlign="center"
-                    width="90px"
-                  >
-                    <Menu>
-                      <MenuButton boxSize="40px">
-                        <Center>
-                          <DotsThreeOutlineVertical
-                            className={styles.cursor_pointer}
-                            weight="fill"
-                          />
-                        </Center>
-                      </MenuButton>
-                      <MenuList>
-                        <MenuItem
-                          onClick={() => onClickEdit(row.id.toString())}
-                        >
-                          Edit<Spacer></Spacer>
-                          <Pencil />
-                        </MenuItem>
-                        <MenuItem
-                          onClick={() => onClickDelete(row.id.toString())}
-                        >
-                          Delete <Spacer></Spacer> <Trash />
-                        </MenuItem>
-                        {onClickExportPDF && (
+    <>
+      <Box className={styles.table_container} style={{ ...(boxStyle ?? '') }}>
+        <Table>
+          <Thead>
+            <Tr>
+              {headers?.map(header => (
+                <Th
+                  key={`table-header-${header.name as string}`}
+                  className={styles.th}
+                >
+                  {header.value}
+                </Th>
+              ))}
+            </Tr>
+          </Thead>
+          <Tbody>
+            {items?.map((row: any) => (
+              <React.Fragment key={`table-row-${row.id}`}>
+                <Tr key={`table-row-${row.id}`}>
+                  {headers?.map(header => (
+                    <Td
+                      key={`table-row-header-${header.name as string}`}
+                      onClick={(e: any) => {
+                        if (rowChild) {
+                          if (selectedRow === row.id)
+                            seTrowChildVisible(!rowChildVisible);
+                          else seTrowChildVisible(true);
+                          setSelectedRow(row.id);
+                        }
+                        handleRowClick && handleRowClick(e);
+                      }}
+                      id={row.id?.toString()}
+                      className={`${styles.td} ${
+                        header.isGreen && styles.column_color__green
+                      } ${
+                        header.name === 'name' ? styles.column_bold_text : ''
+                      } ${handleRowClick ? styles.cursor_pointer : ''}`}
+                    >
+                      {row[header.name]}
+                    </Td>
+                  ))}
+                  {onClickEdit && onClickDelete && !hideOptions ? (
+                    <Td
+                      id={row.id?.toString()}
+                      className={`${styles.td}`}
+                      textAlign="center"
+                      width="90px"
+                    >
+                      <Menu>
+                        <MenuButton boxSize="40px">
+                          <Center>
+                            <DotsThreeOutlineVertical
+                              className={styles.cursor_pointer}
+                              weight="fill"
+                            />
+                          </Center>
+                        </MenuButton>
+                        <MenuList>
                           <MenuItem
-                            onClick={() => onClickExportPDF(row.id.toString())}
+                            onClick={() => onClickEdit(row.id.toString())}
                           >
-                            Export to PDF <Spacer /> <FilePdf size={24} />
+                            {appStrings?.edit}
+                            <Spacer />
+                            <Pencil />
                           </MenuItem>
-                        )}
-                      </MenuList>
-                    </Menu>
-                  </Td>
-                ) : null}
-              </Tr>
-              {rowChildVisible && rowChild && row.id === selectedRow && (
-                <Tr>
-                  <Td>{React.cloneElement(rowChild, { rowID: row.id })}</Td>
+                          <MenuItem
+                            onClick={() => onClickDelete(row.id.toString())}
+                          >
+                            {appStrings?.delete} <Spacer /> <Trash />
+                          </MenuItem>
+                          {onClickExportPDF && (
+                            <MenuItem
+                              onClick={() =>
+                                onClickExportPDF(row.id.toString())
+                              }
+                            >
+                              {appStrings?.exportPDF} <Spacer />{' '}
+                              <FilePdf size={24} />
+                            </MenuItem>
+                          )}
+                        </MenuList>
+                      </Menu>
+                    </Td>
+                  ) : null}
                 </Tr>
-              )}
-            </React.Fragment>
-          ))}
-        </Tbody>
-      </Table>
-      {checkRenderPagination() ? (
-        <Pagination
-          totalCount={props.items.length}
-          itemsPerPage={itemsPerPage}
-          handleOnPageChange={handleOnPageChange}
-          currentPage={currentPage}
-          filteredCount={filteredCount}
-        />
-      ) : undefined}
-    </Box>
+                {rowChildVisible && rowChild && row.id === selectedRow && (
+                  <Tr>
+                    <Td>{React.cloneElement(rowChild, { rowID: row.id })}</Td>
+                  </Tr>
+                )}
+              </React.Fragment>
+            ))}
+          </Tbody>
+        </Table>
+        {checkRenderPagination() ? (
+          <Pagination
+            totalCount={props.items.length}
+            itemsPerPage={itemsPerPage}
+            handleOnPageChange={handleOnPageChange}
+            currentPage={currentPage}
+            filteredCount={filteredCount}
+          />
+        ) : undefined}
+      </Box>
+      {showTotals && (
+        <Stack direction="row" className={styles.totals_container}>
+          <Tag>{appStrings?.totals?.toUpperCase()}</Tag>
+          <TotalStats />
+        </Stack>
+      )}
+    </>
   );
 };
 

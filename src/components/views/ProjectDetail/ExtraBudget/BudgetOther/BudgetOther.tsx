@@ -51,9 +51,19 @@ const BudgetOther: React.FC<IBudgetOtherView> = props => {
   const tableHeader: TTableHeader[] = [
     { name: 'name', value: appStrings.name },
     { name: 'quantity', value: appStrings.quantity },
-    { name: 'cost', value: appStrings.cost, isGreen: true },
-    { name: 'subtotal', value: appStrings.subtotal, isGreen: true },
-    { name: 'dollars', value: appStrings.dollars, isGreen: true },
+    { name: 'cost', value: appStrings.cost, isGreen: true, showTotal: true },
+    {
+      name: 'subtotal',
+      value: appStrings.subtotal,
+      isGreen: true,
+      showTotal: true,
+    },
+    {
+      name: 'dollars',
+      value: appStrings.dollars,
+      isGreen: true,
+      showTotal: true,
+    },
   ];
 
   const formatTableData = () =>
@@ -192,6 +202,7 @@ const BudgetOther: React.FC<IBudgetOtherView> = props => {
           setSelectedItem({ ...selectedItem, id: id });
           setIsAlertDialogOpen(true);
         }}
+        showTotals
       />
       {!extraOthers.length ? <h1>{appStrings.noRecords}</h1> : null}
     </div>

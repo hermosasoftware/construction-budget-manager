@@ -15,3 +15,10 @@ export const dolarFormat = (number: number) =>
     ...numberFormat,
     currency: 'USD',
   });
+
+export const currencyToNumber = (text: string) =>
+  Number(
+    text.includes('₡')
+      ? text.replace(/,/g, '.').replace(/[^0-9-.]/g, '')
+      : text.replace(/[^0-9-.]/g, ''),
+  );

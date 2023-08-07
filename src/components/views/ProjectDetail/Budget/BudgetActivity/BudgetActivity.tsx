@@ -69,8 +69,18 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
   const tableHeader: TTableHeader[] = [
     { name: 'activity', value: appStrings.name },
     { name: 'date', value: appStrings.date },
-    { name: 'subtotal', value: appStrings.subtotal, isGreen: true },
-    { name: 'dollars', value: appStrings.dollars, isGreen: true },
+    {
+      name: 'subtotal',
+      value: appStrings.subtotal,
+      isGreen: true,
+      showTotal: true,
+    },
+    {
+      name: 'dollars',
+      value: appStrings.dollars,
+      isGreen: true,
+      showTotal: true,
+    },
   ];
 
   const filterOptions: FilterOption[] = [
@@ -209,6 +219,7 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
         }}
         hideOptions={!isBudgetOpen}
         usePagination={!search?.searchTerm?.length}
+        showTotals
       />
       {!budgetActivities.length ? <h1>{appStrings.noRecords}</h1> : null}
     </div>
