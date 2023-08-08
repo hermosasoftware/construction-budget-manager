@@ -255,6 +255,7 @@ export default function Materials() {
           <Flex marginBottom="5px">
             <SearchInput
               style={{ margin: '0 10px 0 0', maxWidth: '500px' }}
+              parentClassName={styles.search_input_container}
               placeholder={appStrings.search}
               onChange={handleSearch}
             ></SearchInput>

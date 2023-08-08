@@ -233,9 +233,11 @@ const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
     return (
       <>
         {toShow?.map((element, key) => (
-          <Tooltip key={key} label={element?.name}>
+          <Tooltip key={key} label={element?.value}>
             <Tag colorScheme={key % 2 ? 'teal' : 'green'}>
-              {colonFormat(totalValues[element?.name])}
+              {element?.value?.toString()?.toUpperCase()?.includes('DOLLAR')
+                ? dolarFormat(totalValues[element?.name])
+                : colonFormat(totalValues[element?.name])}
             </Tag>
           </Tooltip>
         ))}
@@ -455,12 +457,12 @@ const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
           />
         ) : undefined}
       </Box>
-      {showTotals && items?.length && (
+      {showTotals && items?.length ? (
         <Stack direction="row" className={styles.totals_container}>
           <Tag>{appStrings?.totals?.toUpperCase()}</Tag>
           <TotalStats />
         </Stack>
-      )}
+      ) : undefined}
     </>
   );
 };
