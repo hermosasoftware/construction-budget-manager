@@ -114,8 +114,9 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
     filteredCount > itemsPerPage;
 
   const TotalStats = () => {
+    const data = props?.items === items ? props?.items : items;
     const toShow = headers?.filter(header => header?.showTotal);
-    const totalValues = items?.reduce((summary: any, item: any) => {
+    const totalValues = data?.reduce((summary: any, item: any) => {
       for (const element of toShow) {
         summary[element?.name] =
           (summary[element?.name] || 0) + currencyToNumber(item[element?.name]);
