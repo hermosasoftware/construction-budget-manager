@@ -30,6 +30,14 @@ div.menu_section {
   width: 146px;
 }
 
-.item_text__selected {
-  color: green;
+@media (prefers-color-scheme: light) {
+  .item_text__selected {
+    color: green;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .item_text__selected {
+    color: var(--chakra-colors-green-dark-text);
+  }
 }

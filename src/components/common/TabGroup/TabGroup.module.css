@@ -14,24 +14,45 @@
   line-height: var(--line-height-md);
 }
 
-.default {
-  border-bottom-color: var(--chakra-colors-success);
-}
-
-.default > p {
-  color: var(--chakra-colors-success);
-}
-
 .rounded {
-  background-color: var(--chakra-colors-light_success);
   border-radius: 20px;
-}
-
-.rounded > p {
-  color: var(--chakra-colors-dark_success);
 }
 
 .disabled {
   pointer-events: none !important;
   opacity: 0.7;
+}
+
+@media (prefers-color-scheme: light) {
+  .default {
+    border-bottom-color: var(--chakra-colors-success);
+  }
+
+  .default > p {
+    color: var(--chakra-colors-success);
+  }
+
+  .rounded {
+    background-color: var(--chakra-colors-green-light-background);
+  }
+  .rounded > p {
+    color: var(--chakra-colors-green-light-text);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .default {
+    border-bottom-color: var(--chakra-colors-green-dark-text);
+  }
+
+  .default > p {
+    color: var(--chakra-colors-green-dark-text);
+  }
+
+  .rounded {
+    background-color: var(--chakra-colors-green-dark-background);
+  }
+  .rounded > p {
+    color: var(--chakra-colors-green-dark-text);
+  }
 }
