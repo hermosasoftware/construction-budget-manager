@@ -54,9 +54,19 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
     { name: 'name', value: appStrings.name },
     { name: 'unit', value: appStrings.unit },
     { name: 'quantity', value: appStrings.quantity },
-    { name: 'cost', value: appStrings.cost, isGreen: true },
-    { name: 'subtotal', value: appStrings.subtotal, isGreen: true },
-    { name: 'dollars', value: appStrings.dollars, isGreen: true },
+    { name: 'cost', value: appStrings.cost, isGreen: true, showTotal: true },
+    {
+      name: 'subtotal',
+      value: appStrings.subtotal,
+      isGreen: true,
+      showTotal: true,
+    },
+    {
+      name: 'dollars',
+      value: appStrings.dollars,
+      isGreen: true,
+      showTotal: true,
+    },
   ];
 
   const formatTableData = () =>
@@ -201,6 +211,7 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
           setIsAlertDialogOpen(true);
         }}
         hideOptions={!isBudgetOpen}
+        showTotals
       />
       {!budgetLabors.length ? <h1>{appStrings.noRecords}</h1> : null}
     </div>

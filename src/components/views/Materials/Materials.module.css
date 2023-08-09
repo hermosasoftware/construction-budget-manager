@@ -23,6 +23,10 @@
   align-items: center;
 }
 
+.search_input_container {
+  align-self: end;
+}
+
 .button_add {
   align-self: end;
   width: 50px;

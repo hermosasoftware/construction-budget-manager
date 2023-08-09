@@ -124,9 +124,14 @@ const Orders: React.FC<IOrdersView> = props => {
     { name: 'description', value: appStrings.description },
     { name: 'quantity', value: appStrings.quantity },
     { name: 'cost', value: appStrings.cost },
-    { name: 'subtotal', value: appStrings.subtotal, isGreen: true },
-    { name: 'imp', value: appStrings.imp, isGreen: true },
-    { name: 'total', value: appStrings.total, isGreen: true },
+    {
+      name: 'subtotal',
+      value: appStrings.subtotal,
+      isGreen: true,
+      showTotal: true,
+    },
+    { name: 'imp', value: appStrings.imp, isGreen: true, showTotal: true },
+    { name: 'total', value: appStrings.total, isGreen: true, showTotal: true },
   ];
 
   const filterOptions: FilterOption[] = [
@@ -542,6 +547,7 @@ const Orders: React.FC<IOrdersView> = props => {
           }
           formatCurrency
           usePagination={!search.searchTerm?.length}
+          showTotals
         />
         {!projectOrders.length ? <h1>{appStrings.noRecords}</h1> : null}
       </Box>

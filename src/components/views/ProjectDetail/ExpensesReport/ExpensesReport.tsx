@@ -69,8 +69,18 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
     { name: 'owner', value: appStrings.owner },
     { name: 'work', value: appStrings.work },
     { name: 'family', value: appStrings.family },
-    { name: 'amount', value: appStrings.amount, isGreen: true },
-    { name: 'dollars', value: appStrings.dollars, isGreen: true },
+    {
+      name: 'amount',
+      value: appStrings.amount,
+      isGreen: true,
+      showTotal: true,
+    },
+    {
+      name: 'dollars',
+      value: appStrings.dollars,
+      isGreen: true,
+      showTotal: true,
+    },
   ];
 
   const filterOptions: FilterOption[] = [
@@ -239,6 +249,7 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
             setSelectedItem({ ...selectedItem, id: id });
             setIsAlertDialogOpen(true);
           }}
+          showTotals
         />
         {!projectExpenses.length ? <h1>{appStrings.noRecords}</h1> : null}
       </Box>

@@ -7,11 +7,14 @@ import {
   MenuItem,
   MenuList,
   Spacer,
+  Stack,
   Table,
+  Tag,
   Tbody,
   Td,
   Th,
   Thead,
+  Tooltip,
   Tr,
   useColorMode,
 } from '@chakra-ui/react';
@@ -23,17 +26,23 @@ import {
   Trash,
 } from 'phosphor-react';
 import { TObject } from '../../../types/global';
-import { colonFormat, dolarFormat } from '../../../utils/numbers';
+import {
+  colonFormat,
+  currencyToNumber,
+  dolarFormat,
+} from '../../../utils/numbers';
 import { useAppSelector } from '../../../redux/hooks';
 import Pagination from '../../common/Pagination';
-import styles from './InvoiceTableView.module.css';
 import { parseCurrentPageItems } from '../../../utils/common';
+
+import styles from './InvoiceTableView.module.css';
 
 export type TTableHeader<T = TObject> = {
   name: keyof TTableItem<T>;
   value: string | number;
   isGreen?: boolean;
   isEditable?: boolean;
+  showTotal?: boolean;
 };
 
 export type TTableItem<T = TObject> = T & { id: string | number };
@@ -58,6 +67,7 @@ interface ITableProps<T> {
   exchangeRate?: Number;
   formatCurrency?: boolean;
   usePagination?: boolean;
+  showTotals?: boolean;
 }
 
 const InvoiceTableView = <T extends TObject>(props: ITableProps<T>) => {
@@ -75,6 +85,7 @@ const InvoiceTableView = <T extends TObject>(props: ITableProps<T>) => {
     exchangeRate,
     formatCurrency,
     usePagination,
+    showTotals = false,
   } = props;
   const [rowChildVisible, setRowChildVisible] = useState<boolean>(false);
   const [selectedRow, setSelectedRow] = useState<string | number>('');
@@ -208,205 +219,247 @@ const InvoiceTableView = <T extends TObject>(props: ITableProps<T>) => {
     props.items.length > itemsPerPage &&
     filteredCount > itemsPerPage;
 
-  return (
-    <Box className={styles.table_container} style={{ ...(boxStyle ?? '') }}>
-      <Table>
-        <Thead>
-          <Tr>
-            {headers?.map(header => (
-              <Th
-                key={`table-header-${header.name as string}`}
-                className={styles.th}
-              >
-                {header.value}
-              </Th>
-            ))}
-          </Tr>
-        </Thead>
-        <Tbody>
-          {items?.map(row => {
-            const isSelected = selectedRow === row.id && rowChildVisible;
-            const hasProducts = row?.products?.length > 0;
-            return (
-              <React.Fragment key={`table-row-${row.id}`}>
-                <Tr
-                  key={`table-row-${row.id}`}
-                  className={`${
-                    isSelected && hasProducts && row?.products?.length
-                      ? styles.rowSelected
-                      : ''
-                  }`}
-                >
-                  {headers?.map(header => {
-                    const isFirstColumn = headers[0] === header;
-                    return (
-                      <Td
-                        key={`table-row-header-${header.name as string}`}
-                        onClick={e => onRowClick(isSelected, row, e)}
-                        id={row.id?.toString()}
-                        className={`${styles.td} ${
-                          header.isGreen && styles.column_color__green
-                        } ${isFirstColumn ? styles.column_bold_text : ''} ${
-                          handleRowClick && hasProducts && row?.products?.length
-                            ? styles.cursor_pointer
-                            : ''
-                        }`}
-                      >
-                        {hasProducts &&
-                          row?.products?.length &&
-                          isFirstColumn && (
-                            <i
-                              className={`${
-                                styles.itemArrow
-                              } icon ion-md-arrow-drop${
-                                rowChildVisible && isSelected ? 'down' : 'right'
-                              }`}
-                            ></i>
-                          )}
+  const TotalStats = () => {
+    const data = props?.items === items ? props?.items : items;
+    const toShow = headers?.filter(header => header?.showTotal);
+    const totalValues = data?.reduce((summary: any, item: any) => {
+      for (const element of toShow) {
+        summary[element?.name] =
+          (summary[element?.name] || 0) +
+          currencyToNumber(renderColumnValue(item, element?.name));
+      }
+      return summary;
+    }, {});
 
-                        {renderColumnValue(row, header.name)}
-                      </Td>
-                    );
-                  })}
-                  {onClickEdit && onClickDelete && !hideOptions ? (
-                    <Td
-                      id={row.id?.toString()}
-                      className={`${styles.td}`}
-                      textAlign="center"
-                      width="90px"
-                    >
-                      <Menu>
-                        <MenuButton boxSize="40px">
-                          <Center>
-                            <DotsThreeOutlineVertical
-                              className={styles.cursor_pointer}
-                              weight="fill"
-                            />
-                          </Center>
-                        </MenuButton>
-                        <MenuList
-                          className={
-                            colorMode === 'dark' ? styles.menuList : ''
-                          }
+    return (
+      <>
+        {toShow?.map((element, key) => (
+          <Tooltip key={key} label={element?.value}>
+            <Tag colorScheme={key % 2 ? 'teal' : 'green'}>
+              {element?.value?.toString()?.toUpperCase()?.includes('DOLLAR')
+                ? dolarFormat(totalValues[element?.name])
+                : colonFormat(totalValues[element?.name])}
+            </Tag>
+          </Tooltip>
+        ))}
+      </>
+    );
+  };
+
+  return (
+    <>
+      <Box className={styles.table_container} style={{ ...(boxStyle ?? '') }}>
+        <Table>
+          <Thead>
+            <Tr>
+              {headers?.map(header => (
+                <Th
+                  key={`table-header-${header.name as string}`}
+                  className={styles.th}
+                >
+                  {header.value}
+                </Th>
+              ))}
+            </Tr>
+          </Thead>
+          <Tbody>
+            {items?.map(row => {
+              const isSelected = selectedRow === row.id && rowChildVisible;
+              const hasProducts = row?.products?.length > 0;
+              return (
+                <React.Fragment key={`table-row-${row.id}`}>
+                  <Tr
+                    key={`table-row-${row.id}`}
+                    className={`${
+                      isSelected && hasProducts && row?.products?.length
+                        ? styles.rowSelected
+                        : ''
+                    }`}
+                  >
+                    {headers?.map(header => {
+                      const isFirstColumn = headers[0] === header;
+                      return (
+                        <Td
+                          key={`table-row-header-${header.name as string}`}
+                          onClick={e => onRowClick(isSelected, row, e)}
+                          id={row.id?.toString()}
+                          className={`${styles.td} ${
+                            header.isGreen && styles.column_color__green
+                          } ${isFirstColumn ? styles.column_bold_text : ''} ${
+                            handleRowClick &&
+                            hasProducts &&
+                            row?.products?.length
+                              ? styles.cursor_pointer
+                              : ''
+                          }`}
                         >
-                          {onClickAddProduct && (
-                            <MenuItem
-                              onClick={() =>
-                                onClickAddProduct(row.id.toString())
-                              }
-                            >
-                              Add product <Spacer /> <Plus />
-                            </MenuItem>
-                          )}
-                          <MenuItem
-                            onClick={() => onClickEdit(row.id.toString())}
-                          >
-                            Edit <Spacer /> <Pencil />
-                          </MenuItem>
-                          <MenuItem
-                            onClick={() => onClickDelete(row.id.toString())}
-                          >
-                            Delete <Spacer /> <Trash />
-                          </MenuItem>
-                          {row.pdfURL && (
-                            <MenuItem onClick={() => window.open(row.pdfURL)}>
-                              Open PDF <Spacer /> <FilePdf size={24} />
-                            </MenuItem>
-                          )}
-                        </MenuList>
-                      </Menu>
-                    </Td>
-                  ) : null}
-                </Tr>
-                {rowChildVisible &&
-                  isSelected &&
-                  hasProducts &&
-                  row?.products?.length &&
-                  row?.products?.map((prod: any, i: number, arr: any) => {
-                    let cssFormat = '';
-                    const isLastRow = i === arr.length - 1;
-                    cssFormat = isLastRow ? styles.bottomRoundBorder : '';
-                    return (
-                      <Tr
-                        key={`table-row-${prod.id}`}
-                        className={`${
-                          colorMode === 'light'
-                            ? styles.childRowSelected
-                            : styles.childRowSelectedDark
-                        } ${cssFormat}`}
+                          {hasProducts &&
+                            row?.products?.length &&
+                            isFirstColumn && (
+                              <i
+                                className={`${
+                                  styles.itemArrow
+                                } icon ion-md-arrow-drop${
+                                  rowChildVisible && isSelected
+                                    ? 'down'
+                                    : 'right'
+                                }`}
+                              ></i>
+                            )}
+
+                          {renderColumnValue(row, header.name)}
+                        </Td>
+                      );
+                    })}
+                    {onClickEdit && onClickDelete && !hideOptions ? (
+                      <Td
+                        id={row.id?.toString()}
+                        className={`${styles.td}`}
+                        textAlign="center"
+                        width="90px"
                       >
-                        {headers?.map(header => {
-                          return (
-                            <Td
-                              key={`table-row-header-${header.name as string}`}
-                              id={prod.id?.toString()}
-                              className={`${styles.td}`}
-                            >
-                              {renderSubColumnValue(prod, header.name)}
-                            </Td>
-                          );
-                        })}
-                        {onClickEditProduct &&
-                        onClickDeleteProduct &&
-                        !hideOptions ? (
-                          <Td
-                            id={row.id?.toString()}
-                            className={`${styles.td}`}
-                            textAlign="center"
-                            width="90px"
+                        <Menu>
+                          <MenuButton boxSize="40px">
+                            <Center>
+                              <DotsThreeOutlineVertical
+                                className={styles.cursor_pointer}
+                                weight="fill"
+                              />
+                            </Center>
+                          </MenuButton>
+                          <MenuList
+                            className={
+                              colorMode === 'dark' ? styles.menuList : ''
+                            }
                           >
-                            <Menu>
-                              <MenuButton boxSize="40px">
-                                <Center>
-                                  <DotsThreeOutlineVertical
-                                    className={styles.cursor_pointer}
-                                    weight="fill"
-                                  />
-                                </Center>
-                              </MenuButton>
-                              <MenuList>
-                                <MenuItem
-                                  onClick={() =>
-                                    onClickEditProduct(
-                                      row.id?.toString(),
-                                      prod.id?.toString(),
-                                    )
-                                  }
-                                >
-                                  Edit <Spacer /> <Pencil />
-                                </MenuItem>
-                                <MenuItem
-                                  onClick={() =>
-                                    onClickDeleteProduct(
-                                      row.id?.toString(),
-                                      prod.id?.toString(),
-                                    )
-                                  }
-                                >
-                                  Delete <Spacer /> <Trash />
-                                </MenuItem>
-                              </MenuList>
-                            </Menu>
-                          </Td>
-                        ) : null}
-                      </Tr>
-                    );
-                  })}
-              </React.Fragment>
-            );
-          })}
-        </Tbody>
-      </Table>
-      {checkRenderPagination() ? (
-        <Pagination
-          totalCount={items.length}
-          itemsPerPage={itemsPerPage}
-          handleOnPageChange={handleOnPageChange}
-          currentPage={currentPage}
-          filteredCount={filteredCount}
-        />
+                            {onClickAddProduct && (
+                              <MenuItem
+                                onClick={() =>
+                                  onClickAddProduct(row.id.toString())
+                                }
+                              >
+                                {appStrings?.addProduct} <Spacer /> <Plus />
+                              </MenuItem>
+                            )}
+                            <MenuItem
+                              onClick={() => onClickEdit(row.id.toString())}
+                            >
+                              {appStrings?.edit} <Spacer /> <Pencil />
+                            </MenuItem>
+                            <MenuItem
+                              onClick={() => onClickDelete(row.id.toString())}
+                            >
+                              {appStrings?.delete} <Spacer /> <Trash />
+                            </MenuItem>
+                            {row.pdfURL && (
+                              <MenuItem onClick={() => window.open(row.pdfURL)}>
+                                {appStrings?.openPDF} <Spacer />
+                                <FilePdf size={24} />
+                              </MenuItem>
+                            )}
+                          </MenuList>
+                        </Menu>
+                      </Td>
+                    ) : null}
+                  </Tr>
+                  {rowChildVisible &&
+                    isSelected &&
+                    hasProducts &&
+                    row?.products?.length &&
+                    row?.products?.map((prod: any, i: number, arr: any) => {
+                      let cssFormat = '';
+                      const isLastRow = i === arr.length - 1;
+                      cssFormat = isLastRow ? styles.bottomRoundBorder : '';
+                      return (
+                        <Tr
+                          key={`table-row-${prod.id}`}
+                          className={`${
+                            colorMode === 'light'
+                              ? styles.childRowSelected
+                              : styles.childRowSelectedDark
+                          } ${cssFormat}`}
+                        >
+                          {headers?.map(header => {
+                            return (
+                              <Td
+                                key={`table-row-header-${
+                                  header.name as string
+                                }`}
+                                id={prod.id?.toString()}
+                                className={`${styles.td}`}
+                              >
+                                {renderSubColumnValue(prod, header.name)}
+                              </Td>
+                            );
+                          })}
+                          {onClickEditProduct &&
+                          onClickDeleteProduct &&
+                          !hideOptions ? (
+                            <Td
+                              id={row.id?.toString()}
+                              className={`${styles.td}`}
+                              textAlign="center"
+                              width="90px"
+                            >
+                              <Menu>
+                                <MenuButton boxSize="40px">
+                                  <Center>
+                                    <DotsThreeOutlineVertical
+                                      className={styles.cursor_pointer}
+                                      weight="fill"
+                                    />
+                                  </Center>
+                                </MenuButton>
+                                <MenuList>
+                                  <MenuItem
+                                    onClick={() =>
+                                      onClickEditProduct(
+                                        row.id?.toString(),
+                                        prod.id?.toString(),
+                                      )
+                                    }
+                                  >
+                                    {appStrings?.edit} <Spacer /> <Pencil />
+                                  </MenuItem>
+                                  <MenuItem
+                                    onClick={() =>
+                                      onClickDeleteProduct(
+                                        row.id?.toString(),
+                                        prod.id?.toString(),
+                                      )
+                                    }
+                                  >
+                                    {appStrings?.delete} <Spacer /> <Trash />
+                                  </MenuItem>
+                                </MenuList>
+                              </Menu>
+                            </Td>
+                          ) : null}
+                        </Tr>
+                      );
+                    })}
+                </React.Fragment>
+              );
+            })}
+          </Tbody>
+        </Table>
+        {checkRenderPagination() ? (
+          <Pagination
+            totalCount={items.length}
+            itemsPerPage={itemsPerPage}
+            handleOnPageChange={handleOnPageChange}
+            currentPage={currentPage}
+            filteredCount={filteredCount}
+          />
+        ) : undefined}
+      </Box>
+      {showTotals && items?.length ? (
+        <Stack direction="row" className={styles.totals_container}>
+          <Tag>{appStrings?.totals?.toUpperCase()}</Tag>
+          <TotalStats />
+        </Stack>
       ) : undefined}
-    </Box>
+    </>
   );
 };
 

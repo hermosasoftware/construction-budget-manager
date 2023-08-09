@@ -78,9 +78,19 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
     { name: 'name', value: appStrings.name },
     { name: 'unit', value: appStrings.unit },
     { name: 'quantity', value: appStrings.quantity },
-    { name: 'cost', value: appStrings.cost, isGreen: true },
-    { name: 'subtotal', value: appStrings.subtotal, isGreen: true },
-    { name: 'dollarCost', value: appStrings.dollars, isGreen: true },
+    { name: 'cost', value: appStrings.cost, isGreen: true, showTotal: true },
+    {
+      name: 'subtotal',
+      value: appStrings.subtotal,
+      isGreen: true,
+      showTotal: true,
+    },
+    {
+      name: 'dollarCost',
+      value: appStrings.dollars,
+      isGreen: true,
+      showTotal: true,
+    },
   ];
 
   const editButton = async (extraBudgetMaterialId: string) => {
@@ -414,6 +424,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
         exchangeRate={activity.exchange}
         formatCurrency
         usePagination
+        showTotals
       />
       {!extraMaterials.length ? <h1>{appStrings.noRecords}</h1> : null}
     </div>

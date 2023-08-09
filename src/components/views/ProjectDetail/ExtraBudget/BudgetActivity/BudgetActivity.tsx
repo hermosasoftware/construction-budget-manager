@@ -72,14 +72,30 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
     { name: 'date', value: appStrings.date },
     { name: 'exchange', value: appStrings.exchange },
     { name: 'adminFee', value: appStrings.adminFee },
-    { name: 'sumMaterials', value: appStrings.materials, isGreen: true },
-    { name: 'sumLabors', value: appStrings.labors, isGreen: true },
+    {
+      name: 'sumMaterials',
+      value: appStrings.materials,
+      isGreen: true,
+      showTotal: true,
+    },
+    {
+      name: 'sumLabors',
+      value: appStrings.labors,
+      isGreen: true,
+      showTotal: true,
+    },
     {
       name: 'sumSubcontracts',
       value: appStrings.subcontracts,
       isGreen: true,
+      showTotal: true,
     },
-    { name: 'sumOthers', value: appStrings.others, isGreen: true },
+    {
+      name: 'sumOthers',
+      value: appStrings.others,
+      isGreen: true,
+      showTotal: true,
+    },
   ];
 
   const filterOptions: FilterOption[] = [
@@ -243,6 +259,7 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
           setIsAlertDialogOpen(true);
         }}
         onClickExportPDF={id => exportPDFButton(id)}
+        showTotals
       />
       {!extraActivities.length ? <h1>{appStrings.noRecords}</h1> : null}
     </div>
