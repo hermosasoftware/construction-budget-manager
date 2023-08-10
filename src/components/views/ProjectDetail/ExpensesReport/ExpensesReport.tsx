@@ -249,6 +249,7 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
             setSelectedItem({ ...selectedItem, id: id });
             setIsAlertDialogOpen(true);
           }}
+          usePagination={!search?.searchTerm?.length}
           showTotals
         />
         {!projectExpenses.length ? <h1>{appStrings.noRecords}</h1> : null}

@@ -203,6 +203,7 @@ const BudgetOther: React.FC<IBudgetOtherView> = props => {
           setIsAlertDialogOpen(true);
         }}
         hideOptions={!isBudgetOpen}
+        usePagination={!searchTerm?.length}
         showTotals
       />
       {!budgetOthers.length ? <h1>{appStrings.noRecords}</h1> : null}

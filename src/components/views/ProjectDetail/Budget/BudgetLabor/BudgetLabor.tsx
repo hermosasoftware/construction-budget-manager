@@ -211,6 +211,7 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
           setIsAlertDialogOpen(true);
         }}
         hideOptions={!isBudgetOpen}
+        usePagination={!searchTerm?.length}
         showTotals
       />
       {!budgetLabors.length ? <h1>{appStrings.noRecords}</h1> : null}

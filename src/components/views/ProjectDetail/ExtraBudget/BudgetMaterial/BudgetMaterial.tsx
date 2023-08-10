@@ -423,7 +423,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
         }}
         exchangeRate={activity.exchange}
         formatCurrency
-        usePagination
+        usePagination={!searchTerm?.length}
         showTotals
       />
       {!extraMaterials.length ? <h1>{appStrings.noRecords}</h1> : null}

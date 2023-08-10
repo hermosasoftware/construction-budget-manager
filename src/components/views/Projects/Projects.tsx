@@ -221,6 +221,7 @@ export default function Projects() {
               setSelectedItem({ ...selectedItem, id: id });
               setIsAlertDialogOpen(true);
             }}
+            usePagination={!search?.searchTerm?.length}
           />
           {!projects.length ? <h1>{appStrings.noRecords}</h1> : null}
         </Box>

@@ -202,6 +202,7 @@ const BudgetOther: React.FC<IBudgetOtherView> = props => {
           setSelectedItem({ ...selectedItem, id: id });
           setIsAlertDialogOpen(true);
         }}
+        usePagination={!searchTerm?.length}
         showTotals
       />
       {!extraOthers.length ? <h1>{appStrings.noRecords}</h1> : null}
