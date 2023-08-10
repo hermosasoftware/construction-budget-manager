@@ -9,7 +9,6 @@
 }
 
 .tabs {
-  width: fit-content;
-  margin-left: 25px;
-  margin-top: 25px;
+  flex-wrap: wrap;
+  margin: 20px;
 }

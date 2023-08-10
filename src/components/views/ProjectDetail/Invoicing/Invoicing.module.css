@@ -7,3 +7,7 @@
   display: flex;
   width: 100%;
 }
+
+.menu_container {
+  gap: var(--separator-gap-md);
+}

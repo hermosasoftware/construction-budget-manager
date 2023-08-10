@@ -146,14 +146,14 @@ export default function Projects() {
       />
       <div className={`${styles.operations_container}`}>
         <Box p={5} borderWidth="1px" borderRadius={12}>
-          <Flex marginBottom="5px">
+          <Flex marginBottom="5px" className={styles.menu_container}>
             <SearchFilter
               search={search}
               setSearch={setSearch}
               data={formatTableData()}
               options={filterOptions}
             />
-            <div style={{ textAlign: 'end' }}>
+            <div style={{ textAlign: 'end', flex: 1 }}>
               <Button onClick={() => setIsModalOpen(true)}>+</Button>
               <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
                 <Heading as="h2" size="lg">

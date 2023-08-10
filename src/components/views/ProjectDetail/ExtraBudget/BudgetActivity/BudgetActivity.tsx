@@ -184,7 +184,7 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
 
   return (
     <div className={styles.operations_container}>
-      <Flex marginBottom="5px">
+      <Flex marginBottom="5px" className={styles.menu_container}>
         <SearchFilter
           search={search}
           setSearch={setSearch}

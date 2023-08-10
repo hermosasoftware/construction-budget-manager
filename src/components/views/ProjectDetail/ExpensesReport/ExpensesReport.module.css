@@ -2,3 +2,7 @@
   margin: 20px;
   padding-top: 10px;
 }
+
+.menu_container {
+  gap: var(--separator-gap-md);
+}
