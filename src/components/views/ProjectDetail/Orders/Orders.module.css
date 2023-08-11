@@ -10,11 +10,12 @@
 .tabsContainer {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--separator-gap-md);
   margin-top: 5px;
   margin-bottom: 5px;
 }
 
 .p_10 {
   padding-top: 10px;
+  gap: var(--separator-gap-md);
 }

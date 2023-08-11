@@ -252,15 +252,15 @@ export default function Materials() {
       <Header />
       <div className={`${styles.content_container}`}>
         <Box p={5} borderWidth="1px" borderRadius={12}>
-          <Flex marginBottom="5px">
+          <Flex marginBottom="5px" className={styles.menu_container}>
             <SearchInput
-              style={{ margin: '0 10px 0 0', maxWidth: '500px' }}
+              style={{ margin: 0, maxWidth: '500px' }}
               parentClassName={styles.search_input_container}
               placeholder={appStrings.search}
               onChange={handleSearch}
             ></SearchInput>
             <div
-              style={{ textAlign: 'end' }}
+              style={{ textAlign: 'end', flex: 1 }}
               className={styles.exchange_container}
             >
               <Form

@@ -184,7 +184,7 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
 
   return (
     <div className={styles.operations_container}>
-      <Flex marginBottom="5px">
+      <Flex marginBottom="5px" className={styles.menu_container}>
         <SearchFilter
           search={search}
           setSearch={setSearch}
@@ -259,6 +259,7 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
           setIsAlertDialogOpen(true);
         }}
         onClickExportPDF={id => exportPDFButton(id)}
+        usePagination={!search?.searchTerm?.length}
         showTotals
       />
       {!extraActivities.length ? <h1>{appStrings.noRecords}</h1> : null}

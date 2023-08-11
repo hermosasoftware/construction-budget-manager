@@ -220,7 +220,7 @@ const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
     filteredCount > itemsPerPage;
 
   const TotalStats = () => {
-    const data = props?.items === items ? props?.items : items;
+    const data = checkRenderPagination() ? props?.items : items;
     const toShow = headers?.filter(header => header?.showTotal);
     const totalValues = data?.reduce((summary: any, item: any) => {
       for (const element of toShow) {

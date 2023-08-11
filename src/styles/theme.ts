@@ -37,6 +37,14 @@ export const mavTheme = extendTheme({
       500: '#EDF2F7',
       600: '#CEDBE9',
     },
+    green: {
+      dark: { text: '#9AE6B4', background: '#9AE6B429' },
+      light: { text: '#22543D', background: '#C6F6D5' },
+    },
+    teal: {
+      dark: { text: '#81E6D9', background: '#81E6D929' },
+      light: { text: '#234E52', background: '#B2F5EA' },
+    },
     side_bar_background: '#EEE',
     side_bar_background_dark: '#323742',
     text_ghost: '#A3A3A3',

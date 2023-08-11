@@ -500,7 +500,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
   return (
     <div className={`${styles.operations_container}`}>
       <Box p={5} borderWidth="1px" borderRadius={12}>
-        <Flex marginBottom="5px">
+        <Flex marginBottom="5px" className={styles.menu_container}>
           <SearchFilter
             search={search}
             setSearch={setSearch}

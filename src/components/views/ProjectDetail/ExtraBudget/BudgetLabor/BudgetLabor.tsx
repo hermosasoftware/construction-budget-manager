@@ -210,6 +210,7 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
           setSelectedItem({ ...selectedItem, id: id });
           setIsAlertDialogOpen(true);
         }}
+        usePagination={!searchTerm?.length}
         showTotals
       />
       {!extraLabors.length ? <h1>{appStrings.noRecords}</h1> : null}

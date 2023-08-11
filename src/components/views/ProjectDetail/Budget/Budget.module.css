@@ -12,18 +12,19 @@
 .tab__container {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--separator-gap-md);
 }
 
 .operators__container {
+  justify-content: end;
   display: flex;
-  flex-grow: 1;
-  gap: 10px;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: var(--separator-gap-sm);
 }
 
 .tabs {
   flex-wrap: wrap;
-  min-width: 250px;
 }
 
 .close_budget {

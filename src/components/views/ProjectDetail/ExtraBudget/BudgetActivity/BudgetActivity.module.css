@@ -10,3 +10,7 @@ input.search_button {
   margin-left: 0px;
   max-width: 500px;
 }
+
+.menu_container {
+  gap: var(--separator-gap-md);
+}

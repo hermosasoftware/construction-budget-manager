@@ -207,6 +207,7 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
           setSelectedItem({ ...selectedItem, id: id });
           setIsAlertDialogOpen(true);
         }}
+        usePagination={!searchTerm?.length}
         showTotals
       />
       {!extraSubcontracts.length ? <h1>{appStrings.noRecords}</h1> : null}

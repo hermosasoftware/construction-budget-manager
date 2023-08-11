@@ -161,7 +161,7 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
   return (
     <div className={`${styles.operations_container}`}>
       <Box p={5} borderWidth="1px" borderRadius={12}>
-        <Flex marginBottom="5px">
+        <Flex marginBottom="5px" className={styles.menu_container}>
           <SearchFilter
             search={search}
             setSearch={setSearch}
@@ -249,6 +249,7 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
             setSelectedItem({ ...selectedItem, id: id });
             setIsAlertDialogOpen(true);
           }}
+          usePagination={!search?.searchTerm?.length}
           showTotals
         />
         {!projectExpenses.length ? <h1>{appStrings.noRecords}</h1> : null}

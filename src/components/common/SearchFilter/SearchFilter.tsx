@@ -155,7 +155,7 @@ const SearchFilter: React.FC<SearchFilterProps> = props => {
   );
 
   return (
-    <InputGroup>
+    <InputGroup className={styles.main_container}>
       {!isDate(search?.selectedOption?.value) ? (
         <SearchInput
           value={search?.searchTerm}
@@ -189,7 +189,13 @@ const SearchFilter: React.FC<SearchFilterProps> = props => {
       >
         {appStrings.filters}
       </Button>
-      <Modal onClose={onClose} isOpen={isOpen} isCentered size="2xl">
+      <Modal
+        onClose={onClose}
+        isOpen={isOpen}
+        isCentered
+        size="2xl"
+        scrollBehavior="inside"
+      >
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>{appStrings.searchFilters}</ModalHeader>

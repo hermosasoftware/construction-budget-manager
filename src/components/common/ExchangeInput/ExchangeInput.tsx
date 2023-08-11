@@ -28,7 +28,7 @@ const Stat: React.FC<IStat & ButtonProps> = props => {
             icon={'₡'}
             type="number"
             name="exchange"
-            containerStyle={{ width: '100px' }}
+            containerStyle={{ width: '90px' }}
           />
 
           {editExchange && (
