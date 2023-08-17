@@ -416,6 +416,9 @@ const Orders: React.FC<IOrdersView> = props => {
                 validationSchema={validationSchema}
                 validateOnChange
                 validateOnBlur
+                onFormDataChange={data =>
+                  setSelectedOrder({ ...selectedOrder, ...data })
+                }
                 onSubmit={handleOnSubmit}
               >
                 <Input
@@ -482,6 +485,9 @@ const Orders: React.FC<IOrdersView> = props => {
                 validationSchema={productValSchema}
                 validateOnChange
                 validateOnBlur
+                onFormDataChange={data =>
+                  setSelectedProduct({ ...selectedProduct, ...data })
+                }
                 onSubmit={onSubmitProduct}
               >
                 <AutoComplete

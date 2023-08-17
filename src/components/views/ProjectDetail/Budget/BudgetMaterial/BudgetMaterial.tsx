@@ -384,6 +384,9 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
               validationSchema={validationSchema}
               validateOnChange
               validateOnBlur
+              onFormDataChange={data =>
+                setSelectedItem({ ...selectedItem, ...data })
+              }
               onSubmit={handleOnSubmit}
             >
               <AutoComplete
@@ -441,6 +444,9 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
               validationSchema={subMaterialValSchema}
               validateOnChange
               validateOnBlur
+              onFormDataChange={data =>
+                setSelectedSubMaterial({ ...selectedSubMaterial, ...data })
+              }
               onSubmit={onSubmitSubmaterial}
             >
               <AutoComplete

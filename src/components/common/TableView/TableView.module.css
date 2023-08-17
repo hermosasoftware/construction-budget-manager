@@ -13,6 +13,21 @@ th.th {
   padding: var(--padding-vertical-sm);
 }
 
+th.th:hover {
+  cursor: pointer;
+  border-radius: var(--border-radius-lg);
+}
+
+th.sort_asc::after {
+  content: '\25B2';
+  margin-left: 5px;
+}
+
+th.sort_desc::after {
+  content: '\25BC';
+  margin-left: 5px;
+}
+
 .table_padding {
   padding: 12px;
 }
@@ -21,6 +36,20 @@ td.td {
   font-size: var(--font-size-sm);
   border: none;
   padding: var(--padding-vertical-sm);
+}
+
+td:first-child,
+th:first-child {
+  border-radius: var(--border-radius-lg) 0 0 var(--border-radius-lg);
+}
+
+td:last-child,
+th:last-child {
+  border-radius: 0 var(--border-radius-lg) var(--border-radius-lg) 0;
+}
+
+tr.tr:hover {
+  border-radius: 12px;
 }
 
 .column_bold_text {
@@ -39,12 +68,25 @@ td.td {
 }
 
 @media (prefers-color-scheme: light) {
+  th.th:hover {
+    background-color: var(--chakra-colors-green-light-background);
+  }
+  tr.tr:hover {
+    background-color: var(--chakra-colors-green-light-background);
+  }
   .column_color__green {
     color: green;
   }
 }
 
 @media (prefers-color-scheme: dark) {
+  th.th:hover {
+    background-color: var(--chakra-colors-teal-dark-background);
+  }
+  tr.tr:hover {
+    border-radius: 12px;
+    background-color: var(--chakra-colors-teal-dark-background);
+  }
   .column_color__green {
     color: var(--chakra-colors-teal-dark-text);
   }

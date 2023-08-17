@@ -533,6 +533,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
                 validationSchema={xmlValSchema}
                 validateOnChange
                 validateOnBlur
+                onFormDataChange={data => setXMLItem({ ...xmlItem, ...data })}
                 onSubmit={onSubmitXML}
               >
                 <SearchSelect
@@ -594,6 +595,9 @@ const Invoicing: React.FC<IInvoicing> = props => {
                 validationSchema={validationSchema}
                 validateOnChange
                 validateOnBlur
+                onFormDataChange={data =>
+                  setSelectedItem({ ...selectedItem, ...data })
+                }
                 onSubmit={handleOnSubmit}
               >
                 <SearchSelect
@@ -672,6 +676,9 @@ const Invoicing: React.FC<IInvoicing> = props => {
                 validationSchema={productValSchema}
                 validateOnChange
                 validateOnBlur
+                onFormDataChange={data =>
+                  setSelectedProduct({ ...selectedProduct, ...data })
+                }
                 onSubmit={onSubmitProduct}
               >
                 <ProductSearchSelect />

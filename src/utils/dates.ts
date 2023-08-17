@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import DateUtils from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { TAppLang } from '../types/global';
@@ -8,6 +9,7 @@ DateUtils.extend(customParseFormat);
 export const isDate = (date: any) => {
   return (
     DateUtils.isDayjs(date) ||
+    dayjs(date).isValid() ||
     Object.prototype.toString.call(date) === '[object Date]'
   );
 };

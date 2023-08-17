@@ -31,7 +31,9 @@ import {
   colonFormat,
   currencyToNumber,
   dolarFormat,
+  isCurrency,
 } from '../../../utils/numbers';
+import { isDate } from '../../../utils/dates';
 
 import styles from './TableView.module.css';
 
@@ -90,14 +92,56 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
     props.items?.length,
   );
 
+  const [sortBy, setSortBy] = useState<string>('createdAt');
+  const [sortAscending, setSortAscending] = useState<boolean>(true);
+
+  const sortData = (data: TTableItem<T>[]) =>
+    data?.sort((a: any, b: any) => {
+      const valueA = a[sortBy];
+      const valueB = b[sortBy];
+
+      if (typeof valueA === 'number' && typeof valueB === 'number') {
+        return sortAscending ? valueA - valueB : valueB - valueA;
+      } else if (valueA instanceof Date && valueB instanceof Date) {
+        return sortAscending
+          ? valueA.getTime() - valueB.getTime()
+          : valueB.getTime() - valueA.getTime();
+      } else if (isDate(valueA) && isDate(valueB)) {
+        const dateA = new Date(valueA);
+        const dateB = new Date(valueB);
+        return sortAscending
+          ? dateA.getTime() - dateB.getTime()
+          : dateB.getTime() - dateA.getTime();
+      } else if (isCurrency(valueA) && isCurrency(valueB)) {
+        const numberA = currencyToNumber(valueA);
+        const numberB = currencyToNumber(valueB);
+        return sortAscending ? numberA - numberB : numberB - numberA;
+      } else {
+        return sortAscending
+          ? valueA.localeCompare(valueB)
+          : valueB.localeCompare(valueA);
+      }
+    });
+
+  const handleColumnClick = (column: string) =>
+    column === sortBy ? setSortAscending(!sortAscending) : setSortBy(column);
+
   const items: any = useMemo(() => {
     const auxItems = !filter ? props.items : props.items?.filter(filter);
     setFilteredCount(auxItems.length);
     if (!usePagination || props.items.length !== auxItems.length) {
-      return auxItems;
+      return sortData(auxItems);
     }
-    return parseCurrentPageItems(auxItems, currentPage, itemsPerPage);
-  }, [filter, props.items, usePagination, currentPage, itemsPerPage]);
+    return parseCurrentPageItems(sortData(auxItems), currentPage, itemsPerPage);
+  }, [
+    filter,
+    props.items,
+    usePagination,
+    currentPage,
+    itemsPerPage,
+    sortAscending,
+    sortBy,
+  ]);
 
   React.useEffect(() => {
     setCurrentPage(0);
@@ -148,7 +192,14 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
               {headers?.map(header => (
                 <Th
                   key={`table-header-${header.name as string}`}
-                  className={styles.th}
+                  className={`${styles.th} ${
+                    header.name === sortBy
+                      ? sortAscending
+                        ? styles.sort_asc
+                        : styles.sort_desc
+                      : ''
+                  }`}
+                  onClick={() => handleColumnClick(header.name as string)}
                 >
                   {header.value}
                 </Th>
@@ -158,7 +209,7 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
           <Tbody>
             {items?.map((row: any) => (
               <React.Fragment key={`table-row-${row.id}`}>
-                <Tr key={`table-row-${row.id}`}>
+                <Tr key={`table-row-${row.id}`} className={styles.tr}>
                   {headers?.map(header => (
                     <Td
                       key={`table-row-header-${header.name as string}`}
