@@ -30,6 +30,7 @@ import { useAppSelector } from '../../../../redux/hooks';
 import SearchSelect from '../../../common/Form/Elements/SearchSelect';
 import { formatDate } from '../../../../utils/dates';
 import { xml2json } from '../../../../utils/xml2json';
+import { debounceLoader } from '../../../../utils/common';
 import { IOrderProduct, IProjectOrder } from '../../../../types/projectOrder';
 import InvoiceTableView from '../../../layout/InvoiceTableView';
 import { TTableHeader } from '../../../layout/InvoiceTableView/InvoiceTableView';
@@ -533,7 +534,9 @@ const Invoicing: React.FC<IInvoicing> = props => {
                 validationSchema={xmlValSchema}
                 validateOnChange
                 validateOnBlur
-                onFormDataChange={data => setXMLItem({ ...xmlItem, ...data })}
+                onFormDataChange={data =>
+                  debounceLoader(() => setXMLItem({ ...xmlItem, ...data }))
+                }
                 onSubmit={onSubmitXML}
               >
                 <SearchSelect
@@ -596,7 +599,9 @@ const Invoicing: React.FC<IInvoicing> = props => {
                 validateOnChange
                 validateOnBlur
                 onFormDataChange={data =>
-                  setSelectedItem({ ...selectedItem, ...data })
+                  debounceLoader(() =>
+                    setSelectedItem({ ...selectedItem, ...data }),
+                  )
                 }
                 onSubmit={handleOnSubmit}
               >
@@ -677,7 +682,9 @@ const Invoicing: React.FC<IInvoicing> = props => {
                 validateOnChange
                 validateOnBlur
                 onFormDataChange={data =>
-                  setSelectedProduct({ ...selectedProduct, ...data })
+                  debounceLoader(() =>
+                    setSelectedProduct({ ...selectedProduct, ...data }),
+                  )
                 }
                 onSubmit={onSubmitProduct}
               >
