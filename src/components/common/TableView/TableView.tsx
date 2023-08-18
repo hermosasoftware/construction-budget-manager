@@ -99,9 +99,14 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
     data?.sort((a: any, b: any) => {
       const valueA = a[sortBy];
       const valueB = b[sortBy];
-
       if (typeof valueA === 'number' && typeof valueB === 'number') {
         return sortAscending ? valueA - valueB : valueB - valueA;
+      } else if (!isNaN(valueA) && !isNaN(valueB)) {
+        return sortAscending ? +valueA - +valueB : +valueB - +valueA;
+      } else if (isCurrency(valueA) && isCurrency(valueB)) {
+        const numberA = currencyToNumber(valueA);
+        const numberB = currencyToNumber(valueB);
+        return sortAscending ? numberA - numberB : numberB - numberA;
       } else if (valueA instanceof Date && valueB instanceof Date) {
         return sortAscending
           ? valueA.getTime() - valueB.getTime()
@@ -112,40 +117,17 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
         return sortAscending
           ? dateA.getTime() - dateB.getTime()
           : dateB.getTime() - dateA.getTime();
-      } else if (isCurrency(valueA) && isCurrency(valueB)) {
-        const numberA = currencyToNumber(valueA);
-        const numberB = currencyToNumber(valueB);
-        return sortAscending ? numberA - numberB : numberB - numberA;
-      } else {
+      } else if (typeof valueA === 'string' && typeof valueB === 'string') {
         return sortAscending
           ? valueA.localeCompare(valueB)
           : valueB.localeCompare(valueA);
+      } else {
+        return 1;
       }
     });
 
   const handleColumnClick = (column: string) =>
     column === sortBy ? setSortAscending(!sortAscending) : setSortBy(column);
-
-  const items: any = useMemo(() => {
-    const auxItems = !filter ? props.items : props.items?.filter(filter);
-    setFilteredCount(auxItems.length);
-    if (!usePagination || props.items.length !== auxItems.length) {
-      return sortData(auxItems);
-    }
-    return parseCurrentPageItems(sortData(auxItems), currentPage, itemsPerPage);
-  }, [
-    filter,
-    props.items,
-    usePagination,
-    currentPage,
-    itemsPerPage,
-    sortAscending,
-    sortBy,
-  ]);
-
-  React.useEffect(() => {
-    setCurrentPage(0);
-  }, [props.items?.length]);
 
   const handleOnPageChange = (pageNumber: number, itemsPerPage: number) => {
     setCurrentPage(pageNumber);
@@ -182,6 +164,27 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
       </>
     );
   };
+
+  const items: any = useMemo(() => {
+    const auxItems = !filter ? props.items : props.items?.filter(filter);
+    setFilteredCount(auxItems.length);
+    if (!usePagination || props.items.length !== auxItems.length) {
+      return sortData(auxItems);
+    }
+    return parseCurrentPageItems(sortData(auxItems), currentPage, itemsPerPage);
+  }, [
+    filter,
+    props.items,
+    usePagination,
+    currentPage,
+    itemsPerPage,
+    sortAscending,
+    sortBy,
+  ]);
+
+  React.useEffect(() => {
+    setCurrentPage(0);
+  }, [props.items?.length]);
 
   return (
     <>
@@ -226,7 +229,7 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
                       className={`${styles.td} ${
                         header.isGreen && styles.column_color__green
                       } ${
-                        header.name === 'name' ? styles.column_bold_text : ''
+                        headers[0] === header ? styles.column_bold_text : ''
                       } ${handleRowClick ? styles.cursor_pointer : ''}`}
                     >
                       {row[header.name]}

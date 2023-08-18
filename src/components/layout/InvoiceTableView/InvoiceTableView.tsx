@@ -30,7 +30,9 @@ import {
   colonFormat,
   currencyToNumber,
   dolarFormat,
+  isCurrency,
 } from '../../../utils/numbers';
+import { isDate } from '../../../utils/dates';
 import { useAppSelector } from '../../../redux/hooks';
 import Pagination from '../../common/Pagination';
 import { parseCurrentPageItems } from '../../../utils/common';
@@ -100,16 +102,42 @@ const InvoiceTableView = <T extends TObject>(props: ITableProps<T>) => {
     props.items?.length,
   );
 
-  const items = useMemo(() => {
-    const auxItems = !filter ? props.items : props.items?.filter(filter);
-    setFilteredCount(auxItems.length);
-    if (!usePagination) return auxItems;
-    return parseCurrentPageItems(auxItems, currentPage, itemsPerPage);
-  }, [filter, props.items, usePagination, currentPage, itemsPerPage]);
+  const [sortBy, setSortBy] = useState<string>('createdAt');
+  const [sortAscending, setSortAscending] = useState<boolean>(true);
 
-  React.useEffect(() => {
-    setCurrentPage(0);
-  }, [props.items?.length]);
+  const sortData = (data: TTableItem<T>[]) =>
+    data?.sort((a: any, b: any) => {
+      const valueA = renderColumnValue(a, sortBy);
+      const valueB = renderColumnValue(b, sortBy);
+      if (typeof valueA === 'number' && typeof valueB === 'number') {
+        return sortAscending ? valueA - valueB : valueB - valueA;
+      } else if (!isNaN(valueA) && !isNaN(valueB)) {
+        return sortAscending ? +valueA - +valueB : +valueB - +valueA;
+      } else if (isCurrency(valueA) && isCurrency(valueB)) {
+        const numberA = currencyToNumber(valueA);
+        const numberB = currencyToNumber(valueB);
+        return sortAscending ? numberA - numberB : numberB - numberA;
+      } else if (valueA instanceof Date && valueB instanceof Date) {
+        return sortAscending
+          ? valueA.getTime() - valueB.getTime()
+          : valueB.getTime() - valueA.getTime();
+      } else if (isDate(valueA) && isDate(valueB)) {
+        const dateA = new Date(valueA);
+        const dateB = new Date(valueB);
+        return sortAscending
+          ? dateA.getTime() - dateB.getTime()
+          : dateB.getTime() - dateA.getTime();
+      } else if (typeof valueA === 'string' && typeof valueB === 'string') {
+        return sortAscending
+          ? valueA.localeCompare(valueB)
+          : valueB.localeCompare(valueA);
+      } else {
+        return 1;
+      }
+    });
+
+  const handleColumnClick = (column: string) =>
+    column === sortBy ? setSortAscending(!sortAscending) : setSortBy(column);
 
   const handleOnPageChange = (pageNumber: number, itemsPerPage: number) => {
     setCurrentPage(pageNumber);
@@ -246,6 +274,25 @@ const InvoiceTableView = <T extends TObject>(props: ITableProps<T>) => {
     );
   };
 
+  const items = useMemo(() => {
+    const auxItems = !filter ? props.items : props.items?.filter(filter);
+    setFilteredCount(auxItems.length);
+    if (!usePagination) return sortData(auxItems);
+    return parseCurrentPageItems(sortData(auxItems), currentPage, itemsPerPage);
+  }, [
+    filter,
+    props.items,
+    usePagination,
+    currentPage,
+    itemsPerPage,
+    sortAscending,
+    sortBy,
+  ]);
+
+  React.useEffect(() => {
+    setCurrentPage(0);
+  }, [props.items?.length]);
+
   return (
     <>
       <Box className={styles.table_container} style={{ ...(boxStyle ?? '') }}>
@@ -255,7 +302,14 @@ const InvoiceTableView = <T extends TObject>(props: ITableProps<T>) => {
               {headers?.map(header => (
                 <Th
                   key={`table-header-${header.name as string}`}
-                  className={styles.th}
+                  className={`${styles.th} ${
+                    header.name === sortBy
+                      ? sortAscending
+                        ? styles.sort_asc
+                        : styles.sort_desc
+                      : ''
+                  }`}
+                  onClick={() => handleColumnClick(header.name as string)}
                 >
                   {header.value}
                 </Th>
@@ -270,7 +324,7 @@ const InvoiceTableView = <T extends TObject>(props: ITableProps<T>) => {
                 <React.Fragment key={`table-row-${row.id}`}>
                   <Tr
                     key={`table-row-${row.id}`}
-                    className={`${
+                    className={`${styles.tr} ${styles.rounded} ${
                       isSelected && hasProducts && row?.products?.length
                         ? styles.rowSelected
                         : ''
