@@ -22,6 +22,6 @@ export const isCurrency = (text: string) =>
 export const currencyToNumber = (text: string) =>
   Number(
     text.includes('₡')
-      ? text.replace(/,/g, '.').replace(/[^0-9-.]/g, '')
+      ? text.replace(/[^0-9,-]/g, '').replace(/,/g, '.')
       : text.replace(/[^0-9-.]/g, ''),
   );
