@@ -293,13 +293,13 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
                 <React.Fragment key={`table-row-${row.id}`}>
                   <Tr
                     key={`table-row-${row.id}`}
-                    className={`${styles.tr} ${styles.rounded} ${
+                    className={
                       isSelected &&
                       hasSubMaterials &&
                       row?.material?.hasSubMaterials
                         ? styles.rowSelected
-                        : ''
-                    }`}
+                        : styles.tr
+                    }
                   >
                     {headers?.map(header => {
                       const isFirstColumn = headers[0] === header;
