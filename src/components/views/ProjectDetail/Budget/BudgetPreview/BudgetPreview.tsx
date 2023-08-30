@@ -186,21 +186,23 @@ export default function ActivityPreview() {
             validateOnBlur
             onSubmit={handleOnSettingsSubmit}
           >
-            <Stack spacing={4}>
-              <Switch
-                name="detailedActivities"
-                labelPlacement="inline"
-                label={appStrings?.detailedActivities}
-              />
-              <Switch
-                name="detailedMaterials"
-                labelPlacement="inline"
-                label={appStrings?.detailedMaterials}
-              />
+            <Stack spacing={2}>
               <Switch
                 name="showActivities"
                 labelPlacement="inline"
                 label={appStrings?.showActivities}
+              />
+              <Switch
+                name="detailedActivities"
+                labelPlacement="inline"
+                label={`- ${appStrings?.detailedActivities}`}
+                containerClassName={styles.pl}
+              />
+              <Switch
+                name="detailedMaterials"
+                labelPlacement="inline"
+                label={`- ${appStrings?.detailedMaterials}`}
+                containerClassName={styles.pl}
               />
               <Switch
                 name="showLabors"

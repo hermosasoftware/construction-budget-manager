@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Skeleton } from '@chakra-ui/react';
+import { CaretLeft } from 'phosphor-react';
 import { useAppSelector } from '../../../../../redux/hooks';
 import OrderReport from '../../../../reports/OrderReport/OrderReport';
 import { getProjectById } from '../../../../../services/ProjectService';
@@ -8,6 +9,8 @@ import { getProjectOrderById } from '../../../../../services/ProjectOrderService
 import { IProjectOrder } from '../../../../../types/projectOrder';
 import { IProject } from '../../../../../types/project';
 import DownloadPDF from '../../../../common/PDF/DownloadPDF';
+import Button from '../../../../common/Button/Button';
+import { composePreview } from '../../../../common/PDF/compose';
 
 import styles from './OrderPreview.module.css';
 
@@ -15,6 +18,7 @@ export default function OrderPreview() {
   const projectId = useParams().projectId as string;
   const projectOrderId = useParams().orderId as string;
   const activity = useParams().activity as string;
+  const navigate = useNavigate();
   const [order, setOrder] = useState<IProjectOrder>();
   const [project, setProject] = useState<IProject>();
   const [noteValue, setNoteValue] = useState('');
@@ -54,6 +58,18 @@ export default function OrderPreview() {
     <>
       {project && order ? (
         <div className={`${styles.page_container}`}>
+          <div className={composePreview('back-button-container')}>
+            <Button
+              className={styles.back_button}
+              onClick={() => navigate(-1)}
+              variant="solid"
+              px={0}
+              shape="rectangular"
+              title={appStrings?.back}
+            >
+              <CaretLeft size={24} />
+            </Button>
+          </div>
           <OrderReport
             project={project}
             order={order}

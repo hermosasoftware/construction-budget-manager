@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Skeleton } from '@chakra-ui/react';
+import { CaretLeft } from 'phosphor-react';
 import { useAppSelector } from '../../../../../../redux/hooks';
 import ExtraReport from '../../../../../reports/ExtraReport/ExtraReport';
 import { getProjectById } from '../../../../../../services/ProjectService';
@@ -16,12 +17,15 @@ import { IBudgetLabor } from '../../../../../../types/budgetLabor';
 import { IMaterialBreakdown } from '../../../../../../types/collections';
 import { IBudgetOther } from '../../../../../../types/budgetOther';
 import DownloadPDF from '../../../../../common/PDF/DownloadPDF';
+import Button from '../../../../../common/Button/Button';
+import { composePreview } from '../../../../../common/PDF/compose';
 
 import styles from './ActivityPreview.module.css';
 
 export default function ActivityPreview() {
   const projectId = useParams().projectId as string;
   const activityId = useParams().activityId as string;
+  const navigate = useNavigate();
   const [project, setProject] = useState<IProject>();
   const [activity, setActivity] = useState<IBudgetActivity>();
   const [materials, setMaterials] = useState<IMaterialBreakdown[]>([]);
@@ -111,6 +115,18 @@ export default function ActivityPreview() {
     <>
       {project && activity ? (
         <div className={`${styles.page_container}`}>
+          <div className={composePreview('back-button-container')}>
+            <Button
+              className={styles.back_button}
+              onClick={() => navigate(-1)}
+              variant="solid"
+              px={0}
+              shape="rectangular"
+              title={appStrings?.back}
+            >
+              <CaretLeft size={24} />
+            </Button>
+          </div>
           <ExtraReport
             project={project}
             activity={activity}

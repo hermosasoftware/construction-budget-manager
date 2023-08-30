@@ -325,7 +325,7 @@ const BudgetReport: FC<Props> = props => {
                                   pdfMode={pdfMode}
                                 >
                                   <Text className="dark" pdfMode={pdfMode}>
-                                    {`${subMaterial.name}`}
+                                    {`• ${subMaterial.name}`}
                                   </Text>
                                 </View>
                                 <View

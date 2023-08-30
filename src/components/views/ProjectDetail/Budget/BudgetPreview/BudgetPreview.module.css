@@ -3,6 +3,10 @@
   width: 210mm;
 }
 
+.pl {
+  padding-left: var(--padding-vertical-sm);
+}
+
 .back_button {
   color: var(--chakra-colors-green-light-text) !important;
   background-color: var(--chakra-colors-green-light-background) !important;

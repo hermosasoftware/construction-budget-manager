@@ -373,9 +373,9 @@ h1 {
   position: fixed;
   top: 100px;
   margin-left: 753px;
-  width: 32px;
-  height: 32px;
-  background-image: url('/src/assets/img/llave.png');
+  width: 40px;
+  height: 40px;
+  background-image: url('/src/assets/img/settings.png');
   background-size: cover;
   transition: opacity 0.2s ease-in-out;
   z-index: 1;
