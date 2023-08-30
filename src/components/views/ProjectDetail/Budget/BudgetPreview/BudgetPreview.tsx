@@ -1,8 +1,24 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Skeleton } from '@chakra-ui/react';
+import { useNavigate, useParams } from 'react-router-dom';
+import {
+  ButtonGroup,
+  Divider,
+  Popover,
+  PopoverArrow,
+  PopoverBody,
+  PopoverCloseButton,
+  PopoverContent,
+  PopoverHeader,
+  PopoverTrigger,
+  Skeleton,
+  Stack,
+  useDisclosure,
+} from '@chakra-ui/react';
+import { CaretLeft } from 'phosphor-react';
 import { useAppSelector } from '../../../../../redux/hooks';
-import BudgetReport from '../../../../reports/BudgetReport/BudgetReport';
+import BudgetReport, {
+  IExportSettings,
+} from '../../../../reports/BudgetReport/BudgetReport';
 import { getProjectById } from '../../../../../services/ProjectService';
 import { getProjectBudget } from '../../../../../services/ProjectBudgetService';
 import { getBudgetActivity } from '../../../../../services/BudgetActivityService';
@@ -18,14 +34,31 @@ import { IBudgetLabor } from '../../../../../types/budgetLabor';
 import { IMaterialBreakdown } from '../../../../../types/collections';
 import { IBudgetOther } from '../../../../../types/budgetOther';
 import DownloadPDF from '../../../../common/PDF/DownloadPDF';
+import Button from '../../../../common/Button/Button';
+import { composePreview } from '../../../../common/PDF/compose';
+import Form, { Switch } from '../../../../common/Form';
 
 import styles from './BudgetPreview.module.css';
 
+const initialExportSettings = {
+  showActivities: true,
+  showLabors: true,
+  showSubcontracts: true,
+  showOthers: true,
+  detailedActivities: false,
+  detailedMaterials: false,
+};
+
 export default function ActivityPreview() {
   const projectId = useParams().projectId as string;
+  const navigate = useNavigate();
+  const { onOpen, onClose, isOpen } = useDisclosure();
   const [project, setProject] = useState<IProject>();
   const [budget, setBudget] = useState<IProjectBudget>();
   const [activity, setActivity] = useState<IBudgetActivity[]>([]);
+  const [exportSettings, setExportSettings] = useState<IExportSettings>(
+    initialExportSettings,
+  );
   const [noteValue, setNoteValue] = useState('');
 
   const appStrings = useAppSelector(state => state.settings.appStrings);
@@ -117,6 +150,11 @@ export default function ActivityPreview() {
     return list;
   };
 
+  const handleOnSettingsSubmit = (data: IExportSettings) => {
+    setExportSettings(data);
+    onClose();
+  };
+
   useEffect(() => {
     let abortController = new AbortController();
     getProject();
@@ -126,16 +164,97 @@ export default function ActivityPreview() {
     return () => abortController.abort();
   }, []);
 
+  const ExportSettings = () => (
+    <Popover isOpen={isOpen} onOpen={onOpen} onClose={onClose}>
+      <PopoverTrigger>
+        <div
+          className={composePreview('export-settings')}
+          title={appStrings?.exportSettings}
+        />
+      </PopoverTrigger>
+      <PopoverContent>
+        <PopoverArrow />
+        <PopoverCloseButton />
+        <PopoverHeader fontWeight="bold" fontSize="md">
+          {appStrings?.exportSettings}
+        </PopoverHeader>
+        <PopoverBody p={4}>
+          <Form
+            id="settings-form"
+            initialFormData={exportSettings}
+            validateOnChange
+            validateOnBlur
+            onSubmit={handleOnSettingsSubmit}
+          >
+            <Stack spacing={4}>
+              <Switch
+                name="detailedActivities"
+                labelPlacement="inline"
+                label={appStrings?.detailedActivities}
+              />
+              <Switch
+                name="detailedMaterials"
+                labelPlacement="inline"
+                label={appStrings?.detailedMaterials}
+              />
+              <Switch
+                name="showActivities"
+                labelPlacement="inline"
+                label={appStrings?.showActivities}
+              />
+              <Switch
+                name="showLabors"
+                labelPlacement="inline"
+                label={appStrings?.showLabors}
+              />
+              <Switch
+                name="showSubcontracts"
+                labelPlacement="inline"
+                label={appStrings?.showSubcontracts}
+              />
+              <Switch
+                name="showOthers"
+                labelPlacement="inline"
+                label={appStrings?.showOthers}
+              />
+              <Divider />
+              <ButtonGroup size="sm" display="flex" justifyContent="flex-end">
+                <Button variant="ghost" onClick={onClose}>
+                  {appStrings?.cancel}
+                </Button>
+                <Button type="submit">{appStrings?.apply}</Button>
+              </ButtonGroup>
+            </Stack>
+          </Form>
+        </PopoverBody>
+      </PopoverContent>
+    </Popover>
+  );
+
   return (
     <>
       {project && budget && activity.length ? (
         <div className={`${styles.page_container}`}>
+          <div className={composePreview('back-button-container')}>
+            <Button
+              className={styles.back_button}
+              onClick={() => navigate(-1)}
+              variant="solid"
+              px={0}
+              shape="rectangular"
+              title={appStrings?.back}
+            >
+              <CaretLeft size={24} />
+            </Button>
+          </div>
+          <ExportSettings />
           <BudgetReport
             project={project}
             budget={budget}
             activity={activity}
             noteValue={noteValue}
             setNoteValue={setNoteValue}
+            exportSettings={exportSettings}
             pdfMode={false}
           />
           <DownloadPDF fileName={`Budget-${project.name}`}>
@@ -145,6 +264,7 @@ export default function ActivityPreview() {
               activity={activity}
               noteValue={noteValue}
               setNoteValue={setNoteValue}
+              exportSettings={exportSettings}
               pdfMode={true}
             />
           </DownloadPDF>
