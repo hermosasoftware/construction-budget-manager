@@ -40,7 +40,7 @@ interface IExtraBudgetView {
 const ExtraBudget: React.FC<IExtraBudgetView> = props => {
   const { projectId } = props;
   const selectedTab = useParams().tab as string;
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const [editExchange, setEditExchange] = useState(false);
   const [editAdminFee, setEditAdminFee] = useState(false);
 

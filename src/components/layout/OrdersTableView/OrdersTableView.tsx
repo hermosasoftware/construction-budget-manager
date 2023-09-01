@@ -100,7 +100,7 @@ const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
   const itemsPerPage = useAppSelector(state => state.settings.itemsPerPage);
 
   const [currentPage, setCurrentPage] = useState<number>(
-    Number(searchParams.get('page')) | 0,
+    Math.max(0, Number(searchParams.get('page')) - 1 || 0),
   );
   const [filteredCount, setFilteredCount] = useState<number>(
     props.items?.length,
@@ -290,11 +290,11 @@ const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
   ]);
 
   React.useEffect(() => {
-    setCurrentPage(Number(searchParams.get('page')) | 0);
+    setCurrentPage(Math.max(0, Number(searchParams.get('page')) - 1 || 0));
   }, [props.items?.length, searchParams]);
 
   const handleOnPageChange = (pageNumber: number, itemsPerPage: number) => {
-    setSearchParams({ page: pageNumber?.toString() });
+    setSearchParams({ page: (pageNumber + 1)?.toString() });
     setCurrentPage(pageNumber);
   };
 

@@ -2,12 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, Divider, Heading, Text } from '@chakra-ui/react';
 import { CaretLeft, FilePdf } from 'phosphor-react';
 import * as yup from 'yup';
-import {
-  useLocation,
-  useNavigate,
-  useParams,
-  useSearchParams,
-} from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useAppSelector } from '../../../../redux/hooks';
 import TabGroup from '../../../common/TabGroup/TabGroup';
 import BudgetActivity from './BudgetActivity/BudgetActivity';
@@ -41,8 +36,7 @@ interface IBudgetView {
 const Budget: React.FC<IBudgetView> = props => {
   const { projectId, project, setProject } = props;
   const selectedTab = useParams().tab as string;
-  const location = useLocation();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const budgetActivities = useAppSelector(
     state => state.budgetActivities.budgetActivities,
   );
