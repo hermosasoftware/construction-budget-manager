@@ -8,3 +8,12 @@ export const parseCurrentPageItems = (
   if (!results) return [];
   return results.slice(start, end);
 };
+
+export var delayTimer: any;
+
+export const debounceLoader = (action: Function, timer = 500) => {
+  clearTimeout(delayTimer);
+  delayTimer = setTimeout(() => {
+    action();
+  }, timer);
+};

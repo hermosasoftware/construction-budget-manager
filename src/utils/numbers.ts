@@ -16,9 +16,12 @@ export const dolarFormat = (number: number) =>
     currency: 'USD',
   });
 
+export const isCurrency = (text: string) =>
+  Number(text.includes('₡') || text.includes('$'));
+
 export const currencyToNumber = (text: string) =>
   Number(
     text.includes('₡')
-      ? text.replace(/,/g, '.').replace(/[^0-9-.]/g, '')
+      ? text.replace(/[^0-9,-]/g, '').replace(/,/g, '.')
       : text.replace(/[^0-9-.]/g, ''),
   );

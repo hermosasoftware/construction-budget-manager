@@ -23,6 +23,7 @@ import Form, { AutoComplete, Input, Switch } from '../../../../common/Form';
 import AlertDialog from '../../../../common/AlertDialog/AlertDialog';
 import { useAppSelector } from '../../../../../redux/hooks';
 import { ISubMaterial } from '../../../../../types/collections';
+import { debounceLoader } from '../../../../../utils/common';
 
 import styles from './BudgetMaterial.module.css';
 
@@ -301,6 +302,11 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
               validationSchema={validationSchema}
               validateOnChange
               validateOnBlur
+              onFormDataChange={data =>
+                debounceLoader(() =>
+                  setSelectedItem({ ...selectedItem, ...data }),
+                )
+              }
               onSubmit={handleOnSubmit}
             >
               <AutoComplete
@@ -357,6 +363,11 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
               validationSchema={subMaterialValSchema}
               validateOnChange
               validateOnBlur
+              onFormDataChange={data =>
+                debounceLoader(() =>
+                  setSelectedSubMaterial({ ...selectedSubMaterial, ...data }),
+                )
+              }
               onSubmit={onSubmitSubmaterial}
             >
               <AutoComplete

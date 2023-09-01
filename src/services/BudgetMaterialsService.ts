@@ -40,6 +40,8 @@ export const getBudgetMaterials = async ({
       ...doc.data(),
       id: doc.id,
       subtotal: doc.data().cost * doc.data().quantity,
+      createdAt: doc.data()?.createdAt?.toDate()?.toISOString(),
+      updatedAt: doc.data()?.updatedAt?.toDate()?.toISOString(),
     })) as IBudgetMaterial[];
 
     let allMaterials = null;

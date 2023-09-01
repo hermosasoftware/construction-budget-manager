@@ -33,6 +33,7 @@ import OrdersTableView, {
 } from '../../../layout/OrdersTableView/OrdersTableView';
 import SearchSelect from '../../../common/Form/Elements/SearchSelect';
 import { formatDate } from '../../../../utils/dates';
+import { debounceLoader } from '../../../../utils/common';
 import TabGroup from '../../../common/TabGroup/TabGroup';
 
 import styles from './Orders.module.css';
@@ -416,6 +417,11 @@ const Orders: React.FC<IOrdersView> = props => {
                 validationSchema={validationSchema}
                 validateOnChange
                 validateOnBlur
+                onFormDataChange={data =>
+                  debounceLoader(() =>
+                    setSelectedOrder({ ...selectedOrder, ...data }),
+                  )
+                }
                 onSubmit={handleOnSubmit}
               >
                 <Input
@@ -482,6 +488,11 @@ const Orders: React.FC<IOrdersView> = props => {
                 validationSchema={productValSchema}
                 validateOnChange
                 validateOnBlur
+                onFormDataChange={data =>
+                  debounceLoader(() =>
+                    setSelectedProduct({ ...selectedProduct, ...data }),
+                  )
+                }
                 onSubmit={onSubmitProduct}
               >
                 <AutoComplete
