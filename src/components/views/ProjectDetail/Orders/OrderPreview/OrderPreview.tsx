@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Skeleton } from '@chakra-ui/react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Button, Skeleton } from '@chakra-ui/react';
+import { ArrowLeft } from 'phosphor-react';
 import { useAppSelector } from '../../../../../redux/hooks';
 import OrderReport from '../../../../reports/OrderReport/OrderReport';
 import { getProjectById } from '../../../../../services/ProjectService';
@@ -15,6 +16,7 @@ export default function OrderPreview() {
   const projectId = useParams().projectId as string;
   const projectOrderId = useParams().orderId as string;
   const activity = useParams().activity as string;
+  const navigate = useNavigate();
   const [order, setOrder] = useState<IProjectOrder>();
   const [project, setProject] = useState<IProject>();
   const [noteValue, setNoteValue] = useState('');
@@ -50,10 +52,33 @@ export default function OrderPreview() {
     return () => abortController.abort();
   }, []);
 
+  const PDFToolbar = () => (
+    <div className={styles.toolbar_container}>
+      <Button
+        className={styles.toolbar_button}
+        onClick={() => navigate(-1)}
+        variant="unstyled"
+        title={appStrings?.back}
+      >
+        <ArrowLeft size={22} />
+      </Button>
+      <DownloadPDF fileName={`Orden-${order?.order}-${project?.name}`}>
+        <OrderReport
+          project={project!}
+          order={order!}
+          noteValue={noteValue}
+          setNoteValue={setNoteValue}
+          pdfMode={true}
+        ></OrderReport>
+      </DownloadPDF>
+    </div>
+  );
+
   return (
     <>
       {project && order ? (
         <div className={`${styles.page_container}`}>
+          <PDFToolbar />
           <OrderReport
             project={project}
             order={order}
@@ -61,15 +86,6 @@ export default function OrderPreview() {
             setNoteValue={setNoteValue}
             pdfMode={false}
           ></OrderReport>
-          <DownloadPDF fileName={`Orden-${order.order}-${project.name}`}>
-            <OrderReport
-              project={project}
-              order={order}
-              noteValue={noteValue}
-              setNoteValue={setNoteValue}
-              pdfMode={true}
-            ></OrderReport>
-          </DownloadPDF>
         </div>
       ) : (
         <Skeleton className={styles.page_container} height={'95%'} />

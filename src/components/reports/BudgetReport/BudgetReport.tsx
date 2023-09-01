@@ -21,8 +21,17 @@ interface Props {
   activity: IBudgetActivity[];
   noteValue: string;
   setNoteValue: Function;
-  detailed?: boolean;
+  exportSettings: IExportSettings;
   pdfMode: boolean;
+}
+
+export interface IExportSettings {
+  showActivities: boolean;
+  showLabors: boolean;
+  showSubcontracts: boolean;
+  showOthers: boolean;
+  detailedActivities: boolean;
+  detailedMaterials: boolean;
 }
 
 const BudgetReport: FC<Props> = props => {
@@ -32,7 +41,7 @@ const BudgetReport: FC<Props> = props => {
     activity,
     noteValue,
     setNoteValue,
-    detailed = false,
+    exportSettings,
     pdfMode,
   } = props;
   const [subtotal, setSubtotal] = useState<number>(0);
@@ -43,13 +52,13 @@ const BudgetReport: FC<Props> = props => {
 
   useEffect(() => {
     setSubtotal(
-      (budget.sumMaterials +
-        budget.sumLabors +
-        budget.sumSubcontracts +
-        budget.sumOthers) /
+      ((exportSettings.showActivities ? budget.sumMaterials : 0) +
+        (exportSettings.showLabors ? budget.sumLabors : 0) +
+        (exportSettings.showSubcontracts ? budget.sumSubcontracts : 0) +
+        (exportSettings.showOthers ? budget.sumOthers : 0)) /
         budget.exchange,
     );
-  }, [budget]);
+  }, [budget, exportSettings]);
 
   useEffect(() => {
     const adminFee = subtotal ? (subtotal * budget.adminFee) / 100 : 0;
@@ -170,131 +179,90 @@ const BudgetReport: FC<Props> = props => {
           </View>
         </View>
 
-        {activity.map((element, k) => (
-          <Fragment key={k}>
-            <View className="mt-30" pdfMode={pdfMode}>
-              <Text className="fs-20 bold" pdfMode={pdfMode}>
-                {`Activity Details`}
-              </Text>
-            </View>
-            <View className="row left flex " pdfMode={pdfMode}>
-              <View className="w-55" pdfMode={pdfMode}>
-                <View className="flex" pdfMode={pdfMode}>
-                  <View className="w-40" pdfMode={pdfMode}>
-                    <Text className="bold" pdfMode={pdfMode}>
-                      {`CONCEPT:`}
-                    </Text>
-                  </View>
-                  <View className="w-60" pdfMode={pdfMode}>
-                    <Text pdfMode={pdfMode}>{element.activity}</Text>
-                  </View>
+        {exportSettings.showActivities ? (
+          exportSettings.detailedActivities ? (
+            activity.map((element, k) => (
+              <Fragment key={k}>
+                <View className="mt-30" pdfMode={pdfMode}>
+                  <Text className="fs-20 bold" pdfMode={pdfMode}>
+                    {`Activity Details`}
+                  </Text>
                 </View>
-              </View>
-              <View className="w-45" pdfMode={pdfMode}>
-                <View className="flex" pdfMode={pdfMode}>
-                  <View className="w-40" pdfMode={pdfMode}>
-                    <Text className="bold" pdfMode={pdfMode}>
-                      {`DATE:`}
-                    </Text>
+                <View className="row left flex " pdfMode={pdfMode}>
+                  <View className="w-55" pdfMode={pdfMode}>
+                    <View className="flex" pdfMode={pdfMode}>
+                      <View className="w-40" pdfMode={pdfMode}>
+                        <Text className="bold" pdfMode={pdfMode}>
+                          {`CONCEPT:`}
+                        </Text>
+                      </View>
+                      <View className="w-60" pdfMode={pdfMode}>
+                        <Text pdfMode={pdfMode}>{element.activity}</Text>
+                      </View>
+                    </View>
                   </View>
-                  <View className="w-60" pdfMode={pdfMode}>
-                    <Text pdfMode={pdfMode}>
-                      {element.date.toLocaleDateString()}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            </View>
-            {!!element.materials?.length && (
-              <>
-                <View className="mt-10" pdfMode={pdfMode}>
-                  <View className="bg-dark flex left" pdfMode={pdfMode}>
-                    <View className="w-48 p-4-8" pdfMode={pdfMode}>
-                      <Text className="white bold" pdfMode={pdfMode}>
-                        {`Description`}
-                      </Text>
-                    </View>
-                    <View className="w-10 p-4-8" pdfMode={pdfMode}>
-                      <Text className="white bold" pdfMode={pdfMode}>
-                        {`Qty.`}
-                      </Text>
-                    </View>
-                    <View className="w-10 p-4-8" pdfMode={pdfMode}>
-                      <Text className="white bold" pdfMode={pdfMode}>
-                        {`Unit`}
-                      </Text>
-                    </View>
-                    <View className="w-20 p-4-8" pdfMode={pdfMode}>
-                      <Text className="white bold" pdfMode={pdfMode}>
-                        {`Unit Cost`}
-                      </Text>
-                    </View>
-                    <View className="w-20 p-4-8" pdfMode={pdfMode}>
-                      <Text className="white bold" pdfMode={pdfMode}>
-                        {`Subtotal`}
-                      </Text>
-                    </View>
-                    <View className="w-15 p-4-8" pdfMode={pdfMode}>
-                      <Text className="white bold" pdfMode={pdfMode}>
-                        {`Dolars`}
-                      </Text>
+                  <View className="w-45" pdfMode={pdfMode}>
+                    <View className="flex" pdfMode={pdfMode}>
+                      <View className="w-40" pdfMode={pdfMode}>
+                        <Text className="bold" pdfMode={pdfMode}>
+                          {`DATE:`}
+                        </Text>
+                      </View>
+                      <View className="w-60" pdfMode={pdfMode}>
+                        <Text pdfMode={pdfMode}>
+                          {element.date.toLocaleDateString()}
+                        </Text>
+                      </View>
                     </View>
                   </View>
                 </View>
-                {element.materials?.map((row, i) => {
-                  const material = row.material as IBudgetMaterial;
-                  return (
-                    <Fragment key={i}>
-                      <View className="row flex left" pdfMode={pdfMode}>
-                        <View className="w-48 p-4-8 pb-10" pdfMode={pdfMode}>
-                          <Text className="dark" pdfMode={pdfMode}>
-                            {material.name}
+                {!!element.materials?.length && (
+                  <>
+                    <View className="mt-10" pdfMode={pdfMode}>
+                      <View className="bg-dark flex left" pdfMode={pdfMode}>
+                        <View className="w-48 p-4-8" pdfMode={pdfMode}>
+                          <Text className="white bold" pdfMode={pdfMode}>
+                            {`Description`}
                           </Text>
                         </View>
-                        <View className="w-10 p-4-8 pb-10" pdfMode={pdfMode}>
-                          <Text className="dark" pdfMode={pdfMode}>
-                            {`${material.quantity}`}
+                        <View className="w-10 p-4-8" pdfMode={pdfMode}>
+                          <Text className="white bold" pdfMode={pdfMode}>
+                            {`Qty.`}
                           </Text>
                         </View>
-                        <View className="w-10 p-4-8 pb-10" pdfMode={pdfMode}>
-                          <Text className="dark" pdfMode={pdfMode}>
-                            {material.unit}
+                        <View className="w-10 p-4-8" pdfMode={pdfMode}>
+                          <Text className="white bold" pdfMode={pdfMode}>
+                            {`Unit`}
                           </Text>
                         </View>
-                        <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
-                          <Text className="dark" pdfMode={pdfMode}>
-                            {colonFormat(calculateMaterialCost(row))}
+                        <View className="w-20 p-4-8" pdfMode={pdfMode}>
+                          <Text className="white bold" pdfMode={pdfMode}>
+                            {`Unit Cost`}
                           </Text>
                         </View>
-                        <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
-                          <Text className="dark" pdfMode={pdfMode}>
-                            {colonFormat(
-                              material.quantity * calculateMaterialCost(row),
-                            )}
+                        <View className="w-20 p-4-8" pdfMode={pdfMode}>
+                          <Text className="white bold" pdfMode={pdfMode}>
+                            {`Subtotal`}
                           </Text>
                         </View>
-                        <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
-                          <Text className="dark" pdfMode={pdfMode}>
-                            {dolarFormat(
-                              (material.quantity * calculateMaterialCost(row)) /
-                                budget.exchange,
-                            )}
+                        <View className="w-15 p-4-8" pdfMode={pdfMode}>
+                          <Text className="white bold" pdfMode={pdfMode}>
+                            {`Dolars`}
                           </Text>
                         </View>
                       </View>
-                      {detailed &&
-                        row.subMaterials.map((subMaterial, i) => (
-                          <View
-                            key={i}
-                            className="row flex left"
-                            pdfMode={pdfMode}
-                          >
+                    </View>
+                    {element.materials?.map((row, i) => {
+                      const material = row.material as IBudgetMaterial;
+                      return (
+                        <Fragment key={i}>
+                          <View className="row flex left" pdfMode={pdfMode}>
                             <View
                               className="w-48 p-4-8 pb-10"
                               pdfMode={pdfMode}
                             >
                               <Text className="dark" pdfMode={pdfMode}>
-                                {`${subMaterial.name}`}
+                                {material.name}
                               </Text>
                             </View>
                             <View
@@ -302,7 +270,7 @@ const BudgetReport: FC<Props> = props => {
                               pdfMode={pdfMode}
                             >
                               <Text className="dark" pdfMode={pdfMode}>
-                                {`${subMaterial.quantity}`}
+                                {`${material.quantity}`}
                               </Text>
                             </View>
                             <View
@@ -310,7 +278,7 @@ const BudgetReport: FC<Props> = props => {
                               pdfMode={pdfMode}
                             >
                               <Text className="dark" pdfMode={pdfMode}>
-                                {subMaterial.unit}
+                                {material.unit}
                               </Text>
                             </View>
                             <View
@@ -318,7 +286,7 @@ const BudgetReport: FC<Props> = props => {
                               pdfMode={pdfMode}
                             >
                               <Text className="dark" pdfMode={pdfMode}>
-                                {colonFormat(subMaterial.cost)}
+                                {colonFormat(calculateMaterialCost(row))}
                               </Text>
                             </View>
                             <View
@@ -327,8 +295,8 @@ const BudgetReport: FC<Props> = props => {
                             >
                               <Text className="dark" pdfMode={pdfMode}>
                                 {colonFormat(
-                                  Number(subMaterial.quantity) *
-                                    subMaterial.cost,
+                                  material.quantity *
+                                    calculateMaterialCost(row),
                                 )}
                               </Text>
                             </View>
@@ -338,49 +306,198 @@ const BudgetReport: FC<Props> = props => {
                             >
                               <Text className="dark" pdfMode={pdfMode}>
                                 {dolarFormat(
-                                  (Number(subMaterial.quantity) *
-                                    subMaterial.cost) /
+                                  (material.quantity *
+                                    calculateMaterialCost(row)) /
                                     budget.exchange,
                                 )}
                               </Text>
                             </View>
                           </View>
-                        ))}
-                    </Fragment>
-                  );
-                })}
-                <View className="flex left bg-gray p-5" pdfMode={pdfMode}>
-                  <View className="w-48 p-4-8 pb-10" pdfMode={pdfMode}>
-                    <Text className="bold" pdfMode={pdfMode}>
-                      {`TOTAL`}
-                    </Text>
+                          {exportSettings.detailedMaterials &&
+                            row.subMaterials.map((subMaterial, i) => (
+                              <View
+                                key={i}
+                                className="row flex left"
+                                pdfMode={pdfMode}
+                              >
+                                <View
+                                  className="w-48 p-4-8 pb-10"
+                                  pdfMode={pdfMode}
+                                >
+                                  <Text className="dark" pdfMode={pdfMode}>
+                                    {`• ${subMaterial.name}`}
+                                  </Text>
+                                </View>
+                                <View
+                                  className="w-10 p-4-8 pb-10"
+                                  pdfMode={pdfMode}
+                                >
+                                  <Text className="dark" pdfMode={pdfMode}>
+                                    {`${subMaterial.quantity}`}
+                                  </Text>
+                                </View>
+                                <View
+                                  className="w-10 p-4-8 pb-10"
+                                  pdfMode={pdfMode}
+                                >
+                                  <Text className="dark" pdfMode={pdfMode}>
+                                    {subMaterial.unit}
+                                  </Text>
+                                </View>
+                                <View
+                                  className="w-20 p-4-8 pb-10"
+                                  pdfMode={pdfMode}
+                                >
+                                  <Text className="dark" pdfMode={pdfMode}>
+                                    {colonFormat(subMaterial.cost)}
+                                  </Text>
+                                </View>
+                                <View
+                                  className="w-20 p-4-8 pb-10"
+                                  pdfMode={pdfMode}
+                                >
+                                  <Text className="dark" pdfMode={pdfMode}>
+                                    {colonFormat(
+                                      Number(subMaterial.quantity) *
+                                        subMaterial.cost,
+                                    )}
+                                  </Text>
+                                </View>
+                                <View
+                                  className="w-15 p-4-8 pb-10"
+                                  pdfMode={pdfMode}
+                                >
+                                  <Text className="dark" pdfMode={pdfMode}>
+                                    {dolarFormat(
+                                      (Number(subMaterial.quantity) *
+                                        subMaterial.cost) /
+                                        budget.exchange,
+                                    )}
+                                  </Text>
+                                </View>
+                              </View>
+                            ))}
+                        </Fragment>
+                      );
+                    })}
+                    <View className="flex left bg-gray p-5" pdfMode={pdfMode}>
+                      <View className="w-48 p-4-8 pb-10" pdfMode={pdfMode}>
+                        <Text className="bold" pdfMode={pdfMode}>
+                          {`TOTAL`}
+                        </Text>
+                      </View>
+                      <View
+                        className="w-10 p-4-8 pb-10"
+                        pdfMode={pdfMode}
+                      ></View>
+                      <View
+                        className="w-10 p-4-8 pb-10"
+                        pdfMode={pdfMode}
+                      ></View>
+                      <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
+                        <Text className="dark" pdfMode={pdfMode}>
+                          {colonFormat(
+                            calculateTotalMaterialCost(element.materials),
+                          )}
+                        </Text>
+                      </View>
+                      <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
+                        <Text className="dark" pdfMode={pdfMode}>
+                          {colonFormat(element.sumMaterials)}
+                        </Text>
+                      </View>
+                      <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
+                        <Text className="dark" pdfMode={pdfMode}>
+                          {dolarFormat(element.sumMaterials / budget.exchange)}
+                        </Text>
+                      </View>
+                    </View>
+                  </>
+                )}
+              </Fragment>
+            ))
+          ) : (
+            <>
+              <View className="mt-30" pdfMode={pdfMode}>
+                <Text className="fs-20 bold" pdfMode={pdfMode}>
+                  {`Activities`}
+                </Text>
+              </View>
+              {!!activity?.length && (
+                <>
+                  <View className="mt-10" pdfMode={pdfMode}>
+                    <View className="bg-dark flex left" pdfMode={pdfMode}>
+                      <View className="w-48 p-4-8" pdfMode={pdfMode}>
+                        <Text className="white bold" pdfMode={pdfMode}>
+                          {`Description`}
+                        </Text>
+                      </View>
+                      <View className="w-20 p-4-8" pdfMode={pdfMode}>
+                        <Text className="white bold" pdfMode={pdfMode}>
+                          {`Date`}
+                        </Text>
+                      </View>
+                      <View className="w-20 p-4-8" pdfMode={pdfMode}>
+                        <Text className="white bold" pdfMode={pdfMode}>
+                          {`Subtotal`}
+                        </Text>
+                      </View>
+                      <View className="w-15 p-4-8" pdfMode={pdfMode}>
+                        <Text className="white bold" pdfMode={pdfMode}>
+                          {`Dolars`}
+                        </Text>
+                      </View>
+                    </View>
                   </View>
-                  <View className="w-10 p-4-8 pb-10" pdfMode={pdfMode}></View>
-                  <View className="w-10 p-4-8 pb-10" pdfMode={pdfMode}></View>
-                  <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
-                    <Text className="dark" pdfMode={pdfMode}>
-                      {colonFormat(
-                        calculateTotalMaterialCost(element.materials),
-                      )}
-                    </Text>
+                  {activity.map((element, k) => (
+                    <View key={k} className="row flex left" pdfMode={pdfMode}>
+                      <View className="w-48 p-4-8 pb-10" pdfMode={pdfMode}>
+                        <Text className="dark" pdfMode={pdfMode}>
+                          {element.activity}
+                        </Text>
+                      </View>
+                      <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
+                        <Text className="dark" pdfMode={pdfMode}>
+                          {element.date.toLocaleDateString()}
+                        </Text>
+                      </View>
+                      <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
+                        <Text className="dark" pdfMode={pdfMode}>
+                          {colonFormat(element.sumMaterials)}
+                        </Text>
+                      </View>
+                      <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
+                        <Text className="dark" pdfMode={pdfMode}>
+                          {dolarFormat(element.sumMaterials / budget.exchange)}
+                        </Text>
+                      </View>
+                    </View>
+                  ))}
+                  <View className="flex left bg-gray p-5" pdfMode={pdfMode}>
+                    <View className="w-48 p-4-8 pb-10" pdfMode={pdfMode}>
+                      <Text className="bold" pdfMode={pdfMode}>
+                        {`TOTAL`}
+                      </Text>
+                    </View>
+                    <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode} />
+                    <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
+                      <Text className="dark" pdfMode={pdfMode}>
+                        {colonFormat(budget.sumMaterials)}
+                      </Text>
+                    </View>
+                    <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
+                      <Text className="dark" pdfMode={pdfMode}>
+                        {dolarFormat(budget.sumMaterials / budget.exchange)}
+                      </Text>
+                    </View>
                   </View>
-                  <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
-                    <Text className="dark" pdfMode={pdfMode}>
-                      {colonFormat(element.sumMaterials)}
-                    </Text>
-                  </View>
-                  <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
-                    <Text className="dark" pdfMode={pdfMode}>
-                      {dolarFormat(element.sumMaterials / budget.exchange)}
-                    </Text>
-                  </View>
-                </View>
-              </>
-            )}
-          </Fragment>
-        ))}
+                </>
+              )}
+            </>
+          )
+        ) : undefined}
 
-        {!!budget.labors?.length && (
+        {exportSettings.showLabors && !!budget.labors?.length && (
           <>
             <View className="mt-30" pdfMode={pdfMode}>
               <Text className="fs-20 left bold" pdfMode={pdfMode}>
@@ -484,7 +601,7 @@ const BudgetReport: FC<Props> = props => {
           </>
         )}
 
-        {!!budget.subcontracts?.length && (
+        {exportSettings.showSubcontracts && !!budget.subcontracts?.length && (
           <>
             <View className="mt-30" pdfMode={pdfMode}>
               <Text className="fs-20 left bold" pdfMode={pdfMode}>
@@ -577,7 +694,7 @@ const BudgetReport: FC<Props> = props => {
           </>
         )}
 
-        {!!budget.others?.length && (
+        {exportSettings.showOthers && !!budget.others?.length && (
           <>
             <View className="mt-30" pdfMode={pdfMode}>
               <Text className="fs-20 left bold" pdfMode={pdfMode}>

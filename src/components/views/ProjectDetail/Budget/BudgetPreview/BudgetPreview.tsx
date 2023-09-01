@@ -1,8 +1,25 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Skeleton } from '@chakra-ui/react';
+import { useNavigate, useParams } from 'react-router-dom';
+import {
+  Button,
+  ButtonGroup,
+  Divider,
+  Popover,
+  PopoverArrow,
+  PopoverBody,
+  PopoverCloseButton,
+  PopoverContent,
+  PopoverHeader,
+  PopoverTrigger,
+  Skeleton,
+  Stack,
+  useDisclosure,
+} from '@chakra-ui/react';
+import { ArrowLeft, Gear } from 'phosphor-react';
 import { useAppSelector } from '../../../../../redux/hooks';
-import BudgetReport from '../../../../reports/BudgetReport/BudgetReport';
+import BudgetReport, {
+  IExportSettings,
+} from '../../../../reports/BudgetReport/BudgetReport';
 import { getProjectById } from '../../../../../services/ProjectService';
 import { getProjectBudget } from '../../../../../services/ProjectBudgetService';
 import { getBudgetActivity } from '../../../../../services/BudgetActivityService';
@@ -18,14 +35,29 @@ import { IBudgetLabor } from '../../../../../types/budgetLabor';
 import { IMaterialBreakdown } from '../../../../../types/collections';
 import { IBudgetOther } from '../../../../../types/budgetOther';
 import DownloadPDF from '../../../../common/PDF/DownloadPDF';
+import Form, { Switch } from '../../../../common/Form';
 
 import styles from './BudgetPreview.module.css';
 
+const initialExportSettings = {
+  showActivities: true,
+  showLabors: true,
+  showSubcontracts: true,
+  showOthers: true,
+  detailedActivities: false,
+  detailedMaterials: false,
+};
+
 export default function ActivityPreview() {
   const projectId = useParams().projectId as string;
+  const navigate = useNavigate();
+  const { onOpen, onClose, isOpen } = useDisclosure();
   const [project, setProject] = useState<IProject>();
   const [budget, setBudget] = useState<IProjectBudget>();
   const [activity, setActivity] = useState<IBudgetActivity[]>([]);
+  const [exportSettings, setExportSettings] = useState<IExportSettings>(
+    initialExportSettings,
+  );
   const [noteValue, setNoteValue] = useState('');
 
   const appStrings = useAppSelector(state => state.settings.appStrings);
@@ -117,6 +149,11 @@ export default function ActivityPreview() {
     return list;
   };
 
+  const handleOnSettingsSubmit = (data: IExportSettings) => {
+    setExportSettings(data);
+    onClose();
+  };
+
   useEffect(() => {
     let abortController = new AbortController();
     getProject();
@@ -126,28 +163,119 @@ export default function ActivityPreview() {
     return () => abortController.abort();
   }, []);
 
+  const PDFToolbar = () => (
+    <div className={styles.toolbar_container}>
+      <Button
+        className={styles.toolbar_button}
+        onClick={() => navigate(-1)}
+        variant="unstyled"
+        title={appStrings?.back}
+      >
+        <ArrowLeft size={22} />
+      </Button>
+      <div>
+        <DownloadPDF fileName={`Budget-${project?.name}`}>
+          <BudgetReport
+            project={project!}
+            budget={budget!}
+            activity={activity}
+            noteValue={noteValue}
+            setNoteValue={setNoteValue}
+            exportSettings={exportSettings}
+            pdfMode={true}
+          />
+        </DownloadPDF>
+        <Popover isOpen={isOpen} onOpen={onOpen} onClose={onClose}>
+          <PopoverTrigger>
+            <Button
+              className={styles.toolbar_button}
+              variant="unstyled"
+              title={appStrings?.exportSettings}
+            >
+              <Gear size={22} />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent>
+            <PopoverArrow />
+            <PopoverCloseButton />
+            <PopoverHeader fontWeight="bold" fontSize="md">
+              {appStrings?.exportSettings}
+            </PopoverHeader>
+            <PopoverBody p={4}>
+              <Form
+                id="settings-form"
+                initialFormData={exportSettings}
+                validateOnChange
+                validateOnBlur
+                onSubmit={handleOnSettingsSubmit}
+              >
+                <Stack spacing={2}>
+                  <Switch
+                    name="showActivities"
+                    labelPlacement="inline"
+                    label={appStrings?.showActivities}
+                  />
+                  <Switch
+                    name="detailedActivities"
+                    labelPlacement="inline"
+                    label={`- ${appStrings?.detailedActivities}`}
+                    containerClassName={styles.pl}
+                  />
+                  <Switch
+                    name="detailedMaterials"
+                    labelPlacement="inline"
+                    label={`- ${appStrings?.detailedMaterials}`}
+                    containerClassName={styles.pl}
+                  />
+                  <Switch
+                    name="showLabors"
+                    labelPlacement="inline"
+                    label={appStrings?.showLabors}
+                  />
+                  <Switch
+                    name="showSubcontracts"
+                    labelPlacement="inline"
+                    label={appStrings?.showSubcontracts}
+                  />
+                  <Switch
+                    name="showOthers"
+                    labelPlacement="inline"
+                    label={appStrings?.showOthers}
+                  />
+                  <Divider />
+                  <ButtonGroup
+                    size="sm"
+                    display="flex"
+                    justifyContent="flex-end"
+                  >
+                    <Button variant="ghost" onClick={onClose}>
+                      {appStrings?.cancel}
+                    </Button>
+                    <Button type="submit">{appStrings?.apply}</Button>
+                  </ButtonGroup>
+                </Stack>
+              </Form>
+            </PopoverBody>
+          </PopoverContent>
+        </Popover>
+      </div>
+    </div>
+  );
+
   return (
     <>
       {project && budget && activity.length ? (
         <div className={`${styles.page_container}`}>
+          <PDFToolbar />
           <BudgetReport
             project={project}
             budget={budget}
             activity={activity}
             noteValue={noteValue}
             setNoteValue={setNoteValue}
+            exportSettings={exportSettings}
             pdfMode={false}
           />
-          <DownloadPDF fileName={`Budget-${project.name}`}>
-            <BudgetReport
-              project={project}
-              budget={budget}
-              activity={activity}
-              noteValue={noteValue}
-              setNoteValue={setNoteValue}
-              pdfMode={true}
-            />
-          </DownloadPDF>
         </div>
       ) : (
         <Skeleton className={styles.page_container} height={'95%'} />

@@ -1,6 +1,8 @@
 import { FC, useEffect, useState } from 'react';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { composePreview } from './compose';
+import { DownloadSimple } from 'phosphor-react';
+import { Button } from '@chakra-ui/react';
 
 interface Props {
   fileName: string;
@@ -20,10 +22,12 @@ const Download: FC<Props> = ({ fileName, children }) => {
   }, [fileName, children]);
 
   return (
-    <div
+    <Button
+      variant="unstyled"
       className={composePreview('download-pdf ' + (!show ? 'loading' : ''))}
       title="Save PDF"
     >
+      <DownloadSimple size={22} />
       {show && (
         <PDFDownloadLink
           document={<>{children}</>}
@@ -31,7 +35,7 @@ const Download: FC<Props> = ({ fileName, children }) => {
           aria-label="Save PDF"
         ></PDFDownloadLink>
       )}
-    </div>
+    </Button>
   );
 };
 

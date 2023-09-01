@@ -243,7 +243,7 @@ const ExtraReport: FC<Props> = props => {
                       <View key={i} className="row flex left" pdfMode={pdfMode}>
                         <View className="w-48 p-4-8 pb-10" pdfMode={pdfMode}>
                           <Text className="dark" pdfMode={pdfMode}>
-                            {`${subMaterial.name}`}
+                            {`• ${subMaterial.name}`}
                           </Text>
                         </View>
                         <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
