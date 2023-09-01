@@ -335,54 +335,17 @@ h1 {
   box-shadow: 0 0 17px 0 rgba(16, 40, 73, 0.09);
 }
 
-.back-button-container {
-  position: fixed;
-  top: 40px;
-  margin-right: 750px;
-  z-index: 1;
-}
-
-.back-button-container button {
-  max-width: 24px;
-}
-
 .download-pdf {
-  position: fixed;
-  top: 40px;
-  margin-left: 753px;
-  width: 40px;
-  height: 40px;
-  background-image: url('/src/assets/img/download.svg');
-  background-size: cover;
+  color: var(--chakra-colors-green-light-text) !important;
+  max-height: 32px;
   transition: opacity 0.2s ease-in-out;
 }
 
 .download-pdf.loading {
   opacity: 0.3;
 }
+
 .download-pdf a {
-  display: block;
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.export-settings {
-  position: fixed;
-  top: 100px;
-  margin-left: 753px;
-  width: 40px;
-  height: 40px;
-  background-image: url('/src/assets/img/settings.png');
-  background-size: cover;
-  transition: opacity 0.2s ease-in-out;
-  z-index: 1;
-  cursor: pointer;
-}
-
-.export-settings a {
   display: block;
   position: absolute;
   top: 0;

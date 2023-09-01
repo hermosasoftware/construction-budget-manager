@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
+  Button,
   ButtonGroup,
   Divider,
   Popover,
@@ -14,7 +15,7 @@ import {
   Stack,
   useDisclosure,
 } from '@chakra-ui/react';
-import { CaretLeft } from 'phosphor-react';
+import { ArrowLeft, Gear } from 'phosphor-react';
 import { useAppSelector } from '../../../../../redux/hooks';
 import BudgetReport, {
   IExportSettings,
@@ -34,8 +35,6 @@ import { IBudgetLabor } from '../../../../../types/budgetLabor';
 import { IMaterialBreakdown } from '../../../../../types/collections';
 import { IBudgetOther } from '../../../../../types/budgetOther';
 import DownloadPDF from '../../../../common/PDF/DownloadPDF';
-import Button from '../../../../common/Button/Button';
-import { composePreview } from '../../../../common/PDF/compose';
 import Form, { Switch } from '../../../../common/Form';
 
 import styles from './BudgetPreview.module.css';
@@ -164,92 +163,110 @@ export default function ActivityPreview() {
     return () => abortController.abort();
   }, []);
 
-  const ExportSettings = () => (
-    <Popover isOpen={isOpen} onOpen={onOpen} onClose={onClose}>
-      <PopoverTrigger>
-        <div
-          className={composePreview('export-settings')}
-          title={appStrings?.exportSettings}
-        />
-      </PopoverTrigger>
-      <PopoverContent>
-        <PopoverArrow />
-        <PopoverCloseButton />
-        <PopoverHeader fontWeight="bold" fontSize="md">
-          {appStrings?.exportSettings}
-        </PopoverHeader>
-        <PopoverBody p={4}>
-          <Form
-            id="settings-form"
-            initialFormData={exportSettings}
-            validateOnChange
-            validateOnBlur
-            onSubmit={handleOnSettingsSubmit}
-          >
-            <Stack spacing={2}>
-              <Switch
-                name="showActivities"
-                labelPlacement="inline"
-                label={appStrings?.showActivities}
-              />
-              <Switch
-                name="detailedActivities"
-                labelPlacement="inline"
-                label={`- ${appStrings?.detailedActivities}`}
-                containerClassName={styles.pl}
-              />
-              <Switch
-                name="detailedMaterials"
-                labelPlacement="inline"
-                label={`- ${appStrings?.detailedMaterials}`}
-                containerClassName={styles.pl}
-              />
-              <Switch
-                name="showLabors"
-                labelPlacement="inline"
-                label={appStrings?.showLabors}
-              />
-              <Switch
-                name="showSubcontracts"
-                labelPlacement="inline"
-                label={appStrings?.showSubcontracts}
-              />
-              <Switch
-                name="showOthers"
-                labelPlacement="inline"
-                label={appStrings?.showOthers}
-              />
-              <Divider />
-              <ButtonGroup size="sm" display="flex" justifyContent="flex-end">
-                <Button variant="ghost" onClick={onClose}>
-                  {appStrings?.cancel}
-                </Button>
-                <Button type="submit">{appStrings?.apply}</Button>
-              </ButtonGroup>
-            </Stack>
-          </Form>
-        </PopoverBody>
-      </PopoverContent>
-    </Popover>
+  const PDFToolbar = () => (
+    <div className={styles.toolbar_container}>
+      <Button
+        className={styles.toolbar_button}
+        onClick={() => navigate(-1)}
+        variant="unstyled"
+        title={appStrings?.back}
+      >
+        <ArrowLeft size={22} />
+      </Button>
+      <div>
+        <DownloadPDF fileName={`Budget-${project?.name}`}>
+          <BudgetReport
+            project={project!}
+            budget={budget!}
+            activity={activity}
+            noteValue={noteValue}
+            setNoteValue={setNoteValue}
+            exportSettings={exportSettings}
+            pdfMode={true}
+          />
+        </DownloadPDF>
+        <Popover isOpen={isOpen} onOpen={onOpen} onClose={onClose}>
+          <PopoverTrigger>
+            <Button
+              className={styles.toolbar_button}
+              variant="unstyled"
+              title={appStrings?.exportSettings}
+            >
+              <Gear size={22} />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent>
+            <PopoverArrow />
+            <PopoverCloseButton />
+            <PopoverHeader fontWeight="bold" fontSize="md">
+              {appStrings?.exportSettings}
+            </PopoverHeader>
+            <PopoverBody p={4}>
+              <Form
+                id="settings-form"
+                initialFormData={exportSettings}
+                validateOnChange
+                validateOnBlur
+                onSubmit={handleOnSettingsSubmit}
+              >
+                <Stack spacing={2}>
+                  <Switch
+                    name="showActivities"
+                    labelPlacement="inline"
+                    label={appStrings?.showActivities}
+                  />
+                  <Switch
+                    name="detailedActivities"
+                    labelPlacement="inline"
+                    label={`- ${appStrings?.detailedActivities}`}
+                    containerClassName={styles.pl}
+                  />
+                  <Switch
+                    name="detailedMaterials"
+                    labelPlacement="inline"
+                    label={`- ${appStrings?.detailedMaterials}`}
+                    containerClassName={styles.pl}
+                  />
+                  <Switch
+                    name="showLabors"
+                    labelPlacement="inline"
+                    label={appStrings?.showLabors}
+                  />
+                  <Switch
+                    name="showSubcontracts"
+                    labelPlacement="inline"
+                    label={appStrings?.showSubcontracts}
+                  />
+                  <Switch
+                    name="showOthers"
+                    labelPlacement="inline"
+                    label={appStrings?.showOthers}
+                  />
+                  <Divider />
+                  <ButtonGroup
+                    size="sm"
+                    display="flex"
+                    justifyContent="flex-end"
+                  >
+                    <Button variant="ghost" onClick={onClose}>
+                      {appStrings?.cancel}
+                    </Button>
+                    <Button type="submit">{appStrings?.apply}</Button>
+                  </ButtonGroup>
+                </Stack>
+              </Form>
+            </PopoverBody>
+          </PopoverContent>
+        </Popover>
+      </div>
+    </div>
   );
 
   return (
     <>
       {project && budget && activity.length ? (
         <div className={`${styles.page_container}`}>
-          <div className={composePreview('back-button-container')}>
-            <Button
-              className={styles.back_button}
-              onClick={() => navigate(-1)}
-              variant="solid"
-              px={0}
-              shape="rectangular"
-              title={appStrings?.back}
-            >
-              <CaretLeft size={24} />
-            </Button>
-          </div>
-          <ExportSettings />
+          <PDFToolbar />
           <BudgetReport
             project={project}
             budget={budget}
@@ -259,17 +276,6 @@ export default function ActivityPreview() {
             exportSettings={exportSettings}
             pdfMode={false}
           />
-          <DownloadPDF fileName={`Budget-${project.name}`}>
-            <BudgetReport
-              project={project}
-              budget={budget}
-              activity={activity}
-              noteValue={noteValue}
-              setNoteValue={setNoteValue}
-              exportSettings={exportSettings}
-              pdfMode={true}
-            />
-          </DownloadPDF>
         </div>
       ) : (
         <Skeleton className={styles.page_container} height={'95%'} />

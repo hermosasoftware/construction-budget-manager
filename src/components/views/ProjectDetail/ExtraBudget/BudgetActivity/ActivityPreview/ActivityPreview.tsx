@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Skeleton } from '@chakra-ui/react';
-import { CaretLeft } from 'phosphor-react';
+import { Button, Skeleton } from '@chakra-ui/react';
+import { ArrowLeft } from 'phosphor-react';
 import { useAppSelector } from '../../../../../../redux/hooks';
 import ExtraReport from '../../../../../reports/ExtraReport/ExtraReport';
 import { getProjectById } from '../../../../../../services/ProjectService';
@@ -17,8 +17,6 @@ import { IBudgetLabor } from '../../../../../../types/budgetLabor';
 import { IMaterialBreakdown } from '../../../../../../types/collections';
 import { IBudgetOther } from '../../../../../../types/budgetOther';
 import DownloadPDF from '../../../../../common/PDF/DownloadPDF';
-import Button from '../../../../../common/Button/Button';
-import { composePreview } from '../../../../../common/PDF/compose';
 
 import styles from './ActivityPreview.module.css';
 
@@ -111,22 +109,37 @@ export default function ActivityPreview() {
     return () => abortController.abort();
   }, []);
 
+  const PDFToolbar = () => (
+    <div className={styles.toolbar_container}>
+      <Button
+        className={styles.toolbar_button}
+        onClick={() => navigate(-1)}
+        variant="unstyled"
+        title={appStrings?.back}
+      >
+        <ArrowLeft size={22} />
+      </Button>
+      <DownloadPDF fileName={`Extra-${activity?.activity}-${project?.name}`}>
+        <ExtraReport
+          project={project!}
+          activity={activity!}
+          materials={materials}
+          labors={labors}
+          subcontracts={subcontracts}
+          others={others}
+          noteValue={noteValue}
+          setNoteValue={setNoteValue}
+          pdfMode={true}
+        ></ExtraReport>
+      </DownloadPDF>
+    </div>
+  );
+
   return (
     <>
       {project && activity ? (
         <div className={`${styles.page_container}`}>
-          <div className={composePreview('back-button-container')}>
-            <Button
-              className={styles.back_button}
-              onClick={() => navigate(-1)}
-              variant="solid"
-              px={0}
-              shape="rectangular"
-              title={appStrings?.back}
-            >
-              <CaretLeft size={24} />
-            </Button>
-          </div>
+          <PDFToolbar />
           <ExtraReport
             project={project}
             activity={activity}
@@ -138,19 +151,6 @@ export default function ActivityPreview() {
             setNoteValue={setNoteValue}
             pdfMode={false}
           ></ExtraReport>
-          <DownloadPDF fileName={`Extra-${activity.activity}-${project.name}`}>
-            <ExtraReport
-              project={project}
-              activity={activity}
-              materials={materials}
-              labors={labors}
-              subcontracts={subcontracts}
-              others={others}
-              noteValue={noteValue}
-              setNoteValue={setNoteValue}
-              pdfMode={true}
-            ></ExtraReport>
-          </DownloadPDF>
         </div>
       ) : (
         <Skeleton className={styles.page_container} height={'95%'} />

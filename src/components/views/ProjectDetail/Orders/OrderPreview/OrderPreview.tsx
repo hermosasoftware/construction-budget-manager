@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Skeleton } from '@chakra-ui/react';
-import { CaretLeft } from 'phosphor-react';
+import { Button, Skeleton } from '@chakra-ui/react';
+import { ArrowLeft } from 'phosphor-react';
 import { useAppSelector } from '../../../../../redux/hooks';
 import OrderReport from '../../../../reports/OrderReport/OrderReport';
 import { getProjectById } from '../../../../../services/ProjectService';
@@ -9,8 +9,6 @@ import { getProjectOrderById } from '../../../../../services/ProjectOrderService
 import { IProjectOrder } from '../../../../../types/projectOrder';
 import { IProject } from '../../../../../types/project';
 import DownloadPDF from '../../../../common/PDF/DownloadPDF';
-import Button from '../../../../common/Button/Button';
-import { composePreview } from '../../../../common/PDF/compose';
 
 import styles from './OrderPreview.module.css';
 
@@ -54,22 +52,33 @@ export default function OrderPreview() {
     return () => abortController.abort();
   }, []);
 
+  const PDFToolbar = () => (
+    <div className={styles.toolbar_container}>
+      <Button
+        className={styles.toolbar_button}
+        onClick={() => navigate(-1)}
+        variant="unstyled"
+        title={appStrings?.back}
+      >
+        <ArrowLeft size={22} />
+      </Button>
+      <DownloadPDF fileName={`Orden-${order?.order}-${project?.name}`}>
+        <OrderReport
+          project={project!}
+          order={order!}
+          noteValue={noteValue}
+          setNoteValue={setNoteValue}
+          pdfMode={true}
+        ></OrderReport>
+      </DownloadPDF>
+    </div>
+  );
+
   return (
     <>
       {project && order ? (
         <div className={`${styles.page_container}`}>
-          <div className={composePreview('back-button-container')}>
-            <Button
-              className={styles.back_button}
-              onClick={() => navigate(-1)}
-              variant="solid"
-              px={0}
-              shape="rectangular"
-              title={appStrings?.back}
-            >
-              <CaretLeft size={24} />
-            </Button>
-          </div>
+          <PDFToolbar />
           <OrderReport
             project={project}
             order={order}
@@ -77,15 +86,6 @@ export default function OrderPreview() {
             setNoteValue={setNoteValue}
             pdfMode={false}
           ></OrderReport>
-          <DownloadPDF fileName={`Orden-${order.order}-${project.name}`}>
-            <OrderReport
-              project={project}
-              order={order}
-              noteValue={noteValue}
-              setNoteValue={setNoteValue}
-              pdfMode={true}
-            ></OrderReport>
-          </DownloadPDF>
         </div>
       ) : (
         <Skeleton className={styles.page_container} height={'95%'} />

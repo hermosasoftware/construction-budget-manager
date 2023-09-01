@@ -3,7 +3,17 @@
   width: 210mm;
 }
 
-.back_button {
+.toolbar_container {
+  position: fixed;
+  top: 0px;
+  background-color: var(--chakra-colors-green-dark-text);
+  width: 210mm;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+}
+
+.toolbar_button {
+  max-height: 32px;
   color: var(--chakra-colors-green-light-text) !important;
-  background-color: var(--chakra-colors-green-light-background) !important;
 }
