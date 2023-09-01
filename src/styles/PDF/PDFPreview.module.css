@@ -331,22 +331,20 @@ h1 {
   text-align: left;
   background: #fff;
   color: #222;
-  padding: 40px 35px;
+  padding: 40px 40px;
   box-shadow: 0 0 17px 0 rgba(16, 40, 73, 0.09);
 }
 
 .download-pdf {
-  position: fixed;
-  top: 40px;
-  margin-left: 750px;
-  width: 40px;
-  height: 40px;
-  background-image: url('/src/assets/img/download.svg');
+  color: var(--chakra-colors-green-light-text) !important;
+  max-height: 32px;
   transition: opacity 0.2s ease-in-out;
 }
+
 .download-pdf.loading {
   opacity: 0.3;
 }
+
 .download-pdf a {
   display: block;
   position: absolute;
