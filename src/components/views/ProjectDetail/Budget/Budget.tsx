@@ -2,7 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Box, Divider, Heading, Text } from '@chakra-ui/react';
 import { CaretLeft, FilePdf } from 'phosphor-react';
 import * as yup from 'yup';
-import { useNavigate } from 'react-router-dom';
+import {
+  useLocation,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from 'react-router-dom';
 import { useAppSelector } from '../../../../redux/hooks';
 import TabGroup from '../../../common/TabGroup/TabGroup';
 import BudgetActivity from './BudgetActivity/BudgetActivity';
@@ -35,9 +40,15 @@ interface IBudgetView {
 
 const Budget: React.FC<IBudgetView> = props => {
   const { projectId, project, setProject } = props;
-  const [activity, setActivity] = useState<IBudgetActivity>();
-  const [selectedActivityTab, setSelectedActivityTab] = useState(false);
-  const [selectedTab, setSelectedTab] = useState('summary');
+  const selectedTab = useParams().tab as string;
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const budgetActivities = useAppSelector(
+    state => state.budgetActivities.budgetActivities,
+  );
+  const [activity, setActivity] = useState<IBudgetActivity>(
+    budgetActivities.find(row => row.id === searchParams.get('activityId'))!,
+  );
   const [editExchange, setEditExchange] = useState(false);
   const [editAdminFee, setEditAdminFee] = useState(false);
   const [isBudgetOpen, setIsBudgetOpen] = useState(project?.budgetOpen);
@@ -159,13 +170,7 @@ const Budget: React.FC<IBudgetView> = props => {
         <div className={styles.toolBar__container}>
           {activity ? (
             <div className={styles.tab__container}>
-              <Button
-                onClick={() => {
-                  setActivity(undefined);
-                  setSelectedActivityTab(true);
-                }}
-                variant={'ghost'}
-              >
+              <Button variant={'ghost'} onClick={() => navigate(-1)}>
                 <CaretLeft size={24} /> <Text>{activity.activity}</Text>
               </Button>
               <Divider orientation="vertical" />
@@ -179,9 +184,6 @@ const Budget: React.FC<IBudgetView> = props => {
                   },
                 ]}
                 variant="rounded"
-                onSelectedTabChange={activeTabs =>
-                  setSelectedTab(activeTabs[0])
-                }
               />
             </div>
           ) : (
@@ -191,19 +193,34 @@ const Budget: React.FC<IBudgetView> = props => {
                 {
                   id: 'summary',
                   name: appStrings.summary,
-                  selected: !selectedActivityTab,
+                  selected: selectedTab === 'summary',
                 },
                 {
                   id: 'activity',
                   name: appStrings.activities,
-                  selected: selectedActivityTab,
+                  selected: selectedTab === 'activity',
                 },
-                { id: 'labors', name: appStrings.labors },
-                { id: 'subcontracts', name: appStrings.subcontracts },
-                { id: 'others', name: appStrings.others },
+                {
+                  id: 'labors',
+                  name: appStrings.labors,
+                  selected: selectedTab === 'labors',
+                },
+                {
+                  id: 'subcontracts',
+                  name: appStrings.subcontracts,
+                  selected: selectedTab === 'subcontracts',
+                },
+                {
+                  id: 'others',
+                  name: appStrings.others,
+                  selected: selectedTab === 'others',
+                },
               ]}
               variant="rounded"
-              onSelectedTabChange={activeTabs => setSelectedTab(activeTabs[0])}
+              onSelectedTabChange={activeTabs =>
+                activeTabs[0] !== selectedTab &&
+                navigate(`/project-detail/${projectId}/budget/${activeTabs[0]}`)
+              }
             />
           )}
           <div className={styles.operators__container}>

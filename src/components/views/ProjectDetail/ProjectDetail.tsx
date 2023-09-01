@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Box, Flex, Text, useColorModeValue } from '@chakra-ui/react';
-import { useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import TabGroup from '../../common/TabGroup/TabGroup';
 import { IProject } from '../../../types/project';
 import ExpensesReport from './ExpensesReport/ExpensesReport';
@@ -45,9 +45,11 @@ const defaultProjectData = {
 };
 
 export default function Projects() {
-  const [selectedTab, setSelectedTab] = useState('budget');
-  const [project, setProject] = useState<IProject>(defaultProjectData);
   const projectId = useParams().id as string;
+  const selectedTab = useParams().view as string;
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [project, setProject] = useState<IProject>(defaultProjectData);
   const appStrings = useAppSelector(state => state.settings.appStrings);
   const projects = useAppSelector(state => state.projects.projects);
   const dispatch = useAppDispatch();
@@ -371,34 +373,52 @@ export default function Projects() {
   }, [projects]);
 
   return (
-    <div className={`container ${styles.projects_container}`}>
+    <div
+      key={location.key}
+      className={`container ${styles.projects_container}`}
+    >
       <Header />
       <TabGroup
         className={`${styles.tabs}`}
         tabs={[
-          { id: 'budget', name: appStrings.budget, selected: true },
+          {
+            id: 'budget',
+            name: appStrings.budget,
+            selected: selectedTab === 'budget',
+          },
           {
             id: 'extras',
             name: appStrings.extras,
             isDisable: project?.budgetOpen,
+            selected: selectedTab === 'extras',
           },
           {
             id: 'orders',
             name: appStrings.orders,
             isDisable: project?.budgetOpen,
+            selected: selectedTab === 'orders',
           },
           {
             id: 'invoicing',
             name: appStrings.invoicing,
             isDisable: project?.budgetOpen,
+            selected: selectedTab === 'invoicing',
           },
           {
             id: 'expenses',
             name: appStrings.expensesReport,
             isDisable: project?.budgetOpen,
+            selected: selectedTab === 'expenses',
           },
         ]}
-        onSelectedTabChange={activeTabs => setSelectedTab(activeTabs[0])}
+        onSelectedTabChange={activeTabs => {
+          if (activeTabs[0] !== selectedTab)
+            if (activeTabs[0] === 'budget' || activeTabs[0] === 'extras') {
+              navigate(`/project-detail/${projectId}/${activeTabs[0]}/summary`);
+            } else {
+              navigate(`/project-detail/${projectId}/${activeTabs[0]}`);
+            }
+        }}
       />
       {selectedTab === 'budget' ? (
         <Budget

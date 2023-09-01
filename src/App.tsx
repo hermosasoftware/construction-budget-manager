@@ -43,7 +43,11 @@ function App() {
               element={<AuthRoute component={Materials} />}
             />
             <Route
-              path="/project-detail/:id"
+              path="/project-detail/:id/:view"
+              element={<AuthRoute component={ProjectDetail} />}
+            />
+            <Route
+              path="/project-detail/:id/:view/:tab"
               element={<AuthRoute component={ProjectDetail} />}
             />
           </Route>

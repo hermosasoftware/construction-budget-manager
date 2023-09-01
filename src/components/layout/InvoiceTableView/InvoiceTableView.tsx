@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Box,
   Center,
@@ -89,6 +90,7 @@ const InvoiceTableView = <T extends TObject>(props: ITableProps<T>) => {
     usePagination,
     showTotals = false,
   } = props;
+  const [searchParams, setSearchParams] = useSearchParams();
   const [rowChildVisible, setRowChildVisible] = useState<boolean>(false);
   const [selectedRow, setSelectedRow] = useState<string | number>('');
   const { colorMode } = useColorMode();
@@ -96,7 +98,9 @@ const InvoiceTableView = <T extends TObject>(props: ITableProps<T>) => {
 
   const itemsPerPage = useAppSelector(state => state.settings.itemsPerPage);
 
-  const [currentPage, setCurrentPage] = useState<number>(0);
+  const [currentPage, setCurrentPage] = useState<number>(
+    Number(searchParams.get('page')) | 0,
+  );
 
   const [filteredCount, setFilteredCount] = useState<number>(
     props.items?.length,
@@ -140,6 +144,7 @@ const InvoiceTableView = <T extends TObject>(props: ITableProps<T>) => {
     column === sortBy ? setSortAscending(!sortAscending) : setSortBy(column);
 
   const handleOnPageChange = (pageNumber: number, itemsPerPage: number) => {
+    setSearchParams({ page: pageNumber?.toString() });
     setCurrentPage(pageNumber);
   };
 
@@ -290,8 +295,8 @@ const InvoiceTableView = <T extends TObject>(props: ITableProps<T>) => {
   ]);
 
   React.useEffect(() => {
-    setCurrentPage(0);
-  }, [props.items?.length]);
+    setCurrentPage(Number(searchParams.get('page')) | 0);
+  }, [props.items?.length, searchParams]);
 
   return (
     <>
