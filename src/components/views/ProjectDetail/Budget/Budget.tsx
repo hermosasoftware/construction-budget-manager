@@ -164,7 +164,7 @@ const Budget: React.FC<IBudgetView> = props => {
         <div className={styles.toolBar__container}>
           {activity ? (
             <div className={styles.tab__container}>
-              <Button variant={'ghost'} onClick={() => navigate(-1)}>
+              <Button variant="ghost" onClick={() => navigate(-1)}>
                 <CaretLeft size={24} /> <Text>{activity.activity}</Text>
               </Button>
               <Divider orientation="vertical" />

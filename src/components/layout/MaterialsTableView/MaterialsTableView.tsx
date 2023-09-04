@@ -96,7 +96,7 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
   const itemsPerPage = useAppSelector(state => state.settings.itemsPerPage);
 
   const [currentPage, setCurrentPage] = useState<number>(
-    Math.max(0, Number(searchParams.get('page')) - 1 || 0),
+    Math.max(0, Number(searchParams.get('page')) - 1),
   );
 
   const [filteredCount, setFilteredCount] = useState<number>(
@@ -264,7 +264,7 @@ const MaterialsTableView = <T extends TObject>(props: ITableProps<T>) => {
   ]);
 
   React.useEffect(() => {
-    setCurrentPage(Math.max(0, Number(searchParams.get('page')) - 1 || 0));
+    setCurrentPage(Math.max(0, Number(searchParams.get('page')) - 1));
   }, [props.items?.length, searchParams]);
 
   return (

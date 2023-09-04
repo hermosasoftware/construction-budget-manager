@@ -1,7 +1,7 @@
 import { Box, Flex, Heading } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import * as yup from 'yup';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Button from '../../../common/Button/Button';
 import Modal from '../../../common/Modal/Modal';
 import SearchFilter, {
@@ -94,7 +94,7 @@ const Orders: React.FC<IOrdersView> = props => {
   const [selectedProduct, setSelectedProduct] = useState<IOrderProduct>(
     initialSelectedProductData,
   );
-  const [selectedTab, setSelectedTab] = useState('draft');
+  const selectedTab = useParams().tab as string;
   const [allActivities, setAllActivities] = useState<IActivity[]>([]);
   const [materialRef, setMaterialRef] = useState(initialMaterialRefData);
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
@@ -373,11 +373,22 @@ const Orders: React.FC<IOrdersView> = props => {
           <TabGroup
             className={styles.tabs}
             tabs={[
-              { id: 'pending', name: appStrings.pending, selected: true },
-              { id: 'sent', name: appStrings.sent },
+              {
+                id: 'pending',
+                name: appStrings.pending,
+                selected: selectedTab === 'pending',
+              },
+              {
+                id: 'sent',
+                name: appStrings.sent,
+                selected: selectedTab === 'sent',
+              },
             ]}
             variant="rounded"
-            onSelectedTabChange={activeTabs => setSelectedTab(activeTabs[0])}
+            onSelectedTabChange={activeTabs =>
+              activeTabs[0] !== selectedTab &&
+              navigate(`/project-detail/${projectId}/orders/${activeTabs[0]}`)
+            }
           />
         </div>
         <Flex marginBottom="5px" className={styles.p_10}>

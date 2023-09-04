@@ -59,6 +59,18 @@ export default function Projects() {
     setProject(elem);
   };
 
+  const onSelectedTabChange = (activeTabs: string[]) => {
+    if (activeTabs[0] !== selectedTab) {
+      if (activeTabs[0] === 'budget' || activeTabs[0] === 'extras') {
+        navigate(`/project-detail/${projectId}/${activeTabs[0]}/summary`);
+      } else if (activeTabs[0] === 'orders') {
+        navigate(`/project-detail/${projectId}/${activeTabs[0]}/pending`);
+      } else {
+        navigate(`/project-detail/${projectId}/${activeTabs[0]}`);
+      }
+    }
+  };
+
   const projectBudgetListener = () => {
     const successCallback = (response: Function) => {
       listenersList.push({
@@ -411,14 +423,7 @@ export default function Projects() {
             selected: selectedTab === 'expenses',
           },
         ]}
-        onSelectedTabChange={activeTabs => {
-          if (activeTabs[0] !== selectedTab)
-            if (activeTabs[0] === 'budget' || activeTabs[0] === 'extras') {
-              navigate(`/project-detail/${projectId}/${activeTabs[0]}/summary`);
-            } else {
-              navigate(`/project-detail/${projectId}/${activeTabs[0]}`);
-            }
-        }}
+        onSelectedTabChange={onSelectedTabChange}
       />
       {selectedTab === 'budget' ? (
         <Budget

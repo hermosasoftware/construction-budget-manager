@@ -99,7 +99,7 @@ const InvoiceTableView = <T extends TObject>(props: ITableProps<T>) => {
   const itemsPerPage = useAppSelector(state => state.settings.itemsPerPage);
 
   const [currentPage, setCurrentPage] = useState<number>(
-    Math.max(0, Number(searchParams.get('page')) - 1 || 0),
+    Math.max(0, Number(searchParams.get('page')) - 1),
   );
 
   const [filteredCount, setFilteredCount] = useState<number>(
@@ -107,7 +107,7 @@ const InvoiceTableView = <T extends TObject>(props: ITableProps<T>) => {
   );
 
   const [sortBy, setSortBy] = useState<string>('createdAt');
-  const [sortAscending, setSortAscending] = useState<boolean>(true);
+  const [sortAscending, setSortAscending] = useState<boolean>(false);
 
   const sortData = (data: TTableItem<T>[]) =>
     data?.sort((a: any, b: any) => {
@@ -295,7 +295,7 @@ const InvoiceTableView = <T extends TObject>(props: ITableProps<T>) => {
   ]);
 
   React.useEffect(() => {
-    setCurrentPage(Math.max(0, Number(searchParams.get('page')) - 1 || 0));
+    setCurrentPage(Math.max(0, Number(searchParams.get('page')) - 1));
   }, [props.items?.length, searchParams]);
 
   return (
