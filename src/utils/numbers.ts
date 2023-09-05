@@ -17,11 +17,11 @@ export const dolarFormat = (number: number) =>
   });
 
 export const isCurrency = (text: string) =>
-  Number(text.includes('₡') || text.includes('$'));
+  Number(text?.includes('₡') || text?.includes('$'));
 
 export const currencyToNumber = (text: string) =>
   Number(
-    text.includes('₡')
-      ? text.replace(/[^0-9,-]/g, '').replace(/,/g, '.')
-      : text.replace(/[^0-9-.]/g, ''),
+    text?.includes('₡')
+      ? text?.replace(/[^0-9,-]/g, '')?.replace(/,/g, '.')
+      : text?.replace(/[^0-9-.]/g, ''),
   );

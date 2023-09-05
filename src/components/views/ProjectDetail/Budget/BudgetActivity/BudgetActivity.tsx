@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Flex, Heading } from '@chakra-ui/react';
 import * as yup from 'yup';
 import Button from '../../../../common/Button/Button';
@@ -61,6 +62,7 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [search, setSearch] = useState<Search>(initialSearchData);
   const { projectId, isBudgetOpen, budget, setActivity } = props;
+  const navigate = useNavigate();
   const appStrings = useAppSelector(state => state.settings.appStrings);
   const budgetActivities = useAppSelector(
     state => state.budgetActivities.budgetActivities,
@@ -124,9 +126,9 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
 
   const handleRowClick = (event: MouseEvent) => {
     const row = event.target as HTMLInputElement;
-    const projectId = row.id;
-    const activity = budgetActivities.find(row => row.id === projectId);
-    setActivity({ ...activity, date: new Date(activity!.date) });
+    navigate(
+      `/project-detail/${projectId}/budget/materials?activityId=${row.id}`,
+    );
   };
 
   const handleOnSubmit = async (budgetActivity: IBudgetActivity) => {

@@ -74,7 +74,7 @@ export default function Projects() {
   const handleRowClick = (event: MouseEvent) => {
     const row = event.target as HTMLInputElement;
     const projectId = row.id;
-    navigate(`/project-detail/${projectId}`);
+    navigate(`/project-detail/${projectId}/budget/summary`);
   };
 
   const editButton = async (projectId: string) => {

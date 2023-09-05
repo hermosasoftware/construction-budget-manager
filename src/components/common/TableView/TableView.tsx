@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Box,
   Center,
@@ -80,11 +81,14 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
     usePagination,
     showTotals = false,
   } = props;
+  const [searchParams, setSearchParams] = useSearchParams();
   const appStrings = useAppSelector(state => state.settings.appStrings);
   const [rowChildVisible, seTrowChildVisible] = useState<boolean>(false);
   const [selectedRow, setSelectedRow] = useState<string | number>('');
 
-  const [currentPage, setCurrentPage] = useState<number>(0);
+  const [currentPage, setCurrentPage] = useState<number>(
+    Math.max(0, Number(searchParams.get('page')) - 1),
+  );
 
   const itemsPerPage = useAppSelector(state => state.settings.itemsPerPage);
 
@@ -130,6 +134,7 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
     column === sortBy ? setSortAscending(!sortAscending) : setSortBy(column);
 
   const handleOnPageChange = (pageNumber: number, itemsPerPage: number) => {
+    setSearchParams({ page: (pageNumber + 1)?.toString() });
     setCurrentPage(pageNumber);
   };
 
@@ -183,8 +188,8 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
   ]);
 
   React.useEffect(() => {
-    setCurrentPage(0);
-  }, [props.items?.length]);
+    setCurrentPage(Math.max(0, Number(searchParams.get('page')) - 1));
+  }, [props.items?.length, searchParams]);
 
   return (
     <>

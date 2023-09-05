@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Box,
   Center,
@@ -91,19 +92,22 @@ const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
     usePagination,
     showTotals = false,
   } = props;
+  const [searchParams, setSearchParams] = useSearchParams();
   const [rowChildVisible, setRowChildVisible] = useState<boolean>(false);
   const [selectedRow, setSelectedRow] = useState<string | number>('');
   const { colorMode } = useColorMode();
   const appStrings = useAppSelector(state => state.settings.appStrings);
   const itemsPerPage = useAppSelector(state => state.settings.itemsPerPage);
 
-  const [currentPage, setCurrentPage] = useState<number>(0);
+  const [currentPage, setCurrentPage] = useState<number>(
+    Math.max(0, Number(searchParams.get('page')) - 1),
+  );
   const [filteredCount, setFilteredCount] = useState<number>(
     props.items?.length,
   );
 
   const [sortBy, setSortBy] = useState<string>('createdAt');
-  const [sortAscending, setSortAscending] = useState<boolean>(true);
+  const [sortAscending, setSortAscending] = useState<boolean>(false);
 
   const sortData = (data: TTableItem<T>[]) =>
     data?.sort((a: any, b: any) => {
@@ -286,10 +290,11 @@ const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
   ]);
 
   React.useEffect(() => {
-    setCurrentPage(0);
-  }, [props.items?.length]);
+    setCurrentPage(Math.max(0, Number(searchParams.get('page')) - 1));
+  }, [props.items?.length, searchParams]);
 
   const handleOnPageChange = (pageNumber: number, itemsPerPage: number) => {
+    setSearchParams({ page: (pageNumber + 1)?.toString() });
     setCurrentPage(pageNumber);
   };
 

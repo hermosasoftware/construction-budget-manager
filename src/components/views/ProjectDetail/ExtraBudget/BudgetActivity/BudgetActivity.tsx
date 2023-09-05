@@ -150,9 +150,9 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
 
   const handleRowClick = (event: MouseEvent) => {
     const row = event.target as HTMLInputElement;
-    const projectId = row.id;
-    const activity = extraActivities.find(row => row.id === projectId);
-    setActivity({ ...activity, date: new Date(activity!.date) });
+    navigate(
+      `/project-detail/${projectId}/extras/summary?activityId=${row.id}`,
+    );
   };
 
   const handleOnSubmit = async (extraBudgetActivity: IBudgetActivity) => {

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, Divider, Text } from '@chakra-ui/react';
 import * as yup from 'yup';
 import { CaretLeft, FilePdf } from 'phosphor-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../../../redux/hooks';
 import TabGroup from '../../../common/TabGroup/TabGroup';
 import BudgetMaterial from './BudgetMaterial/BudgetMaterial';
@@ -39,17 +39,20 @@ interface IExtraBudgetView {
 
 const ExtraBudget: React.FC<IExtraBudgetView> = props => {
   const { projectId } = props;
-  const [selectedTab, setSelectedTab] = useState('summary');
-  const [selectedActivityTab, setSelectedActivityTab] = useState(false);
+  const selectedTab = useParams().tab as string;
+  const [searchParams] = useSearchParams();
   const [editExchange, setEditExchange] = useState(false);
   const [editAdminFee, setEditAdminFee] = useState(false);
-  const [activity, setActivity] = useState<IBudgetActivity>();
+
   const appStrings = useAppSelector(state => state.settings.appStrings);
   const projectExtraBudget = useAppSelector(
     state => state.projectExtraBudget.projectExtraBudget,
   );
   const extraActivities = useAppSelector(
     state => state.extraActivities.extraActivities,
+  );
+  const [activity, setActivity] = useState<IBudgetActivity>(
+    extraActivities.find(row => row.id === searchParams.get('activityId'))!,
   );
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -227,10 +230,6 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
     activity && checkListeners(activity.id);
   }, [activity]);
 
-  useEffect(() => {
-    activity && setActivity(extraActivities.find(a => a.id === activity.id));
-  }, [extraActivities]);
-
   const contentToDisplay = (option: string) => {
     const contentOptions: any = activity
       ? {
@@ -272,13 +271,7 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
           {activity ? (
             <>
               <div className={styles.tab__container}>
-                <Button
-                  onClick={() => {
-                    setActivity(undefined);
-                    setSelectedActivityTab(true);
-                  }}
-                  variant={'ghost'}
-                >
+                <Button variant="ghost" onClick={() => navigate(-1)}>
                   <CaretLeft size={24} /> <Text>{activity.activity}</Text>
                 </Button>
                 <Divider orientation="vertical" />
@@ -288,16 +281,35 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
                     {
                       id: 'summary',
                       name: appStrings.summary,
-                      selected: true,
+                      selected: selectedTab === 'summary',
                     },
-                    { id: 'materials', name: appStrings.materials },
-                    { id: 'labors', name: appStrings.labors },
-                    { id: 'subcontracts', name: appStrings.subcontracts },
-                    { id: 'others', name: appStrings.others },
+                    {
+                      id: 'materials',
+                      name: appStrings.materials,
+                      selected: selectedTab === 'materials',
+                    },
+                    {
+                      id: 'labors',
+                      name: appStrings.labors,
+                      selected: selectedTab === 'labors',
+                    },
+                    {
+                      id: 'subcontracts',
+                      name: appStrings.subcontracts,
+                      selected: selectedTab === 'subcontracts',
+                    },
+                    {
+                      id: 'others',
+                      name: appStrings.others,
+                      selected: selectedTab === 'others',
+                    },
                   ]}
                   variant="rounded"
                   onSelectedTabChange={activeTabs =>
-                    setSelectedTab(activeTabs[0])
+                    activeTabs[0] !== selectedTab &&
+                    navigate(
+                      `/project-detail/${projectId}/extras/${activeTabs[0]}?activityId=${activity.id}`,
+                    )
                   }
                 />
               </div>
@@ -347,16 +359,19 @@ const ExtraBudget: React.FC<IExtraBudgetView> = props => {
                 {
                   id: 'summary',
                   name: appStrings.summary,
-                  selected: !selectedActivityTab,
+                  selected: selectedTab === 'summary',
                 },
                 {
                   id: 'activity',
                   name: appStrings.activities,
-                  selected: selectedActivityTab,
+                  selected: selectedTab === 'activity',
                 },
               ]}
               variant="rounded"
-              onSelectedTabChange={activeTabs => setSelectedTab(activeTabs[0])}
+              onSelectedTabChange={activeTabs =>
+                activeTabs[0] !== selectedTab &&
+                navigate(`/project-detail/${projectId}/extras/${activeTabs[0]}`)
+              }
             />
           )}
         </div>
