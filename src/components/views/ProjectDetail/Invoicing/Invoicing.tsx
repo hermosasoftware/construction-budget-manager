@@ -381,6 +381,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
     invoice: yup.string().required(appStrings?.requiredField),
     activity: yup.string().required(appStrings?.requiredField),
     supplier: yup.string().required(appStrings?.requiredField),
+    date: yup.date().required(appStrings?.requiredField),
     pdfFile: yup.mixed().optional(),
   });
 
