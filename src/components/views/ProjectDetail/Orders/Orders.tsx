@@ -292,7 +292,12 @@ const Orders: React.FC<IOrdersView> = props => {
     };
     const serviceCallParameters = {
       projectId,
-      projectOrder: { ...rest, activity: activity.value, sentStatus: isSent },
+      projectOrder: {
+        ...rest,
+        order: +rest.order,
+        activity: activity.value,
+        sentStatus: isSent,
+      },
       appStrings,
       successCallback,
     };
@@ -435,12 +440,7 @@ const Orders: React.FC<IOrdersView> = props => {
                 }
                 onSubmit={handleOnSubmit}
               >
-                <Input
-                  name="order"
-                  type="number"
-                  label={appStrings.order}
-                  isDisabled
-                />
+                <Input name="order" type="number" label={appStrings.order} />
                 <SearchSelect
                   name="activity"
                   label={appStrings.activity}
