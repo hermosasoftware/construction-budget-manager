@@ -11,6 +11,7 @@ import projectExpenses from './reducers/projectExpensesSlice';
 import projectInvoices from './reducers/projectInvoicesSlice';
 import projectOrders from './reducers/projectOrdersSlice';
 import budgetActivities from './reducers/budgetActivitiesSlice';
+import budgetMaterials from './reducers/budgetMaterialsSlice';
 import budgetLabors from './reducers/budgetLaborsSlice';
 import budgetSubcontracts from './reducers/budgetSubcontractsSlice';
 import budgetOthers from './reducers/budgetOthersSlice';
@@ -35,6 +36,7 @@ export const store = configureStore({
     projectInvoices,
     projectOrders,
     budgetActivities,
+    budgetMaterials,
     budgetLabors,
     budgetSubcontracts,
     budgetOthers,

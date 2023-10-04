@@ -294,7 +294,8 @@ const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
   }, [props.items?.length, searchParams]);
 
   const handleOnPageChange = (pageNumber: number, itemsPerPage: number) => {
-    setSearchParams({ page: (pageNumber + 1)?.toString() });
+    searchParams.set('page', (pageNumber + 1)?.toString());
+    setSearchParams(searchParams);
     setCurrentPage(pageNumber);
   };
 
