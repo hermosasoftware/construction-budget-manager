@@ -3,7 +3,7 @@ import { Box, Divider, Heading, Text } from '@chakra-ui/react';
 import { CaretLeft, FilePdf } from 'phosphor-react';
 import * as yup from 'yup';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { useAppSelector } from '../../../../redux/hooks';
+import { useAppDispatch, useAppSelector } from '../../../../redux/hooks';
 import TabGroup from '../../../common/TabGroup/TabGroup';
 import BudgetActivity from './BudgetActivity/BudgetActivity';
 import BudgetMaterial from './BudgetMaterial/BudgetMaterial';
@@ -24,6 +24,9 @@ import { IProject } from '../../../../types/project';
 import Button from '../../../common/Button/Button';
 import Modal from '../../../common/Modal/Modal';
 import AdminFeeInput from '../../../common/AdminFeeInput';
+import { listenBudgetMaterials } from '../../../../services/BudgetMaterialsService';
+import { listenersList } from '../../../../services/herperService';
+import { changeBudgetMaterials } from '../../../../redux/reducers/budgetMaterialsSlice';
 
 import styles from './Budget.module.css';
 
@@ -51,7 +54,60 @@ const Budget: React.FC<IBudgetView> = props => {
   const projectBudget = useAppSelector(
     state => state.projectBudget.projectBudget,
   );
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
+
+  const budgetMaterialsListener = (activityId: string) => {
+    const successCallback = (response: Function) => {
+      listenersList.push({
+        id: activityId,
+        name: 'budgetMaterials',
+        stop: response,
+      });
+    };
+    listenBudgetMaterials({
+      projectId,
+      activityId,
+      appStrings,
+      successCallback,
+    });
+  };
+
+  const checkListeners = (activityId: string) => {
+    const band = startListeners(activityId);
+    !band && replaceListeners(activityId);
+  };
+
+  const startListeners = (activityId: string) => {
+    if (!listenersList.some(listener => listener.name === 'budgetMaterials')) {
+      budgetMaterialsListener(activityId);
+      return true;
+    }
+    return false;
+  };
+
+  const replaceListeners = (activityId: string) => {
+    const listeners = [...listenersList];
+    listeners.forEach(listener => {
+      if (listener.id && listener.id !== activityId) {
+        switch (listener.name) {
+          case 'budgetMaterials':
+            listener.stop();
+            removeListenerItem(listener.id);
+            dispatch(changeBudgetMaterials([]));
+            budgetMaterialsListener(activityId);
+            break;
+          default:
+            break;
+        }
+      }
+    });
+  };
+
+  const removeListenerItem = (id: string) => {
+    const index = listenersList.findIndex(e => e.id === id);
+    listenersList.splice(index, 1);
+  };
 
   const handleOnSubmitExchange = async (projectBudget: IProjectBudget) => {
     const successCallback = () => {
@@ -108,6 +164,10 @@ const Budget: React.FC<IBudgetView> = props => {
       setIsBudgetOpen(project.budgetOpen);
     }
   }, [project]);
+
+  useEffect(() => {
+    activity && checkListeners(activity.id);
+  }, [activity]);
 
   const contentToDisplay = (option: string) => {
     const contentOptions: any = activity

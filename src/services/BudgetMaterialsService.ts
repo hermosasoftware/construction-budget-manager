@@ -8,13 +8,168 @@ import {
   writeBatch,
   serverTimestamp,
   orderBy,
+  onSnapshot,
+  FirestoreError,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { db } from '../config/firebaseConfig';
 import { IBudgetMaterial } from '../types/budgetMaterial';
 import { IService } from '../types/service';
 import { toastSuccess, toastError } from '../utils/toast';
-import { ISubMaterial } from '../types/collections';
+import { IMaterialBreakdown, ISubMaterial } from '../types/collections';
+import {
+  changeBudgetMaterials,
+  insertBudgetMaterial,
+  modifyBudgetMaterial,
+  removeBudgetMaterial,
+} from '../redux/reducers/budgetMaterialsSlice';
+import { store } from '../redux/store';
+import { listenersList } from './herperService';
+
+export const listenBudgetMaterials = ({
+  projectId,
+  activityId,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: { projectId: string; activityId: string } & IService) => {
+  try {
+    const matRef = collection(
+      db,
+      'projects',
+      projectId,
+      'projectBudget',
+      activityId,
+      'budgetMaterials',
+    );
+    const matQuery = query(matRef, orderBy('createdAt'));
+    const { dispatch, getState } = store;
+
+    const unsubscribe = onSnapshot(
+      matQuery,
+      querySnapshot => {
+        let materialsList = [...getState().budgetMaterials.budgetMaterials];
+
+        const projectBudgetMaterials: any = querySnapshot
+          .docChanges()
+          .map(async change => {
+            const elem = {
+              ...change.doc.data(),
+              id: change.doc.id,
+              subtotal: change.doc.data().cost * change.doc.data().quantity,
+              createdAt: change.doc.data()?.createdAt?.toDate()?.toISOString(),
+              updatedAt: change.doc.data()?.updatedAt?.toDate()?.toISOString(),
+            } as IBudgetMaterial;
+
+            if (change.type === 'added') {
+              return changeTypeAdded(dispatch, materialsList, matRef, elem);
+            }
+            if (change.type === 'modified') {
+              return changeTypeModified(dispatch, matRef, elem);
+            }
+            if (change.type === 'removed') {
+              return changeTypeRemoved(dispatch, elem);
+            }
+          });
+
+        Promise.all(projectBudgetMaterials).then(result => {
+          result.flat().length && dispatch(changeBudgetMaterials(result));
+        });
+      },
+      error => {
+        const index = listenersList.findIndex(
+          e => e.name === 'budgetMaterials',
+        );
+        if (index !== -1) {
+          listenersList.splice(index, 1);
+          dispatch(changeBudgetMaterials([]));
+        }
+        throw error;
+      },
+    );
+    successCallback && successCallback(unsubscribe);
+  } catch (e) {
+    let errorMessage = appStrings.genericError;
+    if (e instanceof FirebaseError || e instanceof FirestoreError) {
+      errorMessage = e.message;
+    }
+    toastError(appStrings.getInformationError, errorMessage);
+    errorCallback && errorCallback();
+  }
+};
+
+const changeTypeAdded = async (
+  dispatch: any,
+  materialsList: IMaterialBreakdown[],
+  matRef: any,
+  elem: IBudgetMaterial,
+) => {
+  const subMaterialQ = query(
+    collection(matRef, elem.id, 'subMaterials'),
+    orderBy('createdAt'),
+  );
+  const subMaterials = await getDocs(subMaterialQ);
+  const data = subMaterials.docs.map(doc => ({
+    ...doc.data(),
+    id: doc.id,
+    createdAt: doc.data()?.createdAt?.toDate()?.toISOString(),
+    updatedAt: doc.data()?.updatedAt?.toDate()?.toISOString(),
+  })) as ISubMaterial[];
+
+  if (materialsList.length > 0) {
+    dispatch(
+      insertBudgetMaterial({
+        id: elem.id,
+        material: elem,
+        subMaterials: data,
+      }),
+    );
+    return [];
+  } else {
+    return {
+      id: elem.id,
+      material: elem,
+      subMaterials: data,
+    };
+  }
+};
+
+const changeTypeModified = async (
+  dispatch: any,
+  matRef: any,
+  elem: IBudgetMaterial,
+) => {
+  const subMaterialQ = query(
+    collection(matRef, elem.id, 'subMaterials'),
+    orderBy('createdAt'),
+  );
+  const subMaterials = await getDocs(subMaterialQ);
+  const data = subMaterials.docs.map(doc => ({
+    ...doc.data(),
+    id: doc.id,
+    createdAt: doc.data()?.createdAt?.toDate()?.toISOString(),
+    updatedAt: doc.data()?.updatedAt?.toDate()?.toISOString(),
+  })) as ISubMaterial[];
+  dispatch(
+    modifyBudgetMaterial({
+      id: elem.id,
+      material: elem,
+      subMaterials: data,
+    }),
+  );
+  return [];
+};
+
+const changeTypeRemoved = async (dispatch: any, elem: IBudgetMaterial) => {
+  dispatch(
+    removeBudgetMaterial({
+      id: elem.id,
+      material: elem,
+      subMaterials: [],
+    }),
+  );
+  return [];
+};
 
 export const getBudgetMaterials = async ({
   projectId,

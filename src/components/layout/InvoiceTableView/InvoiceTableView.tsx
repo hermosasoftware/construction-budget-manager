@@ -144,7 +144,8 @@ const InvoiceTableView = <T extends TObject>(props: ITableProps<T>) => {
     column === sortBy ? setSortAscending(!sortAscending) : setSortBy(column);
 
   const handleOnPageChange = (pageNumber: number, itemsPerPage: number) => {
-    setSearchParams({ page: (pageNumber + 1)?.toString() });
+    searchParams.set('page', (pageNumber + 1)?.toString());
+    setSearchParams(searchParams);
     setCurrentPage(pageNumber);
   };
 

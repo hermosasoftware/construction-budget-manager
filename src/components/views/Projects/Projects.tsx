@@ -13,10 +13,8 @@ import {
 import TabGroup from '../../common/TabGroup/TabGroup';
 import TableView, { TTableHeader } from '../../common/TableView/TableView';
 import Form, { Input, Select } from '../../common/Form';
-import AlertDialog from '../../common/AlertDialog/AlertDialog';
 import {
   createProject,
-  deleteProject,
   getProjectById,
   updateProject,
 } from '../../../services/ProjectService';
@@ -48,7 +46,6 @@ export default function Projects() {
   const [selectedItem, setSelectedItem] = useState<IProject>(
     initialSelectedItemData,
   );
-  const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [search, setSearch] = useState<Search>(initialSearchData);
   const appStrings = useAppSelector(state => state.settings.appStrings);
@@ -83,18 +80,6 @@ export default function Projects() {
       setIsModalOpen(true);
     };
     await getProjectById({ projectId, appStrings, successCallback });
-  };
-
-  const deleteButton = async () => {
-    const successCallback = () => {
-      setSelectedItem(initialSelectedItemData);
-      setIsAlertDialogOpen(false);
-    };
-    await deleteProject({
-      projectId: selectedItem.id,
-      appStrings,
-      successCallback,
-    });
   };
 
   const handleOnSubmit = async (project: IProject) => {
@@ -201,26 +186,12 @@ export default function Projects() {
               </Modal>
             </div>
           </Flex>
-          <AlertDialog
-            title={appStrings.deleteProject}
-            content={appStrings.deleteWarning}
-            isOpen={isAlertDialogOpen}
-            onClose={() => {
-              setSelectedItem(initialSelectedItemData);
-              setIsAlertDialogOpen(false);
-            }}
-            onSubmit={() => deleteButton()}
-          />
           <TableView
             headers={tableHeader}
             items={formatTableData()}
             filter={value => handleFilterSearch(value, search)}
             handleRowClick={handleRowClick}
             onClickEdit={id => editButton(id)}
-            onClickDelete={id => {
-              setSelectedItem({ ...selectedItem, id: id });
-              setIsAlertDialogOpen(true);
-            }}
             usePagination={!search?.searchTerm?.length}
           />
           {!projects.length ? <h1>{appStrings.noRecords}</h1> : null}

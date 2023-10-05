@@ -134,7 +134,8 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
     column === sortBy ? setSortAscending(!sortAscending) : setSortBy(column);
 
   const handleOnPageChange = (pageNumber: number, itemsPerPage: number) => {
-    setSearchParams({ page: (pageNumber + 1)?.toString() });
+    searchParams.set('page', (pageNumber + 1)?.toString());
+    setSearchParams(searchParams);
     setCurrentPage(pageNumber);
   };
 
@@ -240,7 +241,7 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
                       {row[header.name]}
                     </Td>
                   ))}
-                  {onClickEdit && onClickDelete && !hideOptions ? (
+                  {(onClickEdit || onClickDelete) && !hideOptions ? (
                     <Td
                       id={row.id?.toString()}
                       className={`${styles.td}`}
@@ -257,18 +258,22 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
                           </Center>
                         </MenuButton>
                         <MenuList>
-                          <MenuItem
-                            onClick={() => onClickEdit(row.id.toString())}
-                          >
-                            {appStrings?.edit}
-                            <Spacer />
-                            <Pencil />
-                          </MenuItem>
-                          <MenuItem
-                            onClick={() => onClickDelete(row.id.toString())}
-                          >
-                            {appStrings?.delete} <Spacer /> <Trash />
-                          </MenuItem>
+                          {onClickEdit && (
+                            <MenuItem
+                              onClick={() => onClickEdit(row.id.toString())}
+                            >
+                              {appStrings?.edit}
+                              <Spacer />
+                              <Pencil />
+                            </MenuItem>
+                          )}
+                          {onClickDelete && (
+                            <MenuItem
+                              onClick={() => onClickDelete(row.id.toString())}
+                            >
+                              {appStrings?.delete} <Spacer /> <Trash />
+                            </MenuItem>
+                          )}
                           {onClickExportPDF && (
                             <MenuItem
                               onClick={() =>
