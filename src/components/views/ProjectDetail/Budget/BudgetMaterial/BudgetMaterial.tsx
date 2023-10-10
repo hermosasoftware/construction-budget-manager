@@ -259,19 +259,20 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
   const validationSchema = yup.object().shape({
     name: yup.string().required(appStrings?.requiredField),
     unit: yup.string().required(appStrings?.requiredField),
-    cost: yup.string().when('hasSubMaterials', (val, schema) => {
+    cost: yup.number().when('hasSubMaterials', (val, schema) => {
       if (val) {
-        return yup.string().notRequired();
+        return yup.number().min(0).notRequired();
       }
-      return yup.string().required();
+      return yup.number().min(0).required();
     }),
+    quantity: yup.number().min(0).required(appStrings?.requiredField),
   });
 
   const subMaterialValSchema = yup.object().shape({
     name: yup.string().required(appStrings?.requiredField),
     unit: yup.string().required(appStrings?.requiredField),
-    cost: yup.string().required(appStrings?.requiredField),
-    quantity: yup.string().required(appStrings?.requiredField),
+    cost: yup.number().min(0).required(appStrings?.requiredField),
+    quantity: yup.number().min(0).required(appStrings?.requiredField),
   });
 
   return (
@@ -381,8 +382,12 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
                 placeholder={appStrings.materialName}
               />
               <Input name="unit" label={appStrings.unit} />
-              <Input name="quantity" label={appStrings.quantity} />
-              <Input name="cost" type={'number'} label={appStrings.cost} />
+              <Input
+                name="quantity"
+                type="number"
+                label={appStrings.quantity}
+              />
+              <Input name="cost" type="number" label={appStrings.cost} />
               <br />
               <Button width="full" type="submit">
                 {appStrings.submit}
