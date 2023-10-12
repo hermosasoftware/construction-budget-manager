@@ -259,19 +259,20 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
   const validationSchema = yup.object().shape({
     name: yup.string().required(appStrings?.requiredField),
     unit: yup.string().required(appStrings?.requiredField),
-    cost: yup.string().when('hasSubMaterials', (val, schema) => {
+    cost: yup.number().when('hasSubMaterials', (val, schema) => {
       if (val) {
-        return yup.string().notRequired();
+        return yup.number().min(0).notRequired();
       }
-      return yup.string().required();
+      return yup.number().min(0).required();
     }),
+    quantity: yup.number().min(0).required(appStrings?.requiredField),
   });
 
   const subMaterialValSchema = yup.object().shape({
     name: yup.string().required(appStrings?.requiredField),
     unit: yup.string().required(appStrings?.requiredField),
-    cost: yup.string().required(appStrings?.requiredField),
-    quantity: yup.string().required(appStrings?.requiredField),
+    cost: yup.number().min(0).required(appStrings?.requiredField),
+    quantity: yup.number().min(0).required(appStrings?.requiredField),
   });
 
   return (

@@ -378,7 +378,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
       value: yup.string().required(appStrings?.requiredField),
       label: yup.string().required(appStrings?.requiredField),
     }),
-    invoice: yup.string().required(appStrings?.requiredField),
+    invoice: yup.number().positive().required(appStrings?.requiredField),
     activity: yup.string().required(appStrings?.requiredField),
     supplier: yup.string().required(appStrings?.requiredField),
     date: yup.date().required(appStrings?.requiredField),
@@ -390,8 +390,8 @@ const Invoicing: React.FC<IInvoicing> = props => {
       value: yup.string().required(appStrings?.requiredField),
       label: yup.string().required(appStrings?.requiredField),
     }),
-    quantity: yup.string().required(appStrings?.requiredField),
-    cost: yup.string().required(appStrings?.requiredField),
+    quantity: yup.number().min(0).required(appStrings?.requiredField),
+    cost: yup.number().min(0).required(appStrings?.requiredField),
     tax: yup.number().min(0).max(100).required(appStrings.required),
   });
 

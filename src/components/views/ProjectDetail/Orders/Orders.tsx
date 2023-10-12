@@ -341,7 +341,7 @@ const Orders: React.FC<IOrdersView> = props => {
 
   const validationSchema = yup.object().shape({
     order: yup.number().positive().required(appStrings?.requiredField),
-    proforma: yup.string().required(appStrings?.requiredField),
+    proforma: yup.number().positive().required(appStrings?.requiredField),
     activity: yup.object().shape({
       value: yup.string().required(appStrings?.requiredField),
       label: yup.string().required(appStrings?.requiredField),
@@ -352,8 +352,8 @@ const Orders: React.FC<IOrdersView> = props => {
 
   const productValSchema = yup.object().shape({
     description: yup.string().required(appStrings?.requiredField),
-    quantity: yup.string().required(appStrings?.requiredField),
-    cost: yup.string().required(appStrings?.requiredField),
+    quantity: yup.number().min(0).required(appStrings?.requiredField),
+    cost: yup.number().min(0).required(appStrings?.requiredField),
     tax: yup.number().min(0).max(100).required(appStrings.required),
   });
 
