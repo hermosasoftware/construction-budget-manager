@@ -344,6 +344,7 @@
   "uploadXML": "Upload XML",
   "validEmailRequired": "Valid email required",
   "value": "Value",
+  "valueAlreadyExists": "Value already exists",
   "verifyPassword": "Verify password",
   "withoutClients": "Without clients",
   "work": "Work",

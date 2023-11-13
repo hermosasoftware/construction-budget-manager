@@ -378,7 +378,16 @@ const Invoicing: React.FC<IInvoicing> = props => {
       value: yup.string().required(appStrings?.requiredField),
       label: yup.string().required(appStrings?.requiredField),
     }),
-    invoice: yup.number().positive().required(appStrings?.requiredField),
+    invoice: yup
+      .string()
+      .required(appStrings?.requiredField)
+      .test(
+        'invoice',
+        appStrings?.valueAlreadyExists,
+        val =>
+          !!selectedItem.id ||
+          !projectInvoices.find(a => a.invoice.slice(-8) === val),
+      ),
     activity: yup.string().required(appStrings?.requiredField),
     supplier: yup.string().required(appStrings?.requiredField),
     date: yup.date().required(appStrings?.requiredField),

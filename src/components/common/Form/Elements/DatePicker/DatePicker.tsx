@@ -71,7 +71,7 @@ const DatePicker: React.FC<IDatePicker> = props => {
 
   const handleOnInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = event?.target?.value;
-    if (newValue !== undefined) {
+    if (newValue !== undefined && isValidDate(newValue, appLang)) {
       const dateValue = checkDateFormat(newValue);
       updateFormData?.({ name, value: newValue });
       setSelected(dateValue);
