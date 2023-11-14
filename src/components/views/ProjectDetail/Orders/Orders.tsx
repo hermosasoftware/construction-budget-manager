@@ -340,8 +340,24 @@ const Orders: React.FC<IOrdersView> = props => {
   };
 
   const validationSchema = yup.object().shape({
-    order: yup.number().positive().required(appStrings?.requiredField),
-    proforma: yup.number().positive().required(appStrings?.requiredField),
+    order: yup
+      .number()
+      .positive()
+      .required(appStrings?.requiredField)
+      .test(
+        'order',
+        appStrings?.valueAlreadyExists,
+        val => !!selectedOrder.id || !projectOrders.find(a => a.order === val),
+      ),
+    proforma: yup
+      .string()
+      .required(appStrings?.requiredField)
+      .test(
+        'proforma',
+        appStrings?.valueAlreadyExists,
+        val =>
+          !!selectedOrder.id || !projectOrders.find(a => a.proforma === val),
+      ),
     activity: yup.object().shape({
       value: yup.string().required(appStrings?.requiredField),
       label: yup.string().required(appStrings?.requiredField),
