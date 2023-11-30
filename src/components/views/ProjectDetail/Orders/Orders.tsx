@@ -364,6 +364,7 @@ const Orders: React.FC<IOrdersView> = props => {
     }),
     supplier: yup.string().required(appStrings?.requiredField),
     date: yup.date().required(appStrings?.requiredField),
+    deliverDate: yup.date().required(appStrings?.requiredField),
   });
 
   const productValSchema = yup.object().shape({
