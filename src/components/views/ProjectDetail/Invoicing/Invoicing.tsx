@@ -227,17 +227,30 @@ const Invoicing: React.FC<IInvoicing> = props => {
       date: new Date(json?.FacturaElectronica?.FechaEmision?.['#text']),
       supplier: json?.FacturaElectronica?.Emisor?.NombreComercial?.['#text'],
     };
-    const products =
-      json?.FacturaElectronica?.DetalleServicio?.LineaDetalle.map(
-        (element: any) => {
+    const lineaDetalle =
+      json?.FacturaElectronica?.DetalleServicio?.LineaDetalle;
+
+    const products = Array.isArray(lineaDetalle)
+      ? lineaDetalle.map((element: any) => {
           return {
             cost: +element?.SubTotal?.['#text'] / +element?.Cantidad?.['#text'],
             description: element?.Detalle?.['#text'],
             quantity: +element?.Cantidad?.['#text'],
             tax: element?.Impuesto ? +element?.Impuesto?.Tarifa?.['#text'] : 0,
           } as IInvoiceProduct;
-        },
-      );
+        })
+      : [
+          {
+            cost:
+              +lineaDetalle?.SubTotal?.['#text'] /
+              +lineaDetalle?.Cantidad?.['#text'],
+            description: lineaDetalle?.Detalle?.['#text'],
+            quantity: +lineaDetalle?.Cantidad?.['#text'],
+            tax: lineaDetalle?.Impuesto
+              ? +lineaDetalle?.Impuesto?.Tarifa?.['#text']
+              : 0,
+          } as IInvoiceProduct,
+        ];
     return { ...invoice, products };
   };
 
