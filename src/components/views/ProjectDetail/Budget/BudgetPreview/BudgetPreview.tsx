@@ -35,7 +35,7 @@ import { IBudgetLabor } from '../../../../../types/budgetLabor';
 import { IMaterialBreakdown } from '../../../../../types/collections';
 import { IBudgetOther } from '../../../../../types/budgetOther';
 import DownloadPDF from '../../../../common/PDF/DownloadPDF';
-import Form, { Switch } from '../../../../common/Form';
+import Form, { Input, Switch } from '../../../../common/Form';
 
 import styles from './BudgetPreview.module.css';
 
@@ -46,6 +46,7 @@ const initialExportSettings = {
   showOthers: true,
   detailedActivities: false,
   detailedMaterials: false,
+  saleTax: 0,
 };
 
 export default function ActivityPreview() {
@@ -241,6 +242,12 @@ export default function ActivityPreview() {
                     name="showOthers"
                     labelPlacement="inline"
                     label={appStrings?.showOthers}
+                  />
+                  <Input
+                    name="saleTax"
+                    labelPlacement="inline"
+                    type="number"
+                    label={`${appStrings?.ivaTax} (%)`}
                   />
                   <Divider />
                   <ButtonGroup

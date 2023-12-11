@@ -32,6 +32,7 @@ export interface IExportSettings {
   showOthers: boolean;
   detailedActivities: boolean;
   detailedMaterials: boolean;
+  saleTax: number;
 }
 
 const BudgetReport: FC<Props> = props => {
@@ -62,11 +63,14 @@ const BudgetReport: FC<Props> = props => {
 
   useEffect(() => {
     const adminFee = subtotal ? (subtotal * budget.adminFee) / 100 : 0;
-    const saleTax = subtotal ? subtotal * 0.04 : 0;
+    const saleTax =
+      exportSettings.saleTax > 0
+        ? (adminFee * exportSettings.saleTax) / 100
+        : 0;
 
     setAdminFee(adminFee);
     setSaleTax(saleTax);
-  }, [subtotal]);
+  }, [subtotal, exportSettings]);
 
   const calculateMaterialCost = (row: any) => {
     let total = 0;
@@ -826,16 +830,22 @@ const BudgetReport: FC<Props> = props => {
                   </Text>
                 </View>
               </View>
-              <View className="flex" pdfMode={pdfMode}>
-                <View className="w-50 p-5" pdfMode={pdfMode}>
-                  <Text pdfMode={pdfMode}>{`IVA (4%)`}</Text>
-                </View>
-                <View className="w-50 p-5" pdfMode={pdfMode}>
-                  <Text className="right bold dark" pdfMode={pdfMode}>
-                    {dolarFormat(saleTax)}
-                  </Text>
-                </View>
-              </View>
+              {exportSettings.saleTax > 0 && (
+                <>
+                  <View className="flex" pdfMode={pdfMode}>
+                    <View className="w-50 p-5" pdfMode={pdfMode}>
+                      <Text
+                        pdfMode={pdfMode}
+                      >{`IVA (${exportSettings.saleTax}%)`}</Text>
+                    </View>
+                    <View className="w-50 p-5" pdfMode={pdfMode}>
+                      <Text className="right bold dark" pdfMode={pdfMode}>
+                        {dolarFormat(saleTax)}
+                      </Text>
+                    </View>
+                  </View>
+                </>
+              )}
               <View className="flex bg-gray p-5" pdfMode={pdfMode}>
                 <View className="w-50 p-5" pdfMode={pdfMode}>
                   <Text className="bold" pdfMode={pdfMode}>

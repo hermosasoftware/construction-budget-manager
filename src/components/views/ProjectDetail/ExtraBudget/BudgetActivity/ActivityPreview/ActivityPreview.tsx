@@ -1,9 +1,25 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Button, Skeleton } from '@chakra-ui/react';
-import { ArrowLeft } from 'phosphor-react';
+import {
+  Button,
+  ButtonGroup,
+  Divider,
+  Popover,
+  PopoverArrow,
+  PopoverBody,
+  PopoverCloseButton,
+  PopoverContent,
+  PopoverHeader,
+  PopoverTrigger,
+  Skeleton,
+  Stack,
+  useDisclosure,
+} from '@chakra-ui/react';
+import { ArrowLeft, Gear } from 'phosphor-react';
 import { useAppSelector } from '../../../../../../redux/hooks';
-import ExtraReport from '../../../../../reports/ExtraReport/ExtraReport';
+import ExtraReport, {
+  IExportSettingsExtra,
+} from '../../../../../reports/ExtraReport/ExtraReport';
 import { getProjectById } from '../../../../../../services/ProjectService';
 import { getExtraBudgetActivityById } from '../../../../../../services/ExtraBudgetActivityService';
 import { getExtraBudgetSubcontracts } from '../../../../../../services/ExtraBudgetSubcontractsService';
@@ -17,13 +33,19 @@ import { IBudgetLabor } from '../../../../../../types/budgetLabor';
 import { IMaterialBreakdown } from '../../../../../../types/collections';
 import { IBudgetOther } from '../../../../../../types/budgetOther';
 import DownloadPDF from '../../../../../common/PDF/DownloadPDF';
+import Form, { Input } from '../../../../../common/Form';
 
 import styles from './ActivityPreview.module.css';
+
+const initialExportSettings = {
+  saleTax: 0,
+};
 
 export default function ActivityPreview() {
   const projectId = useParams().projectId as string;
   const activityId = useParams().activityId as string;
   const navigate = useNavigate();
+  const { onOpen, onClose, isOpen } = useDisclosure();
   const [project, setProject] = useState<IProject>();
   const [activity, setActivity] = useState<IBudgetActivity>();
   const [materials, setMaterials] = useState<IMaterialBreakdown[]>([]);
@@ -31,6 +53,9 @@ export default function ActivityPreview() {
   const [subcontracts, setSubcontracts] = useState<IBudgetSubcontract[]>([]);
   const [others, setOthers] = useState<IBudgetOther[]>([]);
   const [noteValue, setNoteValue] = useState('');
+  const [exportSettings, setExportSettings] = useState<IExportSettingsExtra>(
+    initialExportSettings,
+  );
 
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
@@ -96,6 +121,11 @@ export default function ActivityPreview() {
     });
   };
 
+  const handleOnSettingsSubmit = (data: IExportSettingsExtra) => {
+    setExportSettings(data);
+    onClose();
+  };
+
   useEffect(() => {
     let abortController = new AbortController();
 
@@ -119,19 +149,68 @@ export default function ActivityPreview() {
       >
         <ArrowLeft size={22} />
       </Button>
-      <DownloadPDF fileName={`Extra-${activity?.activity}-${project?.name}`}>
-        <ExtraReport
-          project={project!}
-          activity={activity!}
-          materials={materials}
-          labors={labors}
-          subcontracts={subcontracts}
-          others={others}
-          noteValue={noteValue}
-          setNoteValue={setNoteValue}
-          pdfMode={true}
-        ></ExtraReport>
-      </DownloadPDF>
+      <div>
+        <DownloadPDF fileName={`Extra-${activity?.activity}-${project?.name}`}>
+          <ExtraReport
+            project={project!}
+            activity={activity!}
+            materials={materials}
+            labors={labors}
+            subcontracts={subcontracts}
+            others={others}
+            noteValue={noteValue}
+            setNoteValue={setNoteValue}
+            exportSettings={exportSettings}
+            pdfMode={true}
+          ></ExtraReport>
+        </DownloadPDF>
+        <Popover isOpen={isOpen} onOpen={onOpen} onClose={onClose}>
+          <PopoverTrigger>
+            <Button
+              className={styles.toolbar_button}
+              variant="unstyled"
+              title={appStrings?.exportSettings}
+            >
+              <Gear size={22} />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent>
+            <PopoverArrow />
+            <PopoverCloseButton />
+            <PopoverHeader fontWeight="bold" fontSize="md">
+              {appStrings?.exportSettings}
+            </PopoverHeader>
+            <PopoverBody p={4}>
+              <Form
+                id="settings-form"
+                initialFormData={exportSettings}
+                validateOnChange
+                validateOnBlur
+                onSubmit={handleOnSettingsSubmit}
+              >
+                <Stack spacing={2}>
+                  <Input
+                    name="saleTax"
+                    type="number"
+                    label={`${appStrings?.ivaTax} (%)`}
+                  />
+                  <Divider />
+                  <ButtonGroup
+                    size="sm"
+                    display="flex"
+                    justifyContent="flex-end"
+                  >
+                    <Button variant="ghost" onClick={onClose}>
+                      {appStrings?.cancel}
+                    </Button>
+                    <Button type="submit">{appStrings?.apply}</Button>
+                  </ButtonGroup>
+                </Stack>
+              </Form>
+            </PopoverBody>
+          </PopoverContent>
+        </Popover>
+      </div>
     </div>
   );
 
@@ -149,6 +228,7 @@ export default function ActivityPreview() {
             others={others}
             noteValue={noteValue}
             setNoteValue={setNoteValue}
+            exportSettings={exportSettings}
             pdfMode={false}
           ></ExtraReport>
         </div>
