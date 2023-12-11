@@ -12,6 +12,9 @@
 # production
 /build
 
+# firebase
+/.firebase
+
 # misc
 .DS_Store
 .env.local
@@ -25,3 +28,9 @@ yarn-error.log*
 
 # IDE
 .idea
+.vscode
+
+# package-lock as this project is yarn based
+package-lock.json
+
+.env
