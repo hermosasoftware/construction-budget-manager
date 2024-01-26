@@ -8,6 +8,7 @@ export interface IProjectOrder {
   deliverDate: Date | string;
   sentStatus: boolean | string;
   cost: number;
+  exchange: number;
   products: IOrderProduct[];
   createdAt: Date | string;
   updatedAt: Date | string;

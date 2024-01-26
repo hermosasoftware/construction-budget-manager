@@ -78,6 +78,7 @@ const initialSelectedOrderData = {
   supplier: '',
   sentStatus: false,
   cost: 0,
+  exchange: 0,
   products: [],
   option: { value: '', label: '' },
   createdAt: new Date(),
