@@ -159,7 +159,10 @@ const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
     const products = row?.products;
     if (row?.products?.length) {
       products?.forEach((s: any) => {
-        total += Number(s?.quantity) * Number.parseFloat(s?.cost);
+        const quantity = Number(s?.quantity);
+        const cost = Number.parseFloat(s?.cost);
+        const tax = calculateTaxes(quantity, cost, Number(s?.tax));
+        total += quantity * cost + tax;
       });
     } else {
       total = Number(row?.cost);
@@ -215,7 +218,11 @@ const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
     const isSubTotal = headerName === 'subtotal';
     const isTotal = headerName === 'total';
     if (isDollarColumn && formatCurrency) {
-      return dolarFormat(Number(row?.cost / Number(exchange)));
+      const quantity = Number(row?.quantity);
+      const cost = Number.parseFloat(row?.cost);
+      const tax = calculateTaxes(quantity, cost, Number(row?.tax));
+      const total = quantity * cost + tax;
+      return dolarFormat(Number(total / Number(exchange)));
     } else if (isCostColumn && formatCurrency) {
       return colonFormat(Number(row?.cost));
     } else if (isImp) {

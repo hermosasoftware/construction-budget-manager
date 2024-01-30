@@ -226,13 +226,8 @@ const Orders: React.FC<IOrdersView> = props => {
   };
 
   const dollarExchange = () => {
-    const successCallback = (data: any) => {
-      setExchange(data);
-    };
-    getDollarExchange({
-      appStrings,
-      successCallback,
-    });
+    const successCallback = (data: any) => setExchange(data);
+    getDollarExchange({ appStrings, successCallback });
   };
 
   const deleteButton = async () => {
@@ -507,7 +502,7 @@ const Orders: React.FC<IOrdersView> = props => {
                   type="number"
                   label={appStrings.currencyExchange}
                   placeholder={appStrings.dollarExchange}
-                  helperText="Currency up to date with the Central Bank"
+                  helperText={appStrings.currencyUpToDate}
                 />
                 <DatePicker name="date" label={appStrings.creationDate} />
                 <DatePicker name="deliverDate" label={appStrings.deliverDate} />

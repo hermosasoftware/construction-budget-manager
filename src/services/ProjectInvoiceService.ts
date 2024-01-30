@@ -59,6 +59,7 @@ export const listenProjectInvoices = ({
               ...change.doc.data(),
               id: change.doc.id,
               date: change.doc.data().date.toDate().toISOString(),
+              exchange: change.doc.data()?.exchange || 0,
               createdAt: change.doc.data()?.createdAt?.toDate()?.toISOString(),
               updatedAt: change.doc.data()?.updatedAt?.toDate()?.toISOString(),
             } as IProjectInvoiceDetail;
@@ -185,6 +186,7 @@ export const getProjectInvoicing = async ({
       ...doc.data(),
       id: doc.id,
       date: doc.data()?.date.toDate(),
+      exchange: doc.data()?.exchange,
     })) as IProjectInvoiceDetail[];
 
     let allInvoices: IProjectInvoiceDetail[] = [];

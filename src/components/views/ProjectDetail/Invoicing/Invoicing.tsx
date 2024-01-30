@@ -37,6 +37,7 @@ import { TTableHeader } from '../../../layout/InvoiceTableView/InvoiceTableView'
 import FileUploader, {
   EFileTypes,
 } from '../../../common/FileUploader/FileUploader';
+import { getDollarExchange } from '../../../../providers/CurrencyProvicer';
 
 import styles from './Invoicing.module.css';
 
@@ -50,6 +51,7 @@ const initialSelectedItemData = {
   activity: '',
   invoice: '',
   supplier: '',
+  exchange: 0,
   date: new Date(),
   products: [],
   option: { value: '', label: '' },
@@ -129,7 +131,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
     useState(false);
 
   const [allActivities, setAllActivities] = useState<IActivity[]>([]);
-
+  const [exchange, setExchange] = useState(0);
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isXMLModalOpen, setIsXMLModalOpen] = useState(false);
@@ -165,6 +167,12 @@ const Invoicing: React.FC<IInvoicing> = props => {
     },
     { name: 'imp', value: appStrings.imp, isGreen: true, showTotal: true },
     { name: 'total', value: appStrings.total, isGreen: true, showTotal: true },
+    {
+      name: 'dollarCost',
+      value: appStrings.dollars,
+      isGreen: true,
+      showTotal: true,
+    },
   ];
 
   const filterOptions: FilterOption[] = [
@@ -255,6 +263,11 @@ const Invoicing: React.FC<IInvoicing> = props => {
     return { ...invoice, products };
   };
 
+  const dollarExchange = () => {
+    const successCallback = (data: any) => setExchange(data);
+    getDollarExchange({ appStrings, successCallback });
+  };
+
   const onSubmitXML = async (file: IXMLFile) => {
     const { option, activity, xmlFile, pdfFile, pdfURL } = file;
     const xmlString = await xmlFile?.text(); //Extract text from xml file
@@ -274,6 +287,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
         ...data,
         id: '',
         order: +option.label,
+        exchange: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
         activity,
@@ -299,6 +313,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
       projectInvoiceDetail: {
         ...rest,
         order: +option.label,
+        exchange: +rest.exchange,
       },
       appStrings,
       successCallback,
@@ -392,6 +407,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
       value: yup.string().required(appStrings?.requiredField),
       label: yup.string().required(appStrings?.requiredField),
     }),
+    exchange: yup.number().min(0).required(appStrings?.requiredField),
     invoice: yup
       .string()
       .required(appStrings?.requiredField)
@@ -514,6 +530,8 @@ const Invoicing: React.FC<IInvoicing> = props => {
     );
   };
 
+  useEffect(() => dollarExchange(), []);
+
   useEffect(() => {
     const extrasAct = extraActivities.map(activity => ({
       ...activity,
@@ -539,7 +557,17 @@ const Invoicing: React.FC<IInvoicing> = props => {
             >
               <UploadSimple size={18} />
             </Button>
-            <Button onClick={() => setIsModalOpen(true)}>+</Button>
+            <Button
+              onClick={() => {
+                setSelectedItem({
+                  ...initialSelectedItemData,
+                  exchange: exchange,
+                });
+                setIsModalOpen(true);
+              }}
+            >
+              +
+            </Button>
             <Modal
               isOpen={isXMLModalOpen}
               onClose={() => {
@@ -655,6 +683,13 @@ const Invoicing: React.FC<IInvoicing> = props => {
                   label={appStrings.supplier}
                   placeholder={appStrings.productSupplier}
                 />
+                <Input
+                  name="exchange"
+                  type="number"
+                  label={appStrings.currencyExchange}
+                  placeholder={appStrings.dollarExchange}
+                  helperText={appStrings.currencyUpToDate}
+                />
                 <DatePicker name="date" label={appStrings.date}></DatePicker>
                 <div className={styles.fileUpload_container}>
                   <FileUploader
@@ -665,7 +700,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
                   ></FileUploader>
                   {selectedItem.pdfURL && (
                     <div style={{ width: '40%' }}>
-                      <FormLabel>{appStrings.CurrentPDF}</FormLabel>
+                      <FormLabel>{appStrings.currentPDF}</FormLabel>
                       <Button
                         onClick={() => {
                           window.open(selectedItem.pdfURL);
