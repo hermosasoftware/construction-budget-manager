@@ -51,6 +51,7 @@ export const listenProjectOrders = ({
               id: change.doc.id,
               date: change.doc.data().date.toDate().toISOString(),
               deliverDate: change.doc.data().deliverDate.toDate().toISOString(),
+              exchange: change.doc.data()?.exchange || 0,
               createdAt: change.doc.data()?.createdAt?.toDate()?.toISOString(),
               updatedAt: change.doc.data()?.updatedAt?.toDate()?.toISOString(),
             } as IProjectOrder;
@@ -172,6 +173,7 @@ export const getProjectOrders = async ({
       ...doc.data(),
       id: doc.id,
       date: doc.data()?.date?.toDate(),
+      exchange: doc.data()?.exchange,
       deliverDate: doc.data()?.deliverDate?.toDate(),
     })) as IProjectOrder[];
 

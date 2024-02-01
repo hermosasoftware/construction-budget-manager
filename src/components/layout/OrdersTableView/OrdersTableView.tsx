@@ -159,14 +159,16 @@ const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
     const products = row?.products;
     if (row?.products?.length) {
       products?.forEach((s: any) => {
-        total += Number(s?.quantity) * Number.parseFloat(s?.cost);
+        const quantity = Number(s?.quantity);
+        const cost = Number.parseFloat(s?.cost);
+        const tax = calculateTaxes(quantity, cost, Number(s?.tax));
+        total += quantity * cost + tax;
       });
     } else {
       total = Number(row?.cost);
     }
-
-    const exchange = Number(exchangeRate);
-    return total / exchange;
+    const exchange = Number(row?.exchange);
+    return total / exchange || 0;
   };
 
   const calculateColons = (row: any) => {
@@ -209,14 +211,18 @@ const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
     return row[headerName] || '-';
   };
 
-  const renderSubColumnValue = (row: any, headerName: any) => {
+  const renderSubColumnValue = (row: any, exchange: any, headerName: any) => {
     const isDollarColumn = headerName === 'dollarCost';
     const isCostColumn = headerName === 'cost';
     const isImp = headerName === 'imp';
     const isSubTotal = headerName === 'subtotal';
     const isTotal = headerName === 'total';
     if (isDollarColumn && formatCurrency) {
-      return dolarFormat(Number(row?.cost / Number(exchangeRate)));
+      const quantity = Number(row?.quantity);
+      const cost = Number.parseFloat(row?.cost);
+      const tax = calculateTaxes(quantity, cost, Number(row?.tax));
+      const total = quantity * cost + tax;
+      return dolarFormat(Number(total / Number(exchange)));
     } else if (isCostColumn && formatCurrency) {
       return colonFormat(Number(row?.cost));
     } else if (isImp) {
@@ -453,7 +459,11 @@ const OrdersTableView = <T extends TObject>(props: ITableProps<T>) => {
                                 id={prod.id?.toString()}
                                 className={`${styles.td}`}
                               >
-                                {renderSubColumnValue(prod, header.name)}
+                                {renderSubColumnValue(
+                                  prod,
+                                  row?.exchange,
+                                  header.name,
+                                )}
                               </Td>
                             );
                           })}

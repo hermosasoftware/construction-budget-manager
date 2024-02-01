@@ -35,6 +35,7 @@ import SearchSelect from '../../../common/Form/Elements/SearchSelect';
 import { formatDate } from '../../../../utils/dates';
 import { debounceLoader } from '../../../../utils/common';
 import TabGroup from '../../../common/TabGroup/TabGroup';
+import { getDollarExchange } from '../../../../providers/CurrencyProvicer';
 
 import styles from './Orders.module.css';
 
@@ -56,6 +57,7 @@ const initialSelectedOrderData = {
   deliverDate: new Date(),
   sentStatus: false,
   cost: 0,
+  exchange: 0,
   products: [],
   createdAt: new Date(),
   updatedAt: new Date(),
@@ -94,6 +96,7 @@ const Orders: React.FC<IOrdersView> = props => {
   const [selectedProduct, setSelectedProduct] = useState<IOrderProduct>(
     initialSelectedProductData,
   );
+  const [exchange, setExchange] = useState(0);
   const selectedTab = useParams().tab as string;
   const [allActivities, setAllActivities] = useState<IActivity[]>([]);
   const [materialRef, setMaterialRef] = useState(initialMaterialRefData);
@@ -133,6 +136,12 @@ const Orders: React.FC<IOrdersView> = props => {
     },
     { name: 'imp', value: appStrings.imp, isGreen: true, showTotal: true },
     { name: 'total', value: appStrings.total, isGreen: true, showTotal: true },
+    {
+      name: 'dollarCost',
+      value: appStrings.dollars,
+      isGreen: true,
+      showTotal: true,
+    },
   ];
 
   const filterOptions: FilterOption[] = [
@@ -216,6 +225,11 @@ const Orders: React.FC<IOrdersView> = props => {
       );
   };
 
+  const dollarExchange = () => {
+    const successCallback = (data: any) => setExchange(data);
+    getDollarExchange({ appStrings, successCallback });
+  };
+
   const deleteButton = async () => {
     const successCallback = () => {
       setSelectedOrder(initialSelectedOrderData);
@@ -295,6 +309,7 @@ const Orders: React.FC<IOrdersView> = props => {
       projectOrder: {
         ...rest,
         order: +rest.order,
+        exchange: +rest.exchange,
         activity: activity.value,
         sentStatus: isSent,
       },
@@ -365,6 +380,7 @@ const Orders: React.FC<IOrdersView> = props => {
     supplier: yup.string().required(appStrings?.requiredField),
     date: yup.date().required(appStrings?.requiredField),
     deliverDate: yup.date().required(appStrings?.requiredField),
+    exchange: yup.number().min(0).required(appStrings?.requiredField),
   });
 
   const productValSchema = yup.object().shape({
@@ -379,6 +395,8 @@ const Orders: React.FC<IOrdersView> = props => {
       label: !e.isExtra ? e.activity : `${e.activity} (${appStrings.extra})`,
       value: e.id,
     }));
+
+  useEffect(() => dollarExchange(), []);
 
   useEffect(() => {
     const extrasAct = extraActivities.map(activity => ({
@@ -427,6 +445,7 @@ const Orders: React.FC<IOrdersView> = props => {
                   ? setSelectedOrder({
                       ...initialSelectedOrderData,
                       order: projectOrders[0].order + 1,
+                      exchange: exchange,
                     })
                   : setSelectedOrder(initialSelectedOrderData);
                 setIsModalOpen(true);
@@ -478,14 +497,15 @@ const Orders: React.FC<IOrdersView> = props => {
                   label={appStrings.proforma}
                   placeholder={appStrings.proformaNumber}
                 />
-                <DatePicker
-                  name="date"
-                  label={appStrings.creationDate}
-                ></DatePicker>
-                <DatePicker
-                  name="deliverDate"
-                  label={appStrings.deliverDate}
-                ></DatePicker>
+                <Input
+                  name="exchange"
+                  type="number"
+                  label={appStrings.currencyExchange}
+                  placeholder={appStrings.dollarExchange}
+                  helperText={appStrings.currencyUpToDate}
+                />
+                <DatePicker name="date" label={appStrings.creationDate} />
+                <DatePicker name="deliverDate" label={appStrings.deliverDate} />
                 <Select
                   name="sentStatus"
                   options={orderStatus}

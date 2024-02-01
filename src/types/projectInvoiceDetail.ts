@@ -5,6 +5,7 @@ export interface IProjectInvoiceDetail {
   date: Date | string;
   activity: string;
   supplier: string;
+  exchange: number;
   pdfURL?: string;
   pdfFile?: File;
   products: IInvoiceProduct[];
