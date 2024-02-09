@@ -5,6 +5,7 @@ import Login from './components/views/Login/Login';
 import SignUp from './components/views/SignUp/SignUp';
 import Projects from './components/views/Projects/Projects';
 import ProjectDetail from './components/views/ProjectDetail/ProjectDetail';
+import ExpensesPreview from './components/views/ProjectDetail/ExpensesReport/ExpensesPreview/ExpensesPreview';
 import OrderPreview from './components/views/ProjectDetail/Orders/OrderPreview/OrderPreview';
 import ActivityPreview from './components/views/ProjectDetail/ExtraBudget/BudgetActivity/ActivityPreview/ActivityPreview';
 import BudgetPreview from './components/views/ProjectDetail/Budget/BudgetPreview/BudgetPreview';
@@ -51,6 +52,10 @@ function App() {
               element={<AuthRoute component={ProjectDetail} />}
             />
           </Route>
+          <Route
+            path="/project-detail/:projectId/expenses-pdf-preview"
+            element={<AuthRoute component={ExpensesPreview} />}
+          />
           <Route
             path="/project-detail/:projectId/order-pdf-preview/:orderId/:activity"
             element={<AuthRoute component={OrderPreview} />}
