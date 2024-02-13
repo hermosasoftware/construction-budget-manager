@@ -173,7 +173,11 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
           <div style={{ textAlign: 'end' }}>
             <Button
               onClick={() => {
-                navigate(`/project-detail/${projectId}/expenses-pdf-preview`);
+                navigate(
+                  `/project-detail/${projectId}/expenses-pdf-preview/${JSON.stringify(
+                    search,
+                  )}`,
+                );
               }}
               className={styles.pdf_button}
             >

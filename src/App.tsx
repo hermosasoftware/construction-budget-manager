@@ -53,7 +53,7 @@ function App() {
             />
           </Route>
           <Route
-            path="/project-detail/:projectId/expenses-pdf-preview"
+            path="/project-detail/:projectId/expenses-pdf-preview/:search"
             element={<AuthRoute component={ExpensesPreview} />}
           />
           <Route

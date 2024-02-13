@@ -4,14 +4,19 @@ import { Button, Skeleton } from '@chakra-ui/react';
 import { ArrowLeft } from 'phosphor-react';
 import { useAppSelector } from '../../../../../redux/hooks';
 import { getProjectById } from '../../../../../services/ProjectService';
+import {
+  Search,
+  handleFilterSearch,
+} from '../../../../common/SearchFilter/SearchFilter';
 import { IProject } from '../../../../../types/project';
 import DownloadPDF from '../../../../common/PDF/DownloadPDF';
-import ExpenseReport from '../../../../reports/ExpenseReport/ExpenseReport';
+import ExpenseReport from '../../../../reports/ExpenseReport/ExpensesReportPDF';
 
 import styles from './ExpensesPreview.module.css';
 
 export default function ExpensesPreview() {
   const projectId = useParams().projectId as string;
+  const search = JSON.parse(useParams().search as string) as Search;
   const navigate = useNavigate();
   const [project, setProject] = useState<IProject>();
   const [noteValue, setNoteValue] = useState('');
@@ -29,6 +34,9 @@ export default function ExpensesPreview() {
       successCallback,
     });
   };
+
+  const filterExpenses = () =>
+    expenses.filter(value => handleFilterSearch(value, search));
 
   useEffect(() => {
     let abortController = new AbortController();
@@ -51,7 +59,7 @@ export default function ExpensesPreview() {
         <DownloadPDF fileName={`Budget-${project?.name}`}>
           <ExpenseReport
             project={project!}
-            expenses={expenses!}
+            expenses={filterExpenses()!}
             noteValue={noteValue}
             setNoteValue={setNoteValue}
             pdfMode={true}
@@ -68,7 +76,7 @@ export default function ExpensesPreview() {
           <PDFToolbar />
           <ExpenseReport
             project={project}
-            expenses={expenses}
+            expenses={filterExpenses()}
             noteValue={noteValue}
             setNoteValue={setNoteValue}
             pdfMode={false}

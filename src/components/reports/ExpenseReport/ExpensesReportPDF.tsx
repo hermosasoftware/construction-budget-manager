@@ -9,8 +9,9 @@ import EditableTextarea from '../../common/PDF/EditableTextarea';
 import { IProject } from '../../../types/project';
 import { IProjectExpense } from '../../../types/projectExpense';
 import { colonFormat, dolarFormat } from '../../../utils/numbers';
+import { formatDate } from '../../../utils/dates';
 
-import styles from './ExpenseReport.module.css';
+import styles from './ExpensesReportPDF.module.css';
 
 interface Props {
   project: IProject;
@@ -22,16 +23,24 @@ interface Props {
 
 const BudgetReport: FC<Props> = props => {
   const { project, expenses, noteValue, setNoteValue, pdfMode } = props;
-  const [subtotal, setSubtotal] = useState<number>(0);
+  const [subtotalColones, setSubtotalColones] = useState<number>(0);
+  const [subtotalDollars, setSubtotalDollars] = useState<number>(0);
 
   const handleInputChange = (value: string) => setNoteValue(value);
 
-  const calculateTotalCost = (array: any[]) => {
+  const calculateTotalCost = (array: any[], type?: string) => {
     let total = 0;
-    array.forEach(row => (total += row?.cost));
+    array.forEach(
+      row => (total += row?.amount / (type === 'dollars' ? row?.exchange : 1)),
+    );
 
     return total;
   };
+
+  useEffect(() => {
+    setSubtotalColones(calculateTotalCost(expenses));
+    setSubtotalDollars(calculateTotalCost(expenses, 'dollars'));
+  }, []);
 
   return (
     <Document pdfMode={pdfMode}>
@@ -78,6 +87,8 @@ const BudgetReport: FC<Props> = props => {
                 <Text pdfMode={pdfMode}>{project.client}</Text>
               </View>
             </View>
+          </View>
+          <View className="w-45" pdfMode={pdfMode}>
             <View className="flex" pdfMode={pdfMode}>
               <View className="w-40" pdfMode={pdfMode}>
                 <Text className="bold" pdfMode={pdfMode}>
@@ -86,18 +97,6 @@ const BudgetReport: FC<Props> = props => {
               </View>
               <View className="w-60" pdfMode={pdfMode}>
                 <Text pdfMode={pdfMode}>{project.location}</Text>
-              </View>
-            </View>
-          </View>
-          <View className="w-45" pdfMode={pdfMode}>
-            <View className="flex" pdfMode={pdfMode}>
-              <View className="w-40" pdfMode={pdfMode}>
-                <Text className="bold" pdfMode={pdfMode}>
-                  {`CURRENCY \n EXCHANGE:`}
-                </Text>
-              </View>
-              <View className="w-60" pdfMode={pdfMode}>
-                <Text pdfMode={pdfMode}>{colonFormat(0)}</Text>
               </View>
             </View>
             <View className="flex" pdfMode={pdfMode}>
@@ -120,24 +119,24 @@ const BudgetReport: FC<Props> = props => {
                 {`Expenses`}
               </Text>
               <View className="bg-dark flex left" pdfMode={pdfMode}>
-                <View className="w-48 p-4-8" pdfMode={pdfMode}>
+                <View className="w-15 p-4-8" pdfMode={pdfMode}>
                   <Text className="white bold" pdfMode={pdfMode}>
                     {`Description`}
                   </Text>
                 </View>
                 <View className="w-10 p-4-8" pdfMode={pdfMode}>
                   <Text className="white bold" pdfMode={pdfMode}>
-                    {`Doc Number`}
+                    {`Doc Num`}
                   </Text>
                 </View>
-                <View className="w-10 p-4-8" pdfMode={pdfMode}>
+                <View className="w-15 p-4-8" pdfMode={pdfMode}>
                   <Text className="white bold" pdfMode={pdfMode}>
                     {`Date`}
                   </Text>
                 </View>
-                <View className="w-20 p-4-8" pdfMode={pdfMode}>
+                <View className="w-15 p-4-8" pdfMode={pdfMode}>
                   <Text className="white bold" pdfMode={pdfMode}>
-                    {` Owner`}
+                    {`Owner`}
                   </Text>
                 </View>
                 <View className="w-10 p-4-8" pdfMode={pdfMode}>
@@ -150,12 +149,12 @@ const BudgetReport: FC<Props> = props => {
                     {`Family`}
                   </Text>
                 </View>
-                <View className="w-20 p-4-8" pdfMode={pdfMode}>
+                <View className="w-15 p-4-8" pdfMode={pdfMode}>
                   <Text className="white bold" pdfMode={pdfMode}>
                     {`Amount`}
                   </Text>
                 </View>
-                <View className="w-15 p-4-8" pdfMode={pdfMode}>
+                <View className="w-10 p-4-8" pdfMode={pdfMode}>
                   <Text className="white bold" pdfMode={pdfMode}>
                     {`Dollars`}
                   </Text>
@@ -165,7 +164,7 @@ const BudgetReport: FC<Props> = props => {
             {expenses.map((labor, i) => {
               return (
                 <View key={i} className="row flex left" pdfMode={pdfMode}>
-                  <View className="w-48 p-4-8 pb-10" pdfMode={pdfMode}>
+                  <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
                     <Text className="dark" pdfMode={pdfMode}>
                       {labor.name}
                     </Text>
@@ -175,12 +174,12 @@ const BudgetReport: FC<Props> = props => {
                       {`${labor.docNumber}`}
                     </Text>
                   </View>
-                  <View className="w-10 p-4-8 pb-10" pdfMode={pdfMode}>
+                  <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
                     <Text className="dark" pdfMode={pdfMode}>
-                      {labor.date.toLocaleString()}
+                      {formatDate(new Date(labor.date), 'MM/DD/YYYY')}
                     </Text>
                   </View>
-                  <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
+                  <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
                     <Text className="dark" pdfMode={pdfMode}>
                       {labor.owner}
                     </Text>
@@ -195,12 +194,12 @@ const BudgetReport: FC<Props> = props => {
                       {labor.family}
                     </Text>
                   </View>
-                  <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
+                  <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
                     <Text className="dark" pdfMode={pdfMode}>
                       {colonFormat(labor.amount)}
                     </Text>
                   </View>
-                  <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
+                  <View className="w-10 p-4-8 pb-10" pdfMode={pdfMode}>
                     <Text className="dark" pdfMode={pdfMode}>
                       {dolarFormat(labor.amount / labor.exchange)}
                     </Text>
@@ -210,47 +209,49 @@ const BudgetReport: FC<Props> = props => {
             })}
           </>
         )}
-
-        <View className="mt-40" pdfMode={pdfMode}>
-          <View className="row" pdfMode={pdfMode}>
-            <Text className="fs-20 bold" pdfMode={pdfMode}>
-              {`Grand Total`}
+        <View className="flex" pdfMode={pdfMode}>
+          <View className="w-50 mt-10" pdfMode={pdfMode}>
+            <Text className="left fs-20 w-100" pdfMode={pdfMode}>
+              {`Notes:`}
             </Text>
+            <EditableTextarea
+              className="w-100"
+              value={noteValue}
+              onChange={value => handleInputChange(value)}
+              pdfMode={pdfMode}
+            />
           </View>
-          <View className="flex" pdfMode={pdfMode}>
-            <View className="w-50 mt-10" pdfMode={pdfMode}>
-              <Text className="left fs-20 w-100" pdfMode={pdfMode}>
-                {`Notes:`}
-              </Text>
-              <EditableTextarea
-                className="w-100"
-                value={noteValue}
-                onChange={value => handleInputChange(value)}
-                pdfMode={pdfMode}
-              />
-            </View>
-            <View className="w-50 mt-20" pdfMode={pdfMode}>
-              <View className="flex" pdfMode={pdfMode}>
-                <View className="w-50 p-5" pdfMode={pdfMode}>
-                  <Text pdfMode={pdfMode}>Subtotal </Text>
-                </View>
-                <View className="w-50 p-5" pdfMode={pdfMode}>
-                  <Text className="right bold dark" pdfMode={pdfMode}>
-                    {dolarFormat(subtotal)}
-                  </Text>
-                </View>
+          <View className="w-50 mt-20" pdfMode={pdfMode}>
+            <View className="flex" pdfMode={pdfMode}>
+              <View className="w-50 p-5" pdfMode={pdfMode}>
+                <Text pdfMode={pdfMode}>Colones </Text>
               </View>
-              <View className="flex bg-gray p-5" pdfMode={pdfMode}>
-                <View className="w-50 p-5" pdfMode={pdfMode}>
-                  <Text className="bold" pdfMode={pdfMode}>
-                    {`TOTAL`}
-                  </Text>
-                </View>
-                <View className="w-50 p-5 flex" pdfMode={pdfMode}>
-                  <Text className="dark bold right ml-30" pdfMode={pdfMode}>
-                    {dolarFormat(subtotal)}
-                  </Text>
-                </View>
+              <View className="w-50 p-5" pdfMode={pdfMode}>
+                <Text className="right bold dark" pdfMode={pdfMode}>
+                  {colonFormat(subtotalColones)}
+                </Text>
+              </View>
+            </View>
+            <View className="flex" pdfMode={pdfMode}>
+              <View className="w-50 p-5" pdfMode={pdfMode}>
+                <Text pdfMode={pdfMode}>Subtotal </Text>
+              </View>
+              <View className="w-50 p-5" pdfMode={pdfMode}>
+                <Text className="right bold dark" pdfMode={pdfMode}>
+                  {dolarFormat(subtotalDollars)}
+                </Text>
+              </View>
+            </View>
+            <View className="flex bg-gray p-5" pdfMode={pdfMode}>
+              <View className="w-50 p-5" pdfMode={pdfMode}>
+                <Text className="bold" pdfMode={pdfMode}>
+                  {`TOTAL`}
+                </Text>
+              </View>
+              <View className="w-50 p-5 flex" pdfMode={pdfMode}>
+                <Text className="dark bold right ml-30" pdfMode={pdfMode}>
+                  {dolarFormat(subtotalDollars)}
+                </Text>
               </View>
             </View>
           </View>
