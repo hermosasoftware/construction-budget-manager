@@ -10,7 +10,7 @@ import {
 } from '../../../../common/SearchFilter/SearchFilter';
 import { IProject } from '../../../../../types/project';
 import DownloadPDF from '../../../../common/PDF/DownloadPDF';
-import ExpenseReport from '../../../../reports/ExpenseReport/ExpensesReportPDF';
+import ExpensesReportPDF from '../../../../reports/ExpenseReport/ExpensesReportPDF';
 
 import styles from './ExpensesPreview.module.css';
 
@@ -57,7 +57,7 @@ export default function ExpensesPreview() {
       </Button>
       <div>
         <DownloadPDF fileName={`Budget-${project?.name}`}>
-          <ExpenseReport
+          <ExpensesReportPDF
             project={project!}
             expenses={filterExpenses()!}
             noteValue={noteValue}
@@ -74,7 +74,7 @@ export default function ExpensesPreview() {
       {project && expenses ? (
         <div className={`${styles.page_container}`}>
           <PDFToolbar />
-          <ExpenseReport
+          <ExpensesReportPDF
             project={project}
             expenses={filterExpenses()}
             noteValue={noteValue}

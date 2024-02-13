@@ -21,7 +21,7 @@ interface Props {
   pdfMode: boolean;
 }
 
-const BudgetReport: FC<Props> = props => {
+const ExpensesReportPDF: FC<Props> = props => {
   const { project, expenses, noteValue, setNoteValue, pdfMode } = props;
   const [subtotalColones, setSubtotalColones] = useState<number>(0);
   const [subtotalDollars, setSubtotalDollars] = useState<number>(0);
@@ -261,4 +261,4 @@ const BudgetReport: FC<Props> = props => {
   );
 };
 
-export default BudgetReport;
+export default ExpensesReportPDF;
