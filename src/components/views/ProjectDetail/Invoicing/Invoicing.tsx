@@ -65,6 +65,7 @@ const initialXMLData = {
   option: { value: '', label: '' },
   activity: '',
   supplier: '',
+  exchange: 0,
   xmlFile: undefined,
   pdfURL: '',
   pdfFile: undefined,
@@ -269,7 +270,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
   };
 
   const onSubmitXML = async (file: IXMLFile) => {
-    const { option, activity, xmlFile, pdfFile, pdfURL } = file;
+    const { option, activity, exchange, xmlFile, pdfFile, pdfURL } = file;
     const xmlString = await xmlFile?.text(); //Extract text from xml file
     const objson = xml2json.fromStr(xmlString); //Converts xml text to JSON
     const data = jsonProcessor(objson);
@@ -287,7 +288,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
         ...data,
         id: '',
         order: +option.label,
-        exchange: 0,
+        exchange: +exchange,
         createdAt: new Date(),
         updatedAt: new Date(),
         activity,
@@ -441,6 +442,7 @@ const Invoicing: React.FC<IInvoicing> = props => {
     }),
     activity: yup.string().required(appStrings?.requiredField),
     supplier: yup.string().required(appStrings?.requiredField),
+    exchange: yup.number().min(0).required(appStrings?.requiredField),
     xmlFile: yup.mixed().required(appStrings?.requiredField),
     pdfFile: yup.mixed().optional(),
   });
@@ -553,7 +555,13 @@ const Invoicing: React.FC<IInvoicing> = props => {
           <div style={{ textAlign: 'end', display: 'flex' }}>
             <Button
               style={{ padding: '0px', marginRight: 10 }}
-              onClick={() => setIsXMLModalOpen(true)}
+              onClick={() => {
+                setXMLItem({
+                  ...initialXMLData,
+                  exchange: exchange,
+                });
+                setIsXMLModalOpen(true);
+              }}
             >
               <UploadSimple size={18} />
             </Button>
@@ -609,6 +617,13 @@ const Invoicing: React.FC<IInvoicing> = props => {
                   name="supplier"
                   label={appStrings.supplier}
                   placeholder={appStrings.productSupplier}
+                />
+                <Input
+                  name="exchange"
+                  type="number"
+                  label={appStrings.currencyExchange}
+                  placeholder={appStrings.dollarExchange}
+                  helperText={appStrings.currencyUpToDate}
                 />
                 <br />
                 <div className={styles.fileUpload_container}>

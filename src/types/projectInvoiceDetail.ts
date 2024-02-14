@@ -27,6 +27,7 @@ export interface IXMLFile {
   option: { value: string; label: string };
   activity: string;
   supplier: string;
+  exchange: number;
   xmlFile?: File;
   pdfURL?: string;
   pdfFile?: File;
