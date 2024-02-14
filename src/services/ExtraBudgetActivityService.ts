@@ -51,6 +51,7 @@ export const listenExtraActivities = ({
             const elem = {
               ...change.doc.data(),
               id: change.doc.id,
+              advance: change.doc.data()?.advance || 0,
               date: change.doc.data().date.toDate().toISOString(),
               createdAt: change.doc.data()?.createdAt?.toDate()?.toISOString(),
               updatedAt: change.doc.data()?.updatedAt?.toDate()?.toISOString(),
@@ -131,6 +132,7 @@ export const getExtraBudgetActivity = async ({
     const data = result.docs.map(doc => ({
       ...doc.data(),
       id: doc.id,
+      advance: doc.data()?.advance || 0,
       date: doc.data().date.toDate(),
     })) as IBudgetActivity[];
 
@@ -235,6 +237,41 @@ export const updateExtraBudgetActivity = async ({
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
     successCallback && successCallback(extraBudgetActivity);
+  } catch (error) {
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.saveError, errorMessage);
+
+    errorCallback && errorCallback();
+  }
+};
+
+export const updateExtraBudgetActivityAdvance = async ({
+  projectId,
+  activityId,
+  advance,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: {
+  projectId: string;
+  activityId: string;
+  advance: number;
+} & IService) => {
+  try {
+    const extraBudgetRef = doc(
+      db,
+      'projects',
+      projectId,
+      'projectExtraBudget',
+      activityId,
+    );
+    await updateDoc(extraBudgetRef, { advance });
+
+    toastSuccess(appStrings.success, appStrings.saveSuccess);
+
+    successCallback && successCallback();
   } catch (error) {
     let errorMessage = appStrings.genericError;
     if (error instanceof FirebaseError) errorMessage = error.message;

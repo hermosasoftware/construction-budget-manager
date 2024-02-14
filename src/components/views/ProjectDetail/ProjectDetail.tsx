@@ -4,6 +4,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import TabGroup from '../../common/TabGroup/TabGroup';
 import { IProject } from '../../../types/project';
 import ExpensesReport from './ExpensesReport/ExpensesReport';
+import ComparativeReport from './ComparativeReport/ComparativeReport';
 import Orders from './Orders';
 import Invoicing from './Invoicing';
 import Budget from './Budget/Budget';
@@ -422,6 +423,12 @@ export default function Projects() {
             isDisable: project?.budgetOpen,
             selected: selectedTab === 'expenses',
           },
+          {
+            id: 'comparative',
+            name: appStrings.comparativeReport,
+            isDisable: project?.budgetOpen,
+            selected: selectedTab === 'comparative',
+          },
         ]}
         onSelectedTabChange={onSelectedTabChange}
       />
@@ -439,6 +446,8 @@ export default function Projects() {
         <Invoicing projectId={projectId} />
       ) : selectedTab === 'expenses' ? (
         <ExpensesReport projectId={projectId} />
+      ) : selectedTab === 'comparative' ? (
+        <ComparativeReport projectId={projectId} />
       ) : null}
     </div>
   );

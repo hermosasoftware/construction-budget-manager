@@ -1,5 +1,6 @@
 {
   "accessID": "Access ID",
+  "accounting": "Accounting",
   "active": "Active",
   "activity": "Activity",
   "activityName": "Activity name",
@@ -18,6 +19,8 @@
   "addSubcontract": "Add subcontract",
   "addSubmaterial": "Add submaterial",
   "adminFee": "Admin Fee",
+  "advance": "Advance",
+  "advanceAmount": "Advance amount",
   "amount": "Amount",
   "apply": "Apply",
   "auth/admin-restricted-operation": "This operation is restricted to administrators only.",
@@ -123,6 +126,7 @@
   "closeBudget": "Close Budget",
   "closingBudget": "Closing Budget",
   "closingBudgetWarning": "You are going to close the budget for this project. This action cannot be undone in the future.",
+  "comparativeReport": "Comparative Report",
   "confirm": "Confirm",
   "continue": "Continue",
   "continueWithSocials": "Continue with Google or Apple",
