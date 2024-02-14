@@ -6,3 +6,8 @@
 .menu_container {
   gap: var(--separator-gap-md);
 }
+
+.pdf_button {
+  padding: 0px !important;
+  margin-right: 10px;
+}

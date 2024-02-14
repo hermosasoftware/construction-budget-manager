@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Box, Flex, Heading } from '@chakra-ui/react';
+import { FilePdf } from 'phosphor-react';
 import * as yup from 'yup';
 import Button from '../../../common/Button/Button';
 import Modal from '../../../common/Modal/Modal';
@@ -61,7 +63,7 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
   const projectExpenses = useAppSelector(
     state => state.projectExpenses.projectExpenses,
   );
-
+  const navigate = useNavigate();
   const tableHeader: TTableHeader[] = [
     { name: 'name', value: appStrings.name },
     { name: 'docNumber', value: appStrings.docNumber },
@@ -169,6 +171,18 @@ const ExpensesReport: React.FC<IExpensesReport> = props => {
             options={filterOptions}
           />
           <div style={{ textAlign: 'end' }}>
+            <Button
+              onClick={() => {
+                navigate(
+                  `/project-detail/${projectId}/expenses-pdf-preview/${JSON.stringify(
+                    search,
+                  )}`,
+                );
+              }}
+              className={styles.pdf_button}
+            >
+              <FilePdf size={18} />
+            </Button>
             <Button onClick={() => setIsModalOpen(true)}>+</Button>
             <Modal
               isOpen={isModalOpen}
