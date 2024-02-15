@@ -418,16 +418,16 @@ export default function Projects() {
             selected: selectedTab === 'invoicing',
           },
           {
+            id: 'comparative',
+            name: appStrings.comparative,
+            isDisable: project?.budgetOpen,
+            selected: selectedTab === 'comparative',
+          },
+          {
             id: 'expenses',
             name: appStrings.expensesReport,
             isDisable: project?.budgetOpen,
             selected: selectedTab === 'expenses',
-          },
-          {
-            id: 'comparative',
-            name: appStrings.comparativeReport,
-            isDisable: project?.budgetOpen,
-            selected: selectedTab === 'comparative',
           },
         ]}
         onSelectedTabChange={onSelectedTabChange}
@@ -444,10 +444,10 @@ export default function Projects() {
         <Orders projectId={projectId} />
       ) : selectedTab === 'invoicing' ? (
         <Invoicing projectId={projectId} />
-      ) : selectedTab === 'expenses' ? (
-        <ExpensesReport projectId={projectId} />
       ) : selectedTab === 'comparative' ? (
         <ComparativeReport projectId={projectId} />
+      ) : selectedTab === 'expenses' ? (
+        <ExpensesReport projectId={projectId} />
       ) : null}
     </div>
   );

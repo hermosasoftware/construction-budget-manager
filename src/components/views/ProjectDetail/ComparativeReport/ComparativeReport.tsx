@@ -5,20 +5,17 @@ import { FilePdf } from 'phosphor-react';
 import * as yup from 'yup';
 import Button from '../../../common/Button/Button';
 import Modal from '../../../common/Modal/Modal';
-import SearchFilter, {
-  FilterOption,
-  handleFilterSearch,
-  Search,
-} from '../../../common/SearchFilter/SearchFilter';
 import TableView, { TTableHeader } from '../../../common/TableView/TableView';
 import Form, { Input } from '../../../common/Form';
 import { IProjectComparative } from '../../../../types/projectComparative';
 import { useAppSelector } from '../../../../redux/hooks';
 import { dolarFormat } from '../../../../utils/numbers';
-import styles from './ComparativeReport.module.css';
 import { IBudgetActivity } from '../../../../types/budgetActivity';
 import { updateBudgetActivityAdvance } from '../../../../services/BudgetActivityService';
 import { updateExtraBudgetActivityAdvance } from '../../../../services/ExtraBudgetActivityService';
+import SearchInput from '../../../common/SearchInput/SearchInput';
+
+import styles from './ComparativeReport.module.css';
 
 interface IComparativeReport {
   projectId: string;
@@ -34,20 +31,14 @@ const initialSelectedItemData = {
   difference: 0,
 };
 
-const initialSearchData = {
-  selectedOption: { label: 'name', value: '' },
-  searchTerm: '',
-  firstDate: new Date(),
-  secondDate: new Date(),
-};
-
 const ComparativeReport: React.FC<IComparativeReport> = props => {
   const [selectedItem, setSelectedItem] = useState<IProjectComparative>(
     initialSelectedItemData,
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [search, setSearch] = useState<Search>(initialSearchData);
+  const [searchTerm, setSearchTerm] = useState('');
   const { projectId } = props;
+  const navigate = useNavigate();
   const appStrings = useAppSelector(state => state.settings.appStrings);
   const [comparativeList, setcomparativeList] = useState<IProjectComparative[]>(
     [],
@@ -61,18 +52,37 @@ const ComparativeReport: React.FC<IComparativeReport> = props => {
   const projectOrders = useAppSelector(
     state => state.projectOrders.projectOrders,
   );
-  const navigate = useNavigate();
-  const tableHeader: TTableHeader[] = [
-    { name: 'activity', value: appStrings.description },
-    { name: 'budget', value: appStrings.budget },
-    { name: 'advance', value: appStrings.advance, isGreen: true },
-    { name: 'advanceAmount', value: appStrings.advanceAmount },
-    { name: 'accounting', value: appStrings.accounting },
-    { name: 'difference', value: appStrings.difference },
-  ];
+  const projectBudget = useAppSelector(
+    state => state.projectBudget.projectBudget,
+  );
 
-  const filterOptions: FilterOption[] = [
-    { name: 'name', value: '', hasSuggestions: false },
+  const tableHeader: TTableHeader[] = [
+    { name: 'activity', value: appStrings.activity },
+    {
+      name: 'budget',
+      value: appStrings.budget,
+      isDollar: true,
+      showTotal: true,
+    },
+    { name: 'advance', value: appStrings.advance, isGreen: true },
+    {
+      name: 'advanceAmount',
+      value: appStrings.advanceAmount,
+      isDollar: true,
+      showTotal: true,
+    },
+    {
+      name: 'accounting',
+      value: appStrings.accounting,
+      isDollar: true,
+      showTotal: true,
+    },
+    {
+      name: 'difference',
+      value: appStrings.difference,
+      isDollar: true,
+      showTotal: true,
+    },
   ];
 
   const loadComparativeList = () => {
@@ -86,27 +96,35 @@ const ComparativeReport: React.FC<IComparativeReport> = props => {
     activityList: IBudgetActivity[],
     type?: string,
   ) =>
-    activityList.map(data => {
-      const relatedOrders = projectOrders.filter(
-        order => order.activity === data.id,
+    activityList?.map(data => {
+      const relatedOrders = projectOrders?.filter(
+        order => order?.activity === data?.id,
       );
-      const advanceAmount = (data.advance * data.sumMaterials) / 100;
-      const accounting = relatedOrders.reduce(
+      const budget =
+        data?.sumMaterials /
+        Number(type === 'extra' ? data?.exchange : projectBudget?.exchange);
+      const advanceAmount = (data?.advance * budget) / 100;
+      const accounting = relatedOrders?.reduce(
         (total, order) =>
           total +
-          order.products.reduce(
-            (subtotal, product) => subtotal + product.cost * product.quantity,
-            0,
-          ),
+            order?.products?.reduce(
+              (subtotal, product) =>
+                subtotal +
+                product?.cost * product?.quantity +
+                (product?.tax
+                  ? product?.cost * product?.quantity * (product?.tax / 100)
+                  : 0),
+              0,
+            ) /
+              order?.exchange || 0,
         0,
       );
-
       return {
-        id: data.id,
-        activity: data.activity,
+        id: data?.id,
+        activity: data?.activity,
         isExtra: type === 'extra',
-        budget: data.sumMaterials,
-        advance: data.advance,
+        budget,
+        advance: data?.advance,
         advanceAmount,
         accounting,
         difference: advanceAmount - accounting,
@@ -116,12 +134,14 @@ const ComparativeReport: React.FC<IComparativeReport> = props => {
   const formatTableData = () =>
     comparativeList.map(data => ({
       ...data,
-      activity: `${data.activity} ${data.isExtra ? '(Extra)' : ''}`,
-      budget: dolarFormat(data.budget),
-      advance: `${data.advance} %`,
-      advanceAmount: dolarFormat(data.advanceAmount),
-      accounting: dolarFormat(data.accounting),
-      difference: dolarFormat(data.difference),
+      activity: `${data?.activity} ${
+        data?.isExtra ? `(${appStrings?.extra})` : ''
+      }`,
+      budget: dolarFormat(data?.budget),
+      advance: `${data?.advance} %`,
+      advanceAmount: dolarFormat(data?.advanceAmount),
+      accounting: dolarFormat(data?.accounting),
+      difference: dolarFormat(data?.difference),
     }));
 
   const editButton = async (budgetActivityId: string) => {
@@ -132,19 +152,23 @@ const ComparativeReport: React.FC<IComparativeReport> = props => {
     }
   };
 
+  const handleSearch = async (event: { target: { value: string } }) => {
+    setSearchTerm(event.target.value.toUpperCase());
+  };
+
   const handleOnSubmit = async (projectComparative: IProjectComparative) => {
-    const successCallback = (item: IProjectComparative) => {
+    const successCallback = () => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
     };
     const serviceCallParameters = {
       projectId,
       activityId: projectComparative.id,
-      advance: projectComparative.advance,
+      advance: +projectComparative.advance,
       appStrings,
       successCallback,
     };
-    projectComparative?.isExtra
+    !projectComparative?.isExtra
       ? await updateBudgetActivityAdvance(serviceCallParameters)
       : await updateExtraBudgetActivityAdvance(serviceCallParameters);
   };
@@ -167,11 +191,10 @@ const ComparativeReport: React.FC<IComparativeReport> = props => {
     <div className={`${styles.operations_container}`}>
       <Box p={5} borderWidth="1px" borderRadius={12}>
         <Flex marginBottom="5px" className={styles.menu_container}>
-          <SearchFilter
-            search={search}
-            setSearch={setSearch}
-            data={formatTableData()}
-            options={filterOptions}
+          <SearchInput
+            className={styles.search_button}
+            placeholder="Search"
+            onChange={handleSearch}
           />
           <div style={{ textAlign: 'end' }}>
             <Button onClick={() => {}} className={styles.pdf_button}>
@@ -185,7 +208,7 @@ const ComparativeReport: React.FC<IComparativeReport> = props => {
               }}
             >
               <Heading as="h2" size="lg">
-                {appStrings.addExpense}
+                {appStrings.editElement}
               </Heading>
               <Form
                 id="comparative-form"
@@ -204,7 +227,7 @@ const ComparativeReport: React.FC<IComparativeReport> = props => {
                 <Input
                   name="advance"
                   label={appStrings.advance}
-                  placeholder={appStrings.expenseName}
+                  placeholder={appStrings.advancePercentage}
                 />
                 <br />
                 <Button width="full" type="submit">
@@ -217,9 +240,12 @@ const ComparativeReport: React.FC<IComparativeReport> = props => {
         <TableView
           headers={tableHeader}
           items={formatTableData()}
-          filter={value => handleFilterSearch(value, search)}
+          filter={value =>
+            searchTerm === '' ||
+            value.activity.toUpperCase().includes(searchTerm)
+          }
           onClickEdit={id => editButton(id)}
-          usePagination={!search?.searchTerm?.length}
+          usePagination={!searchTerm?.length}
           showTotals
         />
         {!comparativeList.length ? <h1>{appStrings.noRecords}</h1> : null}

@@ -11,3 +11,8 @@
   padding: 0px !important;
   margin-right: 10px;
 }
+
+input.search_button {
+  margin-left: 0px;
+  max-width: 500px;
+}

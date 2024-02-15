@@ -42,6 +42,7 @@ export type TTableHeader<T = TObject> = {
   name: keyof TTableItem<T>;
   value: string | number;
   isGreen?: boolean;
+  isDollar?: boolean;
   isEditable?: boolean;
   showTotal?: boolean;
 };
@@ -161,7 +162,8 @@ const TableView = <T extends TObject>(props: ITableProps<T>) => {
         {toShow?.map((element, key) => (
           <Tooltip key={key} label={element?.value}>
             <Tag colorScheme={key % 2 ? 'teal' : 'green'}>
-              {element?.value?.toString()?.toUpperCase()?.includes('DOLLAR')
+              {element?.value?.toString()?.toUpperCase()?.includes('DOLLAR') ||
+              element?.isDollar
                 ? dolarFormat(totalValues[element?.name])
                 : colonFormat(totalValues[element?.name])}
             </Tag>
