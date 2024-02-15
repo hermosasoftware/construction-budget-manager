@@ -40,7 +40,7 @@ const ComparativeReport: React.FC<IComparativeReport> = props => {
   const { projectId } = props;
   const navigate = useNavigate();
   const appStrings = useAppSelector(state => state.settings.appStrings);
-  const [comparativeList, setcomparativeList] = useState<IProjectComparative[]>(
+  const [comparativeList, setComparativeList] = useState<IProjectComparative[]>(
     [],
   );
   const budgetActivities = useAppSelector(
@@ -86,7 +86,7 @@ const ComparativeReport: React.FC<IComparativeReport> = props => {
   ];
 
   const loadComparativeList = () => {
-    setcomparativeList([
+    setComparativeList([
       ...processActivityList(budgetActivities),
       ...processActivityList(extraActivities, 'extra'),
     ]);
@@ -152,9 +152,8 @@ const ComparativeReport: React.FC<IComparativeReport> = props => {
     }
   };
 
-  const handleSearch = async (event: { target: { value: string } }) => {
+  const handleSearch = async (event: { target: { value: string } }) =>
     setSearchTerm(event.target.value.toUpperCase());
-  };
 
   const handleOnSubmit = async (projectComparative: IProjectComparative) => {
     const successCallback = () => {
@@ -188,7 +187,7 @@ const ComparativeReport: React.FC<IComparativeReport> = props => {
   );
 
   return (
-    <div className={`${styles.operations_container}`}>
+    <div className={styles.operations_container}>
       <Box p={5} borderWidth="1px" borderRadius={12}>
         <Flex marginBottom="5px" className={styles.menu_container}>
           <SearchInput
