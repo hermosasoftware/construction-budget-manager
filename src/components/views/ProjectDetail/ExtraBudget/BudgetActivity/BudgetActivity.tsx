@@ -35,6 +35,7 @@ interface IBudgetActivityView {
 const initialSelectedItemData = {
   id: '',
   activity: '',
+  advance: 0,
   exchange: 1,
   adminFee: 12,
   sumLabors: 0,

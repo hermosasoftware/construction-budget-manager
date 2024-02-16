@@ -5,6 +5,7 @@ export interface IBudgetActivity {
   activity: string;
   exchange?: number;
   adminFee?: number;
+  advance: number;
   sumLabors: number;
   sumMaterials: number;
   sumSubcontracts: number;

@@ -49,6 +49,7 @@ export const listenBudgetActivities = ({
             const elem = {
               ...change.doc.data(),
               id: change.doc.id,
+              advance: change.doc.data()?.advance || 0,
               date: change.doc.data().date.toDate().toISOString(),
               createdAt: change.doc.data()?.createdAt?.toDate()?.toISOString(),
               updatedAt: change.doc.data()?.updatedAt?.toDate()?.toISOString(),
@@ -129,6 +130,7 @@ export const getBudgetActivity = async ({
     const data = result.docs.map(doc => ({
       ...doc.data(),
       id: doc.id,
+      advance: doc.data()?.advance || 0,
       date: doc.data().date.toDate(),
     })) as IBudgetActivity[];
 
@@ -233,6 +235,41 @@ export const updateBudgetActivity = async ({
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 
     successCallback && successCallback(budgetActivity);
+  } catch (error) {
+    let errorMessage = appStrings.genericError;
+    if (error instanceof FirebaseError) errorMessage = error.message;
+
+    toastError(appStrings.saveError, errorMessage);
+
+    errorCallback && errorCallback();
+  }
+};
+
+export const updateBudgetActivityAdvance = async ({
+  projectId,
+  activityId,
+  advance,
+  appStrings,
+  successCallback,
+  errorCallback,
+}: {
+  projectId: string;
+  activityId: string;
+  advance: number;
+} & IService) => {
+  try {
+    const budgetRef = doc(
+      db,
+      'projects',
+      projectId,
+      'projectBudget',
+      activityId,
+    );
+    await updateDoc(budgetRef, { advance });
+
+    toastSuccess(appStrings.success, appStrings.saveSuccess);
+
+    successCallback && successCallback();
   } catch (error) {
     let errorMessage = appStrings.genericError;
     if (error instanceof FirebaseError) errorMessage = error.message;

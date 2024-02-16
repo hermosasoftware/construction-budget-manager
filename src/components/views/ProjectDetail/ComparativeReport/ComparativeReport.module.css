@@ -1,0 +1,18 @@
+.operations_container {
+  margin: 20px;
+  padding-top: 10px;
+}
+
+.menu_container {
+  gap: var(--separator-gap-md);
+}
+
+.pdf_button {
+  padding: 0px !important;
+  margin-right: 10px;
+}
+
+input.search_button {
+  margin-left: 0px;
+  max-width: 500px;
+}

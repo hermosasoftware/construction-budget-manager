@@ -4,6 +4,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import TabGroup from '../../common/TabGroup/TabGroup';
 import { IProject } from '../../../types/project';
 import ExpensesReport from './ExpensesReport/ExpensesReport';
+import ComparativeReport from './ComparativeReport/ComparativeReport';
 import Orders from './Orders';
 import Invoicing from './Invoicing';
 import Budget from './Budget/Budget';
@@ -417,6 +418,12 @@ export default function Projects() {
             selected: selectedTab === 'invoicing',
           },
           {
+            id: 'comparative',
+            name: appStrings.comparative,
+            isDisable: project?.budgetOpen,
+            selected: selectedTab === 'comparative',
+          },
+          {
             id: 'expenses',
             name: appStrings.expensesReport,
             isDisable: project?.budgetOpen,
@@ -437,6 +444,8 @@ export default function Projects() {
         <Orders projectId={projectId} />
       ) : selectedTab === 'invoicing' ? (
         <Invoicing projectId={projectId} />
+      ) : selectedTab === 'comparative' ? (
+        <ComparativeReport projectId={projectId} />
       ) : selectedTab === 'expenses' ? (
         <ExpensesReport projectId={projectId} />
       ) : null}
