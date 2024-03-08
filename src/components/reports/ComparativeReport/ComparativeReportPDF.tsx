@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from 'react';
+import { FC } from 'react';
 import { Image } from '@react-pdf/renderer';
 import CotoLogo from '../../../assets/img/coto-logo.png';
 import Document from '../../common/PDF/Document';
@@ -8,8 +8,7 @@ import Page from '../../common/PDF/Page';
 import EditableTextarea from '../../common/PDF/EditableTextarea';
 import { IProject } from '../../../types/project';
 import { IProjectComparative } from '../../../types/projectComparative';
-import { colonFormat, dolarFormat } from '../../../utils/numbers';
-import { formatDate } from '../../../utils/dates';
+import { dolarFormat } from '../../../utils/numbers';
 
 import styles from './ComparativeReportPDF.module.css';
 
@@ -23,24 +22,11 @@ interface Props {
 
 const ComparativeReportPDF: FC<Props> = props => {
   const { project, comparatives, noteValue, setNoteValue, pdfMode } = props;
-  const [subtotalColones, setSubtotalColones] = useState<number>(0);
-  const [subtotalDollars, setSubtotalDollars] = useState<number>(0);
 
   const handleInputChange = (value: string) => setNoteValue(value);
 
-  const calculateTotalCost = (array: any[], type?: string) => {
-    let total = 0;
-    array.forEach(
-      row => (total += row?.amount / (type === 'dollars' ? row?.exchange : 1)),
-    );
-
-    return total;
-  };
-
-  useEffect(() => {
-    setSubtotalColones(calculateTotalCost(comparatives));
-    setSubtotalDollars(calculateTotalCost(comparatives, 'dollars'));
-  }, []);
+  const calculateTotal = (field: keyof IProjectComparative) =>
+    comparatives.reduce((acc, item) => acc + Number(item[field]), 0);
 
   return (
     <Document pdfMode={pdfMode}>
@@ -151,37 +137,37 @@ const ComparativeReportPDF: FC<Props> = props => {
                 </View>
               </View>
             </View>
-            {comparatives.map((labor, i) => {
+            {comparatives.map((item, i) => {
               return (
                 <View key={i} className="row flex left" pdfMode={pdfMode}>
                   <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
                     <Text className="dark" pdfMode={pdfMode}>
-                      {labor.activity}
+                      {`${item?.activity} ${item?.isExtra ? '(Extra)' : ''}`}
                     </Text>
                   </View>
                   <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
                     <Text className="dark" pdfMode={pdfMode}>
-                      {dolarFormat(labor.budget)}
+                      {dolarFormat(item.budget)}
                     </Text>
                   </View>
                   <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
                     <Text className="dark" pdfMode={pdfMode}>
-                      {formatDate(new Date(labor.advance), 'MM/DD/YYYY')}
+                      {`${item?.advance} %`}
                     </Text>
                   </View>
                   <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
                     <Text className="dark" pdfMode={pdfMode}>
-                      {dolarFormat(labor.advanceAmount)}
+                      {dolarFormat(item.advanceAmount)}
                     </Text>
                   </View>
                   <View className="w-20 p-4-8 pb-10" pdfMode={pdfMode}>
                     <Text className="dark" pdfMode={pdfMode}>
-                      {dolarFormat(labor.accounting)}
+                      {dolarFormat(item.accounting)}
                     </Text>
                   </View>
                   <View className="w-15 p-4-8 pb-10" pdfMode={pdfMode}>
                     <Text className="dark" pdfMode={pdfMode}>
-                      {dolarFormat(labor.difference)}
+                      {dolarFormat(item.difference)}
                     </Text>
                   </View>
                 </View>
@@ -204,31 +190,31 @@ const ComparativeReportPDF: FC<Props> = props => {
           <View className="w-50 mt-20" pdfMode={pdfMode}>
             <View className="flex" pdfMode={pdfMode}>
               <View className="w-50 p-5" pdfMode={pdfMode}>
-                <Text pdfMode={pdfMode}>Bueget </Text>
+                <Text pdfMode={pdfMode}>{`Budget`}</Text>
               </View>
               <View className="w-50 p-5" pdfMode={pdfMode}>
                 <Text className="right bold dark" pdfMode={pdfMode}>
-                  {colonFormat(subtotalColones)}
+                  {dolarFormat(calculateTotal('budget'))}
                 </Text>
               </View>
             </View>
             <View className="flex" pdfMode={pdfMode}>
               <View className="w-50 p-5" pdfMode={pdfMode}>
-                <Text pdfMode={pdfMode}>Advance amount </Text>
+                <Text pdfMode={pdfMode}>{`Advance Amount`}</Text>
               </View>
               <View className="w-50 p-5" pdfMode={pdfMode}>
                 <Text className="right bold dark" pdfMode={pdfMode}>
-                  {colonFormat(subtotalColones)}
+                  {dolarFormat(calculateTotal('advanceAmount'))}
                 </Text>
               </View>
             </View>
             <View className="flex" pdfMode={pdfMode}>
               <View className="w-50 p-5" pdfMode={pdfMode}>
-                <Text pdfMode={pdfMode}>Accounting </Text>
+                <Text pdfMode={pdfMode}>{`Accounting`}</Text>
               </View>
               <View className="w-50 p-5" pdfMode={pdfMode}>
                 <Text className="right bold dark" pdfMode={pdfMode}>
-                  {colonFormat(subtotalColones)}
+                  {dolarFormat(calculateTotal('accounting'))}
                 </Text>
               </View>
             </View>
@@ -240,7 +226,7 @@ const ComparativeReportPDF: FC<Props> = props => {
               </View>
               <View className="w-50 p-5 flex" pdfMode={pdfMode}>
                 <Text className="dark bold right ml-30" pdfMode={pdfMode}>
-                  {dolarFormat(subtotalDollars)}
+                  {dolarFormat(calculateTotal('difference'))}
                 </Text>
               </View>
             </View>
