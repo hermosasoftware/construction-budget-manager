@@ -8,7 +8,8 @@ import Modal from '../../../common/Modal/Modal';
 import TableView, { TTableHeader } from '../../../common/TableView/TableView';
 import Form, { Input } from '../../../common/Form';
 import { IProjectComparative } from '../../../../types/projectComparative';
-import { useAppSelector } from '../../../../redux/hooks';
+import { useAppDispatch, useAppSelector } from '../../../../redux/hooks';
+import { changeProjectComparatives } from '../../../../redux/reducers/projectComparativesSlice';
 import { dolarFormat } from '../../../../utils/numbers';
 import { IBudgetActivity } from '../../../../types/budgetActivity';
 import { updateBudgetActivityAdvance } from '../../../../services/BudgetActivityService';
@@ -39,9 +40,11 @@ const ComparativeReport: React.FC<IComparativeReport> = props => {
   const [searchTerm, setSearchTerm] = useState('');
   const { projectId } = props;
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const appStrings = useAppSelector(state => state.settings.appStrings);
-  const [comparativeList, setComparativeList] = useState<IProjectComparative[]>(
-    [],
+
+  const projectComparative = useAppSelector(
+    state => state.projectComparatives.projectComparatives,
   );
   const budgetActivities = useAppSelector(
     state => state.budgetActivities.budgetActivities,
@@ -86,10 +89,12 @@ const ComparativeReport: React.FC<IComparativeReport> = props => {
   ];
 
   const loadComparativeList = () => {
-    setComparativeList([
-      ...processActivityList(budgetActivities),
-      ...processActivityList(extraActivities, 'extra'),
-    ]);
+    dispatch(
+      changeProjectComparatives([
+        ...processActivityList(budgetActivities),
+        ...processActivityList(extraActivities, 'extra'),
+      ]),
+    );
   };
 
   const processActivityList = (
@@ -132,7 +137,7 @@ const ComparativeReport: React.FC<IComparativeReport> = props => {
     });
 
   const formatTableData = () =>
-    comparativeList.map(data => ({
+    projectComparative.map(data => ({
       ...data,
       activity: `${data?.activity} ${
         data?.isExtra ? `(${appStrings?.extra})` : ''
@@ -145,7 +150,9 @@ const ComparativeReport: React.FC<IComparativeReport> = props => {
     }));
 
   const editButton = async (budgetActivityId: string) => {
-    const element = comparativeList.find(data => data.id === budgetActivityId);
+    const element = projectComparative.find(
+      data => data.id === budgetActivityId,
+    );
     if (element) {
       setSelectedItem(element);
       setIsModalOpen(true);
@@ -196,7 +203,16 @@ const ComparativeReport: React.FC<IComparativeReport> = props => {
             onChange={handleSearch}
           />
           <div style={{ textAlign: 'end' }}>
-            <Button onClick={() => {}} className={styles.pdf_button}>
+            <Button
+              onClick={() => {
+                navigate(
+                  `/project-detail/${projectId}/comparatives-pdf-preview/${JSON.stringify(
+                    searchTerm,
+                  )}`,
+                );
+              }}
+              className={styles.pdf_button}
+            >
               <FilePdf size={18} />
             </Button>
             <Modal
@@ -247,7 +263,7 @@ const ComparativeReport: React.FC<IComparativeReport> = props => {
           usePagination={!searchTerm?.length}
           showTotals
         />
-        {!comparativeList.length ? <h1>{appStrings.noRecords}</h1> : null}
+        {!projectComparative.length ? <h1>{appStrings.noRecords}</h1> : null}
       </Box>
     </div>
   );
