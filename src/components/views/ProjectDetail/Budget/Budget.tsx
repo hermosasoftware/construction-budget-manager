@@ -27,6 +27,7 @@ import AdminFeeInput from '../../../common/AdminFeeInput';
 import { listenBudgetMaterials } from '../../../../services/BudgetMaterialsService';
 import { listenersList } from '../../../../services/herperService';
 import { changeBudgetMaterials } from '../../../../redux/reducers/budgetMaterialsSlice';
+import { isAdmin } from '../../../../utils/permisions';
 
 import styles from './Budget.module.css';
 
@@ -54,6 +55,8 @@ const Budget: React.FC<IBudgetView> = props => {
   const projectBudget = useAppSelector(
     state => state.projectBudget.projectBudget,
   );
+  const sessionUser = useAppSelector(state => state.session.user);
+  const [isAdminUser, setIsAdminUser] = useState(isAdmin(sessionUser!));
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
@@ -164,6 +167,7 @@ const Budget: React.FC<IBudgetView> = props => {
       setIsBudgetOpen(project.budgetOpen);
     }
   }, [project]);
+  useEffect(() => setIsAdminUser(isAdmin(sessionUser!)), [sessionUser]);
 
   useEffect(() => {
     activity && checkListeners(activity.id);
@@ -176,6 +180,7 @@ const Budget: React.FC<IBudgetView> = props => {
             <BudgetMaterial
               projectId={projectId}
               isBudgetOpen={isBudgetOpen}
+              isAdminUser={isAdminUser}
               budget={projectBudget!}
               activity={activity}
             />
@@ -189,6 +194,7 @@ const Budget: React.FC<IBudgetView> = props => {
             <BudgetActivity
               projectId={projectId}
               isBudgetOpen={isBudgetOpen}
+              isAdminUser={isAdminUser}
               budget={projectBudget!}
               setActivity={setActivity}
             />
@@ -197,6 +203,7 @@ const Budget: React.FC<IBudgetView> = props => {
             <BudgetLabor
               projectId={projectId}
               isBudgetOpen={isBudgetOpen}
+              isAdminUser={isAdminUser}
               budget={projectBudget!}
             />
           ),
@@ -204,6 +211,7 @@ const Budget: React.FC<IBudgetView> = props => {
             <BudgetSubcontract
               projectId={projectId}
               isBudgetOpen={isBudgetOpen}
+              isAdminUser={isAdminUser}
               budget={projectBudget!}
             />
           ),
@@ -211,6 +219,7 @@ const Budget: React.FC<IBudgetView> = props => {
             <BudgetOther
               projectId={projectId}
               isBudgetOpen={isBudgetOpen}
+              isAdminUser={isAdminUser}
               budget={projectBudget!}
             />
           ),
@@ -289,7 +298,7 @@ const Budget: React.FC<IBudgetView> = props => {
               <ExchangeInput
                 editExchange={editExchange}
                 onClick={() => setEditExchange(true)}
-                isDisabled={!isBudgetOpen}
+                isDisabled={!isBudgetOpen && !isAdminUser}
               />
             </Form>
             <Form
@@ -303,7 +312,7 @@ const Budget: React.FC<IBudgetView> = props => {
               <AdminFeeInput
                 editAdminFee={editAdminFee}
                 onClick={() => setEditAdminFee(true)}
-                isDisabled={!isBudgetOpen}
+                isDisabled={!isBudgetOpen && !isAdminUser}
               />
             </Form>
             {
@@ -320,19 +329,27 @@ const Budget: React.FC<IBudgetView> = props => {
               onClick={() => {
                 setIsModalOpen(true);
               }}
-              disabled={!isBudgetOpen}
+              disabled={!isBudgetOpen && !isAdminUser}
               className={styles.close_budget}
             >
               {`${
-                isBudgetOpen ? appStrings.closeBudget : appStrings.budgetClosed
+                isBudgetOpen
+                  ? appStrings.closeBudget
+                  : isAdminUser
+                  ? appStrings.openBudget
+                  : appStrings.budgetClosed
               }`}
             </Button>
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
               <Heading as="h2" size="lg">
-                {appStrings.closingBudget}
+                {isBudgetOpen
+                  ? appStrings.closingBudget
+                  : appStrings.openingBudget}
               </Heading>
               <div>
-                {appStrings.closingBudgetWarning}
+                {isBudgetOpen
+                  ? appStrings.closingBudgetWarning
+                  : appStrings.openingBudgetWarning}
                 <div className={styles.buttons_container}>
                   <Button
                     onClick={() => setIsModalOpen(false)}
@@ -344,7 +361,9 @@ const Budget: React.FC<IBudgetView> = props => {
                     onClick={() => handleCloseBudget()}
                     className={`${styles.close_budget} ${styles.button_danger}`}
                   >
-                    {appStrings.closeBudget}
+                    {isBudgetOpen
+                      ? appStrings.closeBudget
+                      : appStrings.openBudget}
                   </Button>
                 </div>
               </div>

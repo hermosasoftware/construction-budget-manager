@@ -25,6 +25,7 @@ import styles from './BudgetOther.module.css';
 interface IBudgetOtherView {
   projectId: string;
   isBudgetOpen: boolean;
+  isAdminUser: boolean;
   budget: IProjectBudget;
 }
 
@@ -39,7 +40,7 @@ const initialSelectedItemData = {
 };
 
 const BudgetOther: React.FC<IBudgetOtherView> = props => {
-  const { projectId, isBudgetOpen, budget } = props;
+  const { projectId, isBudgetOpen, isAdminUser, budget } = props;
   const [selectedItem, setSelectedItem] = useState<IBudgetOther>(
     initialSelectedItemData,
   );
@@ -141,7 +142,7 @@ const BudgetOther: React.FC<IBudgetOtherView> = props => {
           onChange={handleSearch}
         />
         <div className={styles.form_container}>
-          {isBudgetOpen && (
+          {(isBudgetOpen || isAdminUser) && (
             <Button onClick={() => setIsModalOpen(true)}>+</Button>
           )}
           <Modal
@@ -202,7 +203,7 @@ const BudgetOther: React.FC<IBudgetOtherView> = props => {
           setSelectedItem({ ...selectedItem, id: id });
           setIsAlertDialogOpen(true);
         }}
-        hideOptions={!isBudgetOpen}
+        hideOptions={!isBudgetOpen || !isAdminUser}
         usePagination={!searchTerm?.length}
         showTotals
       />

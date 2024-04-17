@@ -1,9 +1,10 @@
-export type TIdType = 'national';
-
 export interface IUser {
+  id: string;
+  uid: string;
   name: string;
   lastName: string;
-  idType: TIdType;
-  id: string;
+  role: string;
   email: string;
+  createdAt: Date | string;
+  updatedAt: Date | string;
 }

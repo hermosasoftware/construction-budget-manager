@@ -21,6 +21,7 @@ import { useState } from 'react';
 import { ReactComponent as Logo } from '../../assets/img/coto-logo.svg';
 import { auth } from '../../config/firebaseConfig';
 import { listenersList } from '../../services/herperService';
+import { isAdmin } from '../../utils/permisions';
 
 import styles from './Sidebar.module.css';
 
@@ -31,7 +32,7 @@ const Sidebar = () => {
   const { appStrings } = useAppSelector(state => ({
     ...state.settings,
   }));
-
+  const sessionUser = useAppSelector(state => state.session.user);
   const navigate = useNavigate();
   const bg = useColorModeValue(
     'var(--chakra-colors-side_bar_background)',
@@ -48,7 +49,7 @@ const Sidebar = () => {
         <Stack className="center-content-cross">
           <Logo className={styles.logo} />
           <MenuBar
-            menuItems={menuItems(appStrings)}
+            menuItems={menuItems(appStrings, isAdmin(sessionUser!))}
             toggleSidebar={toggleSidebar}
           />
         </Stack>

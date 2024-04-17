@@ -33,6 +33,8 @@ import { changeExtraMaterials } from '../redux/reducers/extraMaterialsSlice';
 import { changeExtraLabors } from '../redux/reducers/extraLaborsSlice';
 import { changeExtraSubcontracts } from '../redux/reducers/extraSubcontractsSlice';
 import { changeExtraOthers } from '../redux/reducers/extraOthersSlice';
+import { getUserByUID } from '../services/UserService';
+import { IUser } from '../types/user';
 
 export const verifyEmail = async ({
   email,
@@ -178,15 +180,15 @@ export const handleAuthChange = (dispatch: Function, appStrings: any) => {
   onAuthStateChanged(auth, userAuth => {
     if (userAuth) {
       // user is logged in, send the user's details to redux, store the current user in the state
-      dispatch(
-        login({
-          email: userAuth.email,
-          uid: userAuth.uid,
-          name: userAuth.displayName,
-          // photoUrl: userAuth.photoURL,
-        }),
-      );
-      startListeners(appStrings);
+      const successCallback = (response: IUser) => {
+        dispatch(login(response));
+        startListeners(appStrings);
+      };
+      getUserByUID({
+        userUID: userAuth.uid,
+        appStrings,
+        successCallback,
+      });
     } else {
       dispatch(logout());
       cleanListeners(dispatch);
