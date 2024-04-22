@@ -31,7 +31,7 @@ import styles from './BudgetActivity.module.css';
 interface IBudgetActivityView {
   projectId: string;
   isBudgetOpen: boolean;
-  isAdminUser: boolean;
+  hasExtraPrivilegies: boolean;
   budget: IProjectBudget;
   setActivity: Function;
 }
@@ -63,7 +63,8 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [search, setSearch] = useState<Search>(initialSearchData);
-  const { projectId, isBudgetOpen, isAdminUser, budget, setActivity } = props;
+  const { projectId, isBudgetOpen, hasExtraPrivilegies, budget, setActivity } =
+    props;
   const navigate = useNavigate();
   const appStrings = useAppSelector(state => state.settings.appStrings);
   const budgetActivities = useAppSelector(
@@ -164,7 +165,7 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
           options={filterOptions}
         />
         <div className={styles.form_container}>
-          {(isBudgetOpen || isAdminUser) && (
+          {(isBudgetOpen || hasExtraPrivilegies) && (
             <Button onClick={() => setIsModalOpen(true)}>+</Button>
           )}
           <Modal
@@ -221,7 +222,7 @@ const BudgetActivity: React.FC<IBudgetActivityView> = props => {
           setSelectedItem({ ...selectedItem, id: id });
           setIsAlertDialogOpen(true);
         }}
-        hideOptions={!isBudgetOpen && !isAdminUser}
+        hideOptions={!isBudgetOpen && !hasExtraPrivilegies}
         usePagination={!search?.searchTerm?.length}
         showTotals
       />

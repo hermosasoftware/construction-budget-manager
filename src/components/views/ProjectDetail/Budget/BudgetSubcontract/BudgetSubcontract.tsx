@@ -25,7 +25,7 @@ import styles from './BudgetSubcontract.module.css';
 interface IBudgetSubcontractView {
   projectId: string;
   isBudgetOpen: boolean;
-  isAdminUser: boolean;
+  hasExtraPrivilegies: boolean;
   budget: IProjectBudget;
 }
 
@@ -40,7 +40,7 @@ const initialSelectedItemData = {
 };
 
 const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
-  const { projectId, isBudgetOpen, isAdminUser, budget } = props;
+  const { projectId, isBudgetOpen, hasExtraPrivilegies, budget } = props;
   const [selectedItem, setSelectedItem] = useState<IBudgetSubcontract>(
     initialSelectedItemData,
   );
@@ -144,7 +144,7 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
           onChange={handleSearch}
         />
         <div className={styles.form_container}>
-          {(isBudgetOpen || isAdminUser) && (
+          {(isBudgetOpen || hasExtraPrivilegies) && (
             <Button onClick={() => setIsModalOpen(true)}>+</Button>
           )}
           <Modal
@@ -207,7 +207,7 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
           setSelectedItem({ ...selectedItem, id: id });
           setIsAlertDialogOpen(true);
         }}
-        hideOptions={!isBudgetOpen || !isAdminUser}
+        hideOptions={!isBudgetOpen || !hasExtraPrivilegies}
         usePagination={!searchTerm?.length}
         showTotals
       />

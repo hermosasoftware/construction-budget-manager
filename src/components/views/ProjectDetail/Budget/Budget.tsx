@@ -27,7 +27,7 @@ import AdminFeeInput from '../../../common/AdminFeeInput';
 import { listenBudgetMaterials } from '../../../../services/BudgetMaterialsService';
 import { listenersList } from '../../../../services/herperService';
 import { changeBudgetMaterials } from '../../../../redux/reducers/budgetMaterialsSlice';
-import { isAdmin } from '../../../../utils/permisions';
+import { isManagerOrAdmin } from '../../../../utils/permisions';
 
 import styles from './Budget.module.css';
 
@@ -56,7 +56,9 @@ const Budget: React.FC<IBudgetView> = props => {
     state => state.projectBudget.projectBudget,
   );
   const sessionUser = useAppSelector(state => state.session.user);
-  const [isAdminUser, setIsAdminUser] = useState(isAdmin(sessionUser!));
+  const [hasExtraPrivilegies, setHasExtraPrivilegies] = useState(
+    isManagerOrAdmin(sessionUser!),
+  );
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
@@ -167,7 +169,10 @@ const Budget: React.FC<IBudgetView> = props => {
       setIsBudgetOpen(project.budgetOpen);
     }
   }, [project]);
-  useEffect(() => setIsAdminUser(isAdmin(sessionUser!)), [sessionUser]);
+  useEffect(
+    () => setHasExtraPrivilegies(isManagerOrAdmin(sessionUser!)),
+    [sessionUser],
+  );
 
   useEffect(() => {
     activity && checkListeners(activity.id);
@@ -180,7 +185,7 @@ const Budget: React.FC<IBudgetView> = props => {
             <BudgetMaterial
               projectId={projectId}
               isBudgetOpen={isBudgetOpen}
-              isAdminUser={isAdminUser}
+              hasExtraPrivilegies={hasExtraPrivilegies}
               budget={projectBudget!}
               activity={activity}
             />
@@ -194,7 +199,7 @@ const Budget: React.FC<IBudgetView> = props => {
             <BudgetActivity
               projectId={projectId}
               isBudgetOpen={isBudgetOpen}
-              isAdminUser={isAdminUser}
+              hasExtraPrivilegies={hasExtraPrivilegies}
               budget={projectBudget!}
               setActivity={setActivity}
             />
@@ -203,7 +208,7 @@ const Budget: React.FC<IBudgetView> = props => {
             <BudgetLabor
               projectId={projectId}
               isBudgetOpen={isBudgetOpen}
-              isAdminUser={isAdminUser}
+              hasExtraPrivilegies={hasExtraPrivilegies}
               budget={projectBudget!}
             />
           ),
@@ -211,7 +216,7 @@ const Budget: React.FC<IBudgetView> = props => {
             <BudgetSubcontract
               projectId={projectId}
               isBudgetOpen={isBudgetOpen}
-              isAdminUser={isAdminUser}
+              hasExtraPrivilegies={hasExtraPrivilegies}
               budget={projectBudget!}
             />
           ),
@@ -219,7 +224,7 @@ const Budget: React.FC<IBudgetView> = props => {
             <BudgetOther
               projectId={projectId}
               isBudgetOpen={isBudgetOpen}
-              isAdminUser={isAdminUser}
+              hasExtraPrivilegies={hasExtraPrivilegies}
               budget={projectBudget!}
             />
           ),
@@ -298,7 +303,7 @@ const Budget: React.FC<IBudgetView> = props => {
               <ExchangeInput
                 editExchange={editExchange}
                 onClick={() => setEditExchange(true)}
-                isDisabled={!isBudgetOpen && !isAdminUser}
+                isDisabled={!isBudgetOpen && !hasExtraPrivilegies}
               />
             </Form>
             <Form
@@ -312,7 +317,7 @@ const Budget: React.FC<IBudgetView> = props => {
               <AdminFeeInput
                 editAdminFee={editAdminFee}
                 onClick={() => setEditAdminFee(true)}
-                isDisabled={!isBudgetOpen && !isAdminUser}
+                isDisabled={!isBudgetOpen && !hasExtraPrivilegies}
               />
             </Form>
             {
@@ -329,13 +334,13 @@ const Budget: React.FC<IBudgetView> = props => {
               onClick={() => {
                 setIsModalOpen(true);
               }}
-              disabled={!isBudgetOpen && !isAdminUser}
+              disabled={!isBudgetOpen && !hasExtraPrivilegies}
               className={styles.close_budget}
             >
               {`${
                 isBudgetOpen
                   ? appStrings.closeBudget
-                  : isAdminUser
+                  : hasExtraPrivilegies
                   ? appStrings.openBudget
                   : appStrings.budgetClosed
               }`}
