@@ -5,15 +5,19 @@ import {
   getDocs,
   getDoc,
   doc,
-  runTransaction,
   serverTimestamp,
   updateDoc,
+  addDoc,
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
-import { db } from '../config/firebaseConfig';
+import { auth, db } from '../config/firebaseConfig';
 import { IUser } from '../types/user';
 import { IService } from '../types/service';
 import { toastSuccess, toastError } from '../utils/toast';
+import {
+  createUserWithEmailAndPassword,
+  updateCurrentUser,
+} from 'firebase/auth';
 
 export const getAllUsers = async ({
   appStrings,
@@ -118,25 +122,31 @@ export const getUsersByStatus = async ({
 
 export const createUser = async ({
   user,
+  password,
   appStrings,
   successCallback,
   errorCallback,
-}: { user: IUser } & IService) => {
+}: { user: IUser; password: string } & IService) => {
   try {
-    const data = await runTransaction(db, async transaction => {
-      const { id, ...rest } = user;
-      const userRef = doc(collection(db, 'users'));
-      transaction.set(userRef, {
-        ...rest,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      });
-
-      return {
-        ...user,
-        id: userRef.id,
-      } as IUser;
+    const { id, ...rest } = user;
+    let originalUser = auth.currentUser;
+    const res = await createUserWithEmailAndPassword(
+      auth,
+      user.email,
+      password,
+    );
+    await updateCurrentUser(auth, originalUser);
+    const result = await addDoc(collection(db, 'users'), {
+      ...rest,
+      uid: res.user.uid,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
     });
+
+    const data = {
+      ...user,
+      id: result.id,
+    } as IUser;
 
     toastSuccess(appStrings.success, appStrings.saveSuccess);
 

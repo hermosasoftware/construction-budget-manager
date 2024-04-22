@@ -28,7 +28,8 @@ const initialSelectedItemData = {
   name: '',
   lastName: '',
   email: '',
-  role: '',
+  role: 'employee',
+  password: '',
   createdAt: new Date(),
   updatedAt: new Date(),
 };
@@ -41,9 +42,9 @@ const initialSearchData = {
 };
 
 export default function Users() {
-  const [selectedItem, setSelectedItem] = useState<IUser>(
-    initialSelectedItemData,
-  );
+  const [selectedItem, setSelectedItem] = useState<
+    IUser & { password?: string }
+  >(initialSelectedItemData);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [search, setSearch] = useState<Search>(initialSearchData);
   const appStrings = useAppSelector(state => state.settings.appStrings);
@@ -62,6 +63,12 @@ export default function Users() {
     { name: 'role', value: '', hasSuggestions: true },
   ];
 
+  const roleOptions = [
+    { id: 'employee', name: appStrings.employee },
+    { id: 'manager', name: appStrings.manager },
+    { id: 'admin', name: appStrings.admin },
+  ];
+
   const editButton = async (userId: string) => {
     const successCallback = (response: IUser) => {
       setSelectedItem(response);
@@ -70,12 +77,18 @@ export default function Users() {
     await getUserById({ userId, appStrings, successCallback });
   };
 
-  const handleOnSubmit = async (user: IUser) => {
+  const handleOnSubmit = async (data: any) => {
+    const { password, ...user } = data;
     const successCallback = () => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
     };
-    const serviceCallParameters = { user, appStrings, successCallback };
+    const serviceCallParameters = {
+      user,
+      password,
+      appStrings,
+      successCallback,
+    };
     user.id
       ? await updateUser(serviceCallParameters)
       : await createUser(serviceCallParameters);
@@ -86,6 +99,9 @@ export default function Users() {
     lastName: yup.string().required(appStrings?.requiredField),
     email: yup.string().required(appStrings?.requiredField),
     role: yup.string().required(appStrings?.requiredField),
+    password: !!selectedItem.id
+      ? yup.string()
+      : yup.string().required(appStrings?.requiredField),
   });
 
   const Header = () => {
@@ -142,27 +158,31 @@ export default function Users() {
                   <Input
                     name="name"
                     label={appStrings.name}
-                    placeholder={appStrings.userName}
+                    placeholder={appStrings.nameDescription}
                   />
                   <Input
                     name="lastName"
-                    label={appStrings.client}
-                    placeholder={appStrings.clientName}
+                    label={appStrings.lastName}
+                    placeholder={appStrings.lastNameDescription}
                   />
                   <Input
                     name="email"
                     label={appStrings.email}
-                    placeholder={appStrings.emailDescription}
+                    placeholder={appStrings.emailExample}
                   />
                   <Select
                     name="role"
                     label={appStrings.role}
-                    options={[
-                      { id: 'employee', name: appStrings.employee },
-                      { id: 'admin', name: appStrings.admin },
-                    ]}
-                    containerStyle={{ width: '30%', alignSelf: 'start' }}
+                    options={roleOptions}
                   />
+                  {!selectedItem.id && (
+                    <Input
+                      name="password"
+                      type="password"
+                      label={appStrings.password}
+                      placeholder={appStrings.passwordDescription}
+                    />
+                  )}
                   <br />
                   <Button width="full" type="submit">
                     {appStrings.submit}

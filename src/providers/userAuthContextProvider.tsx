@@ -35,6 +35,7 @@ import { changeExtraSubcontracts } from '../redux/reducers/extraSubcontractsSlic
 import { changeExtraOthers } from '../redux/reducers/extraOthersSlice';
 import { getUserByUID } from '../services/UserService';
 import { IUser } from '../types/user';
+import { store } from '../redux/store';
 
 export const verifyEmail = async ({
   email,
@@ -178,17 +179,19 @@ export const logOut = async () => {
 
 export const handleAuthChange = (dispatch: Function, appStrings: any) => {
   onAuthStateChanged(auth, userAuth => {
+    const user = store.getState().session.user;
     if (userAuth) {
       // user is logged in, send the user's details to redux, store the current user in the state
       const successCallback = (response: IUser) => {
         dispatch(login(response));
         startListeners(appStrings);
       };
-      getUserByUID({
-        userUID: userAuth.uid,
-        appStrings,
-        successCallback,
-      });
+      !user &&
+        getUserByUID({
+          userUID: userAuth.uid,
+          appStrings,
+          successCallback,
+        });
     } else {
       dispatch(logout());
       cleanListeners(dispatch);
