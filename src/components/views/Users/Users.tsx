@@ -48,7 +48,7 @@ export default function Users() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [search, setSearch] = useState<Search>(initialSearchData);
   const appStrings = useAppSelector(state => state.settings.appStrings);
-  const [users, setUsers] = useState<IUser[]>([]);
+  const [tableData, setTableData] = useState<IUser[]>([]);
 
   const tableHeader: TTableHeader[] = [
     { name: 'name', value: appStrings.name },
@@ -69,6 +69,11 @@ export default function Users() {
     { id: 'admin', name: appStrings.admin },
   ];
 
+  const getUsers = () => {
+    const successCallback = (users: IUser[]) => setTableData(users);
+    getAllUsers({ appStrings, successCallback });
+  };
+
   const editButton = async (userId: string) => {
     const successCallback = (response: IUser) => {
       setSelectedItem(response);
@@ -82,6 +87,7 @@ export default function Users() {
     const successCallback = () => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
+      user.id ? updateItem(user) : addItem(user);
     };
     const serviceCallParameters = {
       user,
@@ -92,6 +98,15 @@ export default function Users() {
     user.id
       ? await updateUser(serviceCallParameters)
       : await createUser(serviceCallParameters);
+  };
+
+  const addItem = (item: IUser) => setTableData([item, ...tableData]);
+
+  const updateItem = (item: IUser) => {
+    const index = tableData.findIndex(e => e.id === item.id);
+    const data = [...tableData];
+    data.splice(index, 1, item);
+    setTableData(data);
   };
 
   const validationSchema = yup.object().shape({
@@ -122,10 +137,7 @@ export default function Users() {
     !isModalOpen && setSelectedItem(initialSelectedItemData);
   }, [isModalOpen]);
 
-  useEffect(() => {
-    const successCallback = (users: IUser[]) => setUsers(users);
-    getAllUsers({ appStrings, successCallback });
-  }, []);
+  useEffect(() => getUsers(), []);
 
   return (
     <div className={`container ${styles.users_container}`}>
@@ -136,7 +148,7 @@ export default function Users() {
             <SearchFilter
               search={search}
               setSearch={setSearch}
-              data={users}
+              data={tableData}
               options={filterOptions}
             />
             <div style={{ textAlign: 'end', flex: 1 }}>
@@ -193,12 +205,12 @@ export default function Users() {
           </Flex>
           <TableView
             headers={tableHeader}
-            items={users}
+            items={tableData}
             filter={value => handleFilterSearch(value, search)}
             onClickEdit={id => editButton(id)}
             usePagination={!search?.searchTerm?.length}
           />
-          {!users.length ? <h1>{appStrings.noRecords}</h1> : null}
+          {!tableData.length ? <h1>{appStrings.noRecords}</h1> : null}
         </Box>
       </div>
     </div>
