@@ -5,7 +5,15 @@
 .login__form_container {
   flex-direction: column;
   margin: auto;
-  gap: var(--separator-space-md);
+}
+
+.back_button {
+  padding: 0px !important;
+  align-self: start;
+}
+
+.back_button:hover {
+  text-decoration: underline;
 }
 
 .login__form {

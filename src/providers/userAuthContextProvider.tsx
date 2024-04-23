@@ -182,9 +182,17 @@ export const handleAuthChange = (dispatch: Function, appStrings: any) => {
     const user = store.getState().session.user;
     if (userAuth) {
       // user is logged in, send the user's details to redux, store the current user in the state
-      const successCallback = (response: IUser) => {
-        dispatch(login(response));
-        startListeners(appStrings);
+      const successCallback = (data: IUser) => {
+        if (data.status) {
+          dispatch(login(data));
+          startListeners(appStrings);
+        } else {
+          toastError(
+            appStrings.errorWhileLogIn,
+            appStrings.userDisabledMessage,
+          );
+          logOut();
+        }
       };
       !user &&
         getUserByUID({

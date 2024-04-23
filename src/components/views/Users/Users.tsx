@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Box, Text, Flex, Heading, useColorModeValue } from '@chakra-ui/react';
 import * as yup from 'yup';
 import Button from '../../common/Button/Button';
@@ -29,6 +29,7 @@ const initialSelectedItemData = {
   lastName: '',
   email: '',
   role: 'employee',
+  status: true,
   password: '',
   createdAt: new Date(),
   updatedAt: new Date(),
@@ -55,12 +56,14 @@ export default function Users() {
     { name: 'lastName', value: appStrings.lastName },
     { name: 'email', value: appStrings.email },
     { name: 'role', value: appStrings.role, isGreen: true },
+    { name: 'status', value: appStrings.status, isGreen: true },
   ];
 
   const filterOptions: FilterOption[] = [
     { name: 'name', value: '', hasSuggestions: true },
     { name: 'lastName', value: '', hasSuggestions: true },
     { name: 'role', value: '', hasSuggestions: true },
+    { name: 'status', value: '', hasSuggestions: true },
   ];
 
   const roleOptions = [
@@ -69,6 +72,20 @@ export default function Users() {
     { id: 'admin', name: appStrings.admin },
   ];
 
+  const statusOptions = [
+    { id: 'active', name: appStrings.active },
+    { id: 'inactive', name: appStrings.inactive },
+  ];
+
+  const formatedTableData = useMemo(
+    () =>
+      tableData.map(data => ({
+        ...data,
+        status: data.status ? appStrings.active : appStrings.inactive,
+      })),
+    [tableData],
+  );
+
   const getUsers = () => {
     const successCallback = (users: IUser[]) => setTableData(users);
     getAllUsers({ appStrings, successCallback });
@@ -76,21 +93,24 @@ export default function Users() {
 
   const editButton = async (userId: string) => {
     const successCallback = (response: IUser) => {
-      setSelectedItem(response);
+      setSelectedItem({
+        ...response,
+        status: response.status ? 'active' : 'inactive',
+      });
       setIsModalOpen(true);
     };
     await getUserById({ userId, appStrings, successCallback });
   };
 
   const handleOnSubmit = async (data: any) => {
-    const { password, ...user } = data;
-    const successCallback = () => {
+    const { password, status, ...user } = data;
+    const successCallback = (data: IUser) => {
       setSelectedItem(initialSelectedItemData);
       setIsModalOpen(false);
-      user.id ? updateItem(user) : addItem(user);
+      user.id ? updateItem(data) : addItem(data);
     };
     const serviceCallParameters = {
-      user,
+      user: { ...user, status: status === 'active' },
       password,
       appStrings,
       successCallback,
@@ -148,7 +168,7 @@ export default function Users() {
             <SearchFilter
               search={search}
               setSearch={setSearch}
-              data={tableData}
+              data={formatedTableData}
               options={filterOptions}
             />
             <div style={{ textAlign: 'end', flex: 1 }}>
@@ -187,6 +207,11 @@ export default function Users() {
                     label={appStrings.role}
                     options={roleOptions}
                   />
+                  <Select
+                    name="status"
+                    label={appStrings.status}
+                    options={statusOptions}
+                  />
                   {!selectedItem.id && (
                     <Input
                       name="password"
@@ -205,7 +230,7 @@ export default function Users() {
           </Flex>
           <TableView
             headers={tableHeader}
-            items={tableData}
+            items={formatedTableData}
             filter={value => handleFilterSearch(value, search)}
             onClickEdit={id => editButton(id)}
             usePagination={!search?.searchTerm?.length}

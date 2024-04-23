@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User } from 'firebase/auth';
 import { useAppSelector } from '../../../redux/hooks';
 import BrandPoster from '../../common/BrandPoster/BrandPoster';
 import LoginFormEmail, {
@@ -10,6 +9,7 @@ import LoginFormPassword, {
   ILoginFormPasswordData,
 } from '../../forms/LoginForm/LoginFormPassword';
 import { logIn, verifyEmail } from '../../../providers/userAuthContextProvider';
+import Button from '../../common/Button/Button';
 
 import styles from './Login.module.css';
 
@@ -52,10 +52,20 @@ const LogIn: React.FC<ILogin> = props => {
               onSubmit={handleOnEmailSubmit}
             />
           ) : (
-            <LoginFormPassword
-              className={styles.login__form}
-              onSubmit={handleOnPasswordSubmit}
-            />
+            <>
+              <Button
+                className={styles.back_button}
+                onClick={() => setLoginPhase('email')}
+                variant="unstyled"
+                title={appStrings?.back}
+              >
+                &larr; {appStrings.goBack}
+              </Button>
+              <LoginFormPassword
+                className={styles.login__form}
+                onSubmit={handleOnPasswordSubmit}
+              />
+            </>
           )}
         </div>
       </div>
