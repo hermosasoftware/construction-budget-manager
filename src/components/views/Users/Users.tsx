@@ -204,6 +204,7 @@ export default function Users() {
                     name="email"
                     label={appStrings.email}
                     placeholder={appStrings.emailExample}
+                    isDisabled={!!selectedItem.id}
                   />
                   <Select
                     name="role"
