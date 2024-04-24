@@ -30,7 +30,7 @@ import styles from './BudgetMaterial.module.css';
 interface IBudgetMaterialView {
   projectId: string;
   isBudgetOpen: boolean;
-  hasExtraPrivilegies: boolean;
+  hasHighPrivilegies: boolean;
   budget: IProjectBudget;
   activity: IBudgetActivity;
 }
@@ -57,7 +57,7 @@ const initialSelectedSubMaterialData = {
 };
 
 const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
-  const { projectId, isBudgetOpen, hasExtraPrivilegies, budget, activity } =
+  const { projectId, isBudgetOpen, hasHighPrivilegies, budget, activity } =
     props;
   const [selectedItem, setSelectedItem] = useState<IBudgetMaterial>(
     initialSelectedItemData,
@@ -286,7 +286,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
           onChange={handleSearch}
         />
         <div className={styles.form_container}>
-          {(isBudgetOpen || hasExtraPrivilegies) && (
+          {(isBudgetOpen || hasHighPrivilegies) && (
             <Button onClick={() => setIsModalOpen(true)}>+</Button>
           )}
           <Modal
@@ -430,7 +430,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
           setSelectedItem({ ...selectedItem, id: id });
           setIsAlertDialogOpen(true);
         }}
-        hideOptions={!isBudgetOpen || !hasExtraPrivilegies}
+        hideOptions={!isBudgetOpen || !hasHighPrivilegies}
         exchangeRate={Number(budget.exchange)}
         handleRowClick={() => {}}
         onClickAddSubMaterial={id => selectSubMaterial(id)}

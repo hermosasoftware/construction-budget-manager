@@ -56,7 +56,7 @@ const Budget: React.FC<IBudgetView> = props => {
     state => state.projectBudget.projectBudget,
   );
   const sessionUser = useAppSelector(state => state.session.user);
-  const [hasExtraPrivilegies, setHasExtraPrivilegies] = useState(
+  const [hasHighPrivilegies, setHasHighPrivilegies] = useState(
     isManagerOrAdmin(sessionUser!),
   );
   const dispatch = useAppDispatch();
@@ -170,7 +170,7 @@ const Budget: React.FC<IBudgetView> = props => {
     }
   }, [project]);
   useEffect(
-    () => setHasExtraPrivilegies(isManagerOrAdmin(sessionUser!)),
+    () => setHasHighPrivilegies(isManagerOrAdmin(sessionUser!)),
     [sessionUser],
   );
 
@@ -185,7 +185,7 @@ const Budget: React.FC<IBudgetView> = props => {
             <BudgetMaterial
               projectId={projectId}
               isBudgetOpen={isBudgetOpen}
-              hasExtraPrivilegies={hasExtraPrivilegies}
+              hasHighPrivilegies={hasHighPrivilegies}
               budget={projectBudget!}
               activity={activity}
             />
@@ -199,7 +199,7 @@ const Budget: React.FC<IBudgetView> = props => {
             <BudgetActivity
               projectId={projectId}
               isBudgetOpen={isBudgetOpen}
-              hasExtraPrivilegies={hasExtraPrivilegies}
+              hasHighPrivilegies={hasHighPrivilegies}
               budget={projectBudget!}
               setActivity={setActivity}
             />
@@ -208,7 +208,7 @@ const Budget: React.FC<IBudgetView> = props => {
             <BudgetLabor
               projectId={projectId}
               isBudgetOpen={isBudgetOpen}
-              hasExtraPrivilegies={hasExtraPrivilegies}
+              hasHighPrivilegies={hasHighPrivilegies}
               budget={projectBudget!}
             />
           ),
@@ -216,7 +216,7 @@ const Budget: React.FC<IBudgetView> = props => {
             <BudgetSubcontract
               projectId={projectId}
               isBudgetOpen={isBudgetOpen}
-              hasExtraPrivilegies={hasExtraPrivilegies}
+              hasHighPrivilegies={hasHighPrivilegies}
               budget={projectBudget!}
             />
           ),
@@ -224,7 +224,7 @@ const Budget: React.FC<IBudgetView> = props => {
             <BudgetOther
               projectId={projectId}
               isBudgetOpen={isBudgetOpen}
-              hasExtraPrivilegies={hasExtraPrivilegies}
+              hasHighPrivilegies={hasHighPrivilegies}
               budget={projectBudget!}
             />
           ),
@@ -303,7 +303,7 @@ const Budget: React.FC<IBudgetView> = props => {
               <ExchangeInput
                 editExchange={editExchange}
                 onClick={() => setEditExchange(true)}
-                isDisabled={!isBudgetOpen && !hasExtraPrivilegies}
+                isDisabled={!isBudgetOpen && !hasHighPrivilegies}
               />
             </Form>
             <Form
@@ -317,7 +317,7 @@ const Budget: React.FC<IBudgetView> = props => {
               <AdminFeeInput
                 editAdminFee={editAdminFee}
                 onClick={() => setEditAdminFee(true)}
-                isDisabled={!isBudgetOpen && !hasExtraPrivilegies}
+                isDisabled={!isBudgetOpen && !hasHighPrivilegies}
               />
             </Form>
             {
@@ -334,13 +334,13 @@ const Budget: React.FC<IBudgetView> = props => {
               onClick={() => {
                 setIsModalOpen(true);
               }}
-              disabled={!isBudgetOpen && !hasExtraPrivilegies}
+              disabled={!isBudgetOpen && !hasHighPrivilegies}
               className={styles.close_budget}
             >
               {`${
                 isBudgetOpen
                   ? appStrings.closeBudget
-                  : hasExtraPrivilegies
+                  : hasHighPrivilegies
                   ? appStrings.openBudget
                   : appStrings.budgetClosed
               }`}

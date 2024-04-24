@@ -132,7 +132,10 @@ export default function Users() {
   const validationSchema = yup.object().shape({
     name: yup.string().required(appStrings?.requiredField),
     lastName: yup.string().required(appStrings?.requiredField),
-    email: yup.string().required(appStrings?.requiredField),
+    email: yup
+      .string()
+      .email(appStrings?.validEmailRequired)
+      .required(appStrings?.requiredField),
     role: yup.string().required(appStrings?.requiredField),
     password: !!selectedItem.id
       ? yup.string()
