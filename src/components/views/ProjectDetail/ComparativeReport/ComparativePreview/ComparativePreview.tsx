@@ -35,7 +35,7 @@ export default function ComparativePreview() {
     comparatives.filter(
       value =>
         searchTerm === '""' ||
-        value.activity.toUpperCase().includes(searchTerm),
+        value.activity.toUpperCase().includes(searchTerm.slice(1, -1)),
     );
 
   useEffect(() => {
