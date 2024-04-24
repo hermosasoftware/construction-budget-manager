@@ -25,6 +25,7 @@ import styles from './BudgetLabor.module.css';
 interface IBudgetLaborView {
   projectId: string;
   isBudgetOpen: boolean;
+  hasHighPrivilegies: boolean;
   budget: IProjectBudget;
 }
 
@@ -40,7 +41,7 @@ const initialSelectedItemData = {
 };
 
 const BudgetLabor: React.FC<IBudgetLaborView> = props => {
-  const { projectId, isBudgetOpen, budget } = props;
+  const { projectId, isBudgetOpen, hasHighPrivilegies, budget } = props;
   const [selectedItem, setSelectedItem] = useState<IBudgetLabor>(
     initialSelectedItemData,
   );
@@ -144,7 +145,7 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
           onChange={handleSearch}
         />
         <div className={styles.form_container}>
-          {isBudgetOpen && (
+          {(isBudgetOpen || hasHighPrivilegies) && (
             <Button onClick={() => setIsModalOpen(true)}>+</Button>
           )}
           <Modal
@@ -210,7 +211,7 @@ const BudgetLabor: React.FC<IBudgetLaborView> = props => {
           setSelectedItem({ ...selectedItem, id: id });
           setIsAlertDialogOpen(true);
         }}
-        hideOptions={!isBudgetOpen}
+        hideOptions={!isBudgetOpen || !hasHighPrivilegies}
         usePagination={!searchTerm?.length}
         showTotals
       />

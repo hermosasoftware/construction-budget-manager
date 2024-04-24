@@ -1,0 +1,24 @@
+.users_container {
+  height: 100%;
+}
+
+.title {
+  text-align: left;
+  margin-left: 20px;
+  font-weight: 600;
+}
+
+.tabs {
+  width: fit-content;
+  margin-left: 25px;
+  margin-top: 25px;
+}
+
+.operations_container {
+  margin: 20px;
+  padding-top: 10px;
+}
+
+.menu_container {
+  gap: var(--separator-gap-md);
+}

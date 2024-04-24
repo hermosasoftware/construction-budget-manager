@@ -23,8 +23,9 @@
 }
 
 .account {
+  width: 100%;
   align-self: flex-start;
-  padding-left: 12px;
+  padding: 0 12px;
   padding-bottom: 12px;
 }
 

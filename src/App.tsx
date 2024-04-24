@@ -4,6 +4,7 @@ import { Route, BrowserRouter, Routes, Navigate } from 'react-router-dom';
 import Login from './components/views/Login/Login';
 import SignUp from './components/views/SignUp/SignUp';
 import Projects from './components/views/Projects/Projects';
+import Users from './components/views/Users/Users';
 import ProjectDetail from './components/views/ProjectDetail/ProjectDetail';
 import ComparativePreview from './components/views/ProjectDetail/ComparativeReport/ComparativePreview/ComparativePreview';
 import ExpensesPreview from './components/views/ProjectDetail/ExpensesReport/ExpensesPreview/ExpensesPreview';
@@ -44,6 +45,7 @@ function App() {
               path="/materials"
               element={<AuthRoute component={Materials} />}
             />
+            <Route path="/users" element={<AuthRoute component={Users} />} />
             <Route
               path="/project-detail/:id/:view"
               element={<AuthRoute component={ProjectDetail} />}

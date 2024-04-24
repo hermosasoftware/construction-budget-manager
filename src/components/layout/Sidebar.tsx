@@ -10,6 +10,7 @@ import {
   Box,
   Button,
   useColorModeValue,
+  Spacer,
 } from '@chakra-ui/react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import MenuBar from './MenuBar';
@@ -21,6 +22,7 @@ import { useState } from 'react';
 import { ReactComponent as Logo } from '../../assets/img/coto-logo.svg';
 import { auth } from '../../config/firebaseConfig';
 import { listenersList } from '../../services/herperService';
+import { isAdmin } from '../../utils/permisions';
 
 import styles from './Sidebar.module.css';
 
@@ -31,7 +33,7 @@ const Sidebar = () => {
   const { appStrings } = useAppSelector(state => ({
     ...state.settings,
   }));
-
+  const sessionUser = useAppSelector(state => state.session.user);
   const navigate = useNavigate();
   const bg = useColorModeValue(
     'var(--chakra-colors-side_bar_background)',
@@ -48,7 +50,7 @@ const Sidebar = () => {
         <Stack className="center-content-cross">
           <Logo className={styles.logo} />
           <MenuBar
-            menuItems={menuItems(appStrings)}
+            menuItems={menuItems(appStrings, isAdmin(sessionUser!))}
             toggleSidebar={toggleSidebar}
           />
         </Stack>
@@ -59,11 +61,12 @@ const Sidebar = () => {
             src="https://picsum.photos/24/24"
           />
           <VStack className={styles.account_info}>
-            <Text>{appStrings?.testUserName}</Text>
+            <Text>{sessionUser?.name}</Text>
             <Text className={styles.account_job__text}>
-              {appStrings?.testUserJob}
+              {appStrings[sessionUser?.role!]}
             </Text>
           </VStack>
+          <Spacer />
           <Button onClick={singOut}>{appStrings?.logOut}</Button>
         </HStack>
       </Stack>

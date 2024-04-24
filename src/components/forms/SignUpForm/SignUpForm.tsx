@@ -3,7 +3,7 @@ import { useAppSelector } from '../../../redux/hooks';
 import Button from '../../common/Button/Button';
 import Form, { Input, Select } from '../../common/Form';
 import { IFormProps } from '../../common/Form/Form';
-import { IUser, TIdType } from '../../../types/user';
+import { IUser } from '../../../types/user';
 import { validateKey } from '../../../services/authService';
 import * as yup from 'yup';
 
@@ -14,15 +14,13 @@ export interface ISignUpFormData extends IUser {
 
 interface ISignUpForm extends Omit<IFormProps<ISignUpFormData>, 'id'> {}
 
-const initialFormData: Partial<ISignUpFormData> = {
-  idType: 'national',
-};
+const initialFormData: Partial<ISignUpFormData> = {};
 
 const SignUpForm: React.FC<ISignUpForm> = props => {
   const formProps: Omit<IFormProps<ISignUpFormData>, 'id'> = props;
   const appStrings = useAppSelector(state => state.settings.appStrings);
 
-  const idTypeSelectOptions: Array<{ id: TIdType; name: string }> = [
+  const idTypeSelectOptions: Array<{ id: string; name: string }> = [
     { id: 'national', name: appStrings?.national },
   ];
 

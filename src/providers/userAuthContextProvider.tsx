@@ -33,6 +33,9 @@ import { changeExtraMaterials } from '../redux/reducers/extraMaterialsSlice';
 import { changeExtraLabors } from '../redux/reducers/extraLaborsSlice';
 import { changeExtraSubcontracts } from '../redux/reducers/extraSubcontractsSlice';
 import { changeExtraOthers } from '../redux/reducers/extraOthersSlice';
+import { getUserByUID } from '../services/UserService';
+import { IUser } from '../types/user';
+import { store } from '../redux/store';
 
 export const verifyEmail = async ({
   email,
@@ -176,17 +179,27 @@ export const logOut = async () => {
 
 export const handleAuthChange = (dispatch: Function, appStrings: any) => {
   onAuthStateChanged(auth, userAuth => {
+    const user = store.getState().session.user;
     if (userAuth) {
       // user is logged in, send the user's details to redux, store the current user in the state
-      dispatch(
-        login({
-          email: userAuth.email,
-          uid: userAuth.uid,
-          name: userAuth.displayName,
-          // photoUrl: userAuth.photoURL,
-        }),
-      );
-      startListeners(appStrings);
+      const successCallback = (data: IUser) => {
+        if (data.status) {
+          dispatch(login(data));
+          startListeners(appStrings);
+        } else {
+          toastError(
+            appStrings.errorWhileLogIn,
+            appStrings.userDisabledMessage,
+          );
+          logOut();
+        }
+      };
+      !user &&
+        getUserByUID({
+          userUID: userAuth.uid,
+          appStrings,
+          successCallback,
+        });
     } else {
       dispatch(logout());
       cleanListeners(dispatch);
