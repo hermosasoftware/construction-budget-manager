@@ -203,7 +203,7 @@ const BudgetOther: React.FC<IBudgetOtherView> = props => {
           setSelectedItem({ ...selectedItem, id: id });
           setIsAlertDialogOpen(true);
         }}
-        hideOptions={!isBudgetOpen || !hasHighPrivilegies}
+        hideOptions={!isBudgetOpen && !hasHighPrivilegies}
         usePagination={!searchTerm?.length}
         showTotals
       />

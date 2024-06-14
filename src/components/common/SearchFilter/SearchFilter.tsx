@@ -10,11 +10,12 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  ListItem,
-  List,
   Divider,
-  Grid,
   useColorModeValue,
+  Badge,
+  Flex,
+  Wrap,
+  WrapItem,
 } from '@chakra-ui/react';
 import { FadersHorizontal } from 'phosphor-react';
 import { Dispatch, useEffect, useState } from 'react';
@@ -27,6 +28,7 @@ import {
   getPreviousWeek,
   getPreviousYear,
   isDate,
+  isValidDate,
 } from '../../../utils/dates';
 import SearchInput from '../SearchInput';
 
@@ -80,7 +82,7 @@ export const mapFilterOptions = (
   attributes: FilterOption[],
   appStrings: TObject<any, string>,
 ) => {
-  const suggestionsLimit = 10;
+  const suggestionsLimit = 100;
   const options: Option[] = attributes?.map((attribute: FilterOption) => ({
     label: attribute?.name,
     value: attribute?.value,
@@ -88,7 +90,7 @@ export const mapFilterOptions = (
       ? []
       : [
           { label: appStrings?.today, value: new Date() },
-          { label: appStrings?.yersterday, value: getPreviousDay() },
+          { label: appStrings?.yesterday, value: getPreviousDay() },
           { label: appStrings?.thisWeek, value: getPreviousWeek() },
           { label: appStrings?.thisMonth, value: getPreviousMonth() },
           { label: appStrings?.thisYear, value: getPreviousYear() },
@@ -118,7 +120,7 @@ export const mapFilterOptions = (
 
 const SearchFilter: React.FC<SearchFilterProps> = props => {
   const { search, setSearch, data, options } = props;
-  const appStrings = useAppSelector(state => state.settings.appStrings);
+  const { appLang, appStrings } = useAppSelector(state => state.settings);
   const textColor = useColorModeValue('teal.500', 'teal.300');
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [filterOptions, setFilterOptions] = useState<Option[]>(
@@ -135,7 +137,7 @@ const SearchFilter: React.FC<SearchFilterProps> = props => {
     setSearch({ ...search, searchTerm: event.target.value });
 
   const handleOnClick = (option: Option, value: string | number | Date) => {
-    isDate(value)
+    isValidDate(value, appLang)
       ? setSearch({
           ...search,
           selectedOption: option,
@@ -193,7 +195,7 @@ const SearchFilter: React.FC<SearchFilterProps> = props => {
         onClose={onClose}
         isOpen={isOpen}
         isCentered
-        size="2xl"
+        size="6xl"
         scrollBehavior="inside"
       >
         <ModalOverlay />
@@ -201,13 +203,10 @@ const SearchFilter: React.FC<SearchFilterProps> = props => {
           <ModalHeader>{appStrings.searchFilters}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Grid
-              templateColumns={`repeat(${filterOptions.length}, 1fr)`}
-              gap={6}
-            >
+            <Flex flexDir="column" gap={6}>
               {filterOptions.map((option, key) => (
-                <List spacing={3} key={key}>
-                  <ListItem
+                <Wrap spacing={3} key={key}>
+                  <WrapItem
                     className={styles.title_option}
                     color={
                       search.selectedOption?.label === option?.label
@@ -217,20 +216,20 @@ const SearchFilter: React.FC<SearchFilterProps> = props => {
                     onClick={() => handleOnClick(option, option?.value)}
                   >
                     {option?.label?.toLocaleUpperCase()}
-                  </ListItem>
+                  </WrapItem>
                   <Divider />
                   {option?.suggestions?.map((element, key) => (
-                    <ListItem
+                    <WrapItem
                       className={styles.item}
                       onClick={() => handleOnClick(option, element?.value)}
                       key={key}
                     >
-                      {element?.label}
-                    </ListItem>
+                      <Badge>{element?.label}</Badge>
+                    </WrapItem>
                   ))}
-                </List>
+                </Wrap>
               ))}
-            </Grid>
+            </Flex>
           </ModalBody>
           <ModalFooter />
         </ModalContent>
