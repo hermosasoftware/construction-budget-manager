@@ -207,7 +207,7 @@ const BudgetSubcontract: React.FC<IBudgetSubcontractView> = props => {
           setSelectedItem({ ...selectedItem, id: id });
           setIsAlertDialogOpen(true);
         }}
-        hideOptions={!isBudgetOpen || !hasHighPrivilegies}
+        hideOptions={!isBudgetOpen && !hasHighPrivilegies}
         usePagination={!searchTerm?.length}
         showTotals
       />

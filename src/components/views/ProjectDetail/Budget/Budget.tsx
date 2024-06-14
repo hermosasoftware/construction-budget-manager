@@ -140,15 +140,15 @@ const Budget: React.FC<IBudgetView> = props => {
     await updateProjectBudgetAdminFee(serviceCallParameters);
   };
 
-  const handleCloseBudget = () => {
+  const handleBudgetAction = () => {
     const successCallback = () => {
-      setProject({ ...project, budgetOpen: false });
-      setIsBudgetOpen(false);
+      setProject({ ...project, budgetOpen: !isBudgetOpen });
+      setIsBudgetOpen(!isBudgetOpen);
       setIsModalOpen(false);
     };
     const errorCallBack = () => setIsModalOpen(false);
     const serviceCallParams = {
-      project: { ...project, budgetOpen: false },
+      project: { ...project, budgetOpen: !isBudgetOpen },
       appStrings,
       successCallback,
       errorCallBack,
@@ -363,7 +363,7 @@ const Budget: React.FC<IBudgetView> = props => {
                     {appStrings.cancel}
                   </Button>
                   <Button
-                    onClick={() => handleCloseBudget()}
+                    onClick={() => handleBudgetAction()}
                     className={`${styles.close_budget} ${styles.button_danger}`}
                   >
                     {isBudgetOpen

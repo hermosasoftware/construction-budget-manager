@@ -430,7 +430,7 @@ const BudgetMaterial: React.FC<IBudgetMaterialView> = props => {
           setSelectedItem({ ...selectedItem, id: id });
           setIsAlertDialogOpen(true);
         }}
-        hideOptions={!isBudgetOpen || !hasHighPrivilegies}
+        hideOptions={!isBudgetOpen && !hasHighPrivilegies}
         exchangeRate={Number(budget.exchange)}
         handleRowClick={() => {}}
         onClickAddSubMaterial={id => selectSubMaterial(id)}
